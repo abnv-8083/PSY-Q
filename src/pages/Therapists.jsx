@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Search } from "lucide-react"
-import BookingModal from "/Users/fee/Desktop/psyq/src/components/booking-modal.jsx"
+import BookingModal from "../components/booking-modal.jsx"
 
 // BookingModal component for displaying booking form
 const OldBookingModal = ({ isOpen, therapist, onClose }) => {
