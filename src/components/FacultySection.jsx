@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Box, Container, Typography, Button, IconButton } from '@mui/material';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
@@ -8,35 +9,35 @@ const FacultySection = () => {
 
   const facultyMembers = [
     {
-      id: 0,
-      name: "Sona Anil",
-      title: "Consultant Psychologist",
-      image: "/images/faculty/fathima-fidha."
-    },
-    {
       id: 1,
-      name: "Vandana",
-      title: "Consultant Psychologist",
-      image: "/images/faculty/fathima-fidha.png"
+      name: "Suhail VH",
+      title: "Consultant psychologist",
+      image: "/images/faculty/suhail.jpeg",
     },
     {
       id: 2,
-      name: "Starla Elsa Wilson",
-      title: "Consultant Psychologist",
-      image: "/images/faculty/fathima-fidha.png"
+      name: "Kallu Sajeev",
+      title: "Corporate Wellbeing coach & Consultant Psychologist",
+      image: "/images/faculty/kallu.jpeg",
     },
     {
       id: 3,
-      name: "Afreen",
-      title: "Clinical Psychologist",
-      image: "/images/faculty/fathima-fidha.png"
+      name: "Nasif Ahmed",
+      title: "Consultant Psychologist",
+      image: "/images/faculty/nasif.jpeg",
     },
     {
       id: 4,
-      name: "Adithya Lakshmi",
-      title: "Consultant Psychologist",
-      image: "/images/faculty/fathima-fidha.png"
-    }
+      name: "Parvathi K",
+      title: "Sports Psychologist",
+      image: "/images/faculty/parvathi.jpeg",
+    },
+    {
+      id: 5,
+      name: "Nafih PK",
+      title: "Sports Psychologist",
+      image: "/images/faculty/nafih.jpeg",
+    },
   ];
 
   const handlePrev = () => {
@@ -60,11 +61,11 @@ const FacultySection = () => {
   const visibleCards = getVisibleCards();
 
   return (
-    <Box component="section" sx={{ py: { xs: 8, sm: 10, lg: 12 }, bgcolor: '#f5f5f5' }}>
+    <Box component="section" sx={{ py: { xs: 8, sm: 10, lg: 12 }, background: '#ECE9E6',background: 'linear-gradient(0deg, rgba(236, 233, 230, 0.62) 0%, rgba(255, 255, 255, 1) 100%)' }}>
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ textAlign: 'center', mb: { xs: 6, lg: 8 } }}>
-          <Typography 
+          {/* <Typography 
             variant="h2" 
             component="h2" 
             sx={{ 
@@ -76,8 +77,8 @@ const FacultySection = () => {
             }}
           >
             Meet Our Therapists
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ fontSize: { xs: 16, sm: 18 } }}>
+          </Typography> */}
+          <Typography variant="body1" color="text.secondary" fontStyle="italic" sx={{ fontSize: { xs: 16, sm: 18 } }}>
             Find the right therapist for your journey to wellness.
           </Typography>
         </Box>
@@ -160,7 +161,6 @@ const FacultySection = () => {
                         letterSpacing: 1
                       }}
                     >
-                      Alternative Image
                     </Typography>
                   )}
 
@@ -217,7 +217,7 @@ const FacultySection = () => {
                   </Typography>
 
                   {/* Book Now Button */}
-                  <Button
+                  {/* <Button
                     variant="outlined"
                     sx={{
                       borderRadius: 20,
@@ -233,8 +233,8 @@ const FacultySection = () => {
                       }
                     }}
                   >
-                    Book Now
-                  </Button>
+                    Get to Know me
+                  </Button> */}
                 </Box>
               );
             })}
@@ -243,25 +243,27 @@ const FacultySection = () => {
 
         {/* View All Button */}
         <Box sx={{ textAlign: 'center' }}>
-          <Button
-            variant="contained"
-            endIcon={<ArrowForwardIosIcon sx={{ fontSize: 16 }} />}
-            sx={{
-              bgcolor: '#00388c',
-              color: 'white',
-              px: 4,
-              py: 1.5,
-              borderRadius: 25,
-              fontSize: 16,
-              textTransform: 'none',
-              fontWeight: 600,
-              '&:hover': {
-                bgcolor: '#138496'
-              }
-            }}
-          >
-            View all therapists
-          </Button>
+          <Link to="/therapists" style={{ textDecoration: 'none' }}>
+            <Button
+              variant="contained"
+              endIcon={<ArrowForwardIosIcon sx={{ fontSize: 16 }} />}
+              sx={{
+                bgcolor: '#00388c',
+                color: 'white',
+                px: 4,
+                py: 1.5,
+                borderRadius: 25,
+                fontSize: 16,
+                textTransform: 'none',
+                fontWeight: 600,
+                '&:hover': {
+                  bgcolor: '#256edcff'
+                }
+              }}
+            >
+              View all therapists
+            </Button>
+          </Link>
         </Box>
       </Container>
     </Box>

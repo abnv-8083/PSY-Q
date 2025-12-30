@@ -1,19 +1,19 @@
 import Hero from '../components/Hero'
-import EmpoweringStudents from '../components/EmpoweringStudents'
-import UnlockPotential from '../components/UnlockPotential'
+import FeatureCards from '../components/FeatureCards'
+import NumbersSection from '../components/NumbersSection'
 import FacultySection from '../components/FacultySection'
+import FAQSection from '../components/FAQSection'
 import CTABanner from '../components/CTABanner'
-import ServicesCarousel from '../components/ServicesCarousel'
 
 
 const Home = () => {
   return (
     <main>
       <Hero />
-      <EmpoweringStudents />
-      <ServicesCarousel />
-      {/* <FacultySection /> */}
-      <UnlockPotential />
+      <FeatureCards />
+      {/* <NumbersSection /> */}
+      <FacultySection />
+      <FAQSection />
       <CTABanner />
     </main>
   );

@@ -22,15 +22,12 @@ const Hero = () => {
             mb: { xs: 4, lg: 0 }
           }}>
             <Typography variant="h2" component="h1" sx={{ fontSize: { xs: 32, sm: 40, md: 48, lg: 56 }, fontWeight: 800, color: 'black' }}>
-              Empowering Your Success Through Education and Support.
+              No Mind Left Behind, PSYQ Leads the Way
             </Typography>
             <Typography variant="body1" sx={{ maxWidth: 560, color: 'rgba(0, 0, 0, 0.85)' }}>
               A dynamic e-learning platform designed to support learners with focused, flexible, and expertly guided sessions. We tailor our content to your goals and help you achieve success.
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, pt: 1 }}>
-              {/* <Button component={RouterLink} to="/signup" variant="contained" size="large" sx={{ bgcolor: 'black', color: '#fff', '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.9)' } }}>
-                Sign Up
-              </Button> */}
               <Button component={RouterLink} to="/about" variant="outlined" size="large" sx={{ borderColor: 'black', color: 'black', '&:hover': { borderColor: 'black', bgcolor: 'rgba(0, 0, 0, 0.04)' } }}>
                 Learn More
               </Button>
