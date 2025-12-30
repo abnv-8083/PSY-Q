@@ -61,7 +61,7 @@ const FacultySection = () => {
   const visibleCards = getVisibleCards();
 
   return (
-    <Box component="section" sx={{ py: { xs: 8, sm: 10, lg: 12 }, background: '#ECE9E6',background: 'linear-gradient(0deg, rgba(236, 233, 230, 0.62) 0%, rgba(255, 255, 255, 1) 100%)' }}>
+    <Box component="section" sx={{ py: { xs: 8, sm: 10, lg: 12 },background: 'linear-gradient(0deg, rgba(236, 233, 230, 0.62) 0%, rgba(255, 255, 255, 1) 100%)' }}>
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ textAlign: 'center', mb: { xs: 6, lg: 8 } }}>
