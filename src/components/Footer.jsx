@@ -1,68 +1,178 @@
 import { Link as RouterLink } from 'react-router-dom';
-import { Box, Container, Typography, Button, Divider } from '@mui/material';
+import { Box, Container, Typography, Link, IconButton, Grid } from '@mui/material';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import InstagramIcon from '@mui/icons-material/Instagram';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 
 const Footer = () => {
+  const footerLinks = {
+    services: [
+      { label: 'Counselling & Psychotherapy', href: '/services' },
+      { label: 'Psychological Assessments', href: '/services' },
+      { label: 'Learning Support', href: '/services' },
+      { label: 'Referral & Support', href: '/services' },
+    ],
+    company: [
+      { label: 'About Us', href: '/about' },
+      { label: 'Our Story', href: '/about' },
+      { label: 'Contact Us', href: '/contact' },
+    ],
+    support: [
+      { label: 'FAQs', href: '#' },
+      { label: 'Privacy Policy', href: '#' },
+      { label: 'Terms & Conditions', href: '#' },
+      { label: 'Refunds', href: '#' },
+      { label: 'Clinical Report Policy', href: '#' },
+      { label: 'Minor Reporting Policy', href: '#' },
+      { label: 'Information & Security Policy', href: '#' },
+    ],
+  };
+
   return (
-    <Box component="footer" sx={{ bgcolor: 'background.paper', borderTop: 1, borderColor: 'divider' }}>
-      <Container sx={{ py: 6 }}>
-        {/* Logo and Navigation */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          {/* Logo */}
-          <Box
-            component={RouterLink}
-            to="/"
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              mb: 3,
-              cursor: 'pointer',
-              '&:hover': {
-                opacity: 0.8,
-                transition: 'opacity 0.2s ease'
-              }
-            }}
-          >
-            <Box
-              component="img"
-              src="/logos/psyg-logo-footer.png"
-              alt="Psy-Q Learning Logo"
-              sx={{
-                height: { xs: 60, sm: 80 },
-                width: 'auto',
-                display: 'block'
-              }}
-            />
-          </Box>
-          
-          {/* Navigation Links */}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 3 }}>
-            <Button component={RouterLink} to="/about" color="inherit" size="small">About Us</Button>
-            <Button component={RouterLink} to="/contact" color="inherit" size="small">Contact Us</Button>
-            <Button component={RouterLink} to="/services" color="inherit" size="small">Services</Button>
-          </Box>
-        </Box>
-        
-        {/* Bottom Section */}
-        <Divider sx={{ my: 3 }} />
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', md: 'row' }, 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          gap: 2
-        }}>
-          {/* Copyright */}
-          <Typography variant="body2" color="text.secondary">
-            © 2024 Psy-Q. All rights reserved.
-          </Typography>
-          
-          {/* Legal Links */}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-end' }, gap: 3 }}>
-            <Button href="#privacy" color="inherit" size="small">Privacy Policy</Button>
-            <Button href="#terms" color="inherit" size="small">Terms of Use</Button>
-            <Button href="#cookies" color="inherit" size="small">Cookie Policy</Button>
-          </Box>
-        </Box>
+    <Box 
+      component="footer" 
+      sx={{ 
+        bgcolor: '#fff',
+        color: 'black',
+        py: 6
+      }}
+    >
+      <Container maxWidth="lg">
+        <Grid container spacing={4}>
+          {/* Services Column */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+              Services
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {footerLinks.services.map((link, index) => (
+                <Link
+                  key={index}
+                  component={RouterLink}
+                  to={link.href}
+                  sx={{
+                    color: 'rgba(0, 0, 0, 0.8)',
+                    textDecoration: 'none',
+                    fontSize: '0.9rem',
+                    '&:hover': {
+                      color: 'black',
+                      textDecoration: 'underline'
+                    }
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </Box>
+          </Grid>
+
+          {/* Company Column */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+              Company
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {footerLinks.company.map((link, index) => (
+                <Link
+                  key={index}
+                  component={link.href.startsWith('http') || link.href.startsWith('tel:') ? 'a' : RouterLink}
+                  to={link.href.startsWith('http') || link.href.startsWith('tel:') ? undefined : link.href}
+                  href={link.href.startsWith('http') || link.href.startsWith('tel:') ? link.href : undefined}
+                  target={link.href.startsWith('http') ? '_blank' : undefined}
+                  rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  sx={{
+                    color: 'rgba(0, 0, 0, 0.8)',
+                    textDecoration: 'none',
+                    fontSize: '0.9rem',
+                    '&:hover': {
+                      color: 'black',
+                      textDecoration: 'underline'
+                    }
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </Box>
+          </Grid>
+
+          {/* Support Column */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+              Support
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {footerLinks.support.map((link, index) => (
+                <Link
+                  key={index}
+                  href={link.href}
+                  sx={{
+                    color: 'rgba(0, 0, 0, 0.8)',
+                    textDecoration: 'none',
+                    fontSize: '0.9rem',
+                    '&:hover': {
+                      color: 'black',
+                      textDecoration: 'underline'
+                    }
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </Box>
+          </Grid>
+
+          {/* Stay Connected Column */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+              Stay connected
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <IconButton
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  color: 'black',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.2)'
+                  }
+                }}
+              >
+                <LinkedInIcon />
+              </IconButton>
+              <IconButton
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  color: 'black',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.2)'
+                  }
+                }}
+              >
+                <InstagramIcon />
+              </IconButton>
+              <IconButton
+                href="https://youtube.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  color: 'black',
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.2)'
+                  }
+                }}
+              >
+                <YouTubeIcon />
+              </IconButton>
+            </Box>
+          </Grid>
+        </Grid>
       </Container>
     </Box>
   );

@@ -38,6 +38,12 @@ const FacultySection = () => {
       title: "Sports Psychologist",
       image: "/images/faculty/nafih.jpeg",
     },
+    {
+      id: 6,
+      name: "Gazzala Tharola",
+      title: "Consultant Psychologist and Assistant professor",
+      image: "/images/faculty/gazzala.jpeg",
+    }
   ];
 
   const handlePrev = () => {
@@ -173,7 +179,7 @@ const FacultySection = () => {
                       bgcolor: '#6383b4ff',
                       mb: 2,
                       overflow: 'hidden',
-                      border: isCenter ? '4px solid white' : 'none',
+                      border: isCenter ? '4px solid #00388C' : 'none',
                       boxShadow: isCenter ? 3 : 1
                     }}
                   >

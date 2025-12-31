@@ -45,7 +45,7 @@ const Hero = () => {
           }}>
             <Box
               component="img"
-              src="/images/hero-1.png"
+              src="/images/hero-1.jpg"
               alt="Psy-Q Education Platform"
               sx={{
                 width: '100%',

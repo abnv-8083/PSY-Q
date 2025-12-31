@@ -1,8 +1,8 @@
 const FeatureCard = ({ icon, title, description, image }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 card-hover h-full overflow-hidden">
+    <div className="rounded-lg shadow-sm border border-gray-100 card-hover h-full overflow-hidden">
       {/* Image Section */}
-    <div className="h-48 flex items-center justify-center p-12">
+    <div className="h-48 flex items-center justify-center">
     {image && (
       <img
         src={image}
@@ -10,7 +10,8 @@ const FeatureCard = ({ icon, title, description, image }) => {
         style={{ 
           width: '200px', 
           height: '200px',
-          display: 'block'
+          display: 'block',
+          padding: '20px',
         }}
         className="object-contain"
         onError={(e) => { e.target.style.display = 'none'; }}

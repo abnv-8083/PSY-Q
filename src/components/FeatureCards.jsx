@@ -7,19 +7,19 @@ const FeatureCards = () => {
       title: "Counselling",
       description: "Professional counseling services to support your mental health and academic journey.",
       link: "/therapists",
-      image: "/images/couselling.png"
+      image: "/images/counselling.jpg"
     },
     {
       title: "Webinars",
       description: "Interactive webinars on career guidance and psychological wellness.",
       link: "/soon",
-      image: "/images/webinar.png"
+      image: "/images/webinar.jpg"
     },
     {
       title: "Academic Support",
       description: "Comprehensive academic support and competitive exam preparation.",
       link: "/soon",
-      image: "/images/academic.png"
+      image: "/images/academic.jpg"
     }
   ];
 
