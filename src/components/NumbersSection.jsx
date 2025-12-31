@@ -1,39 +1,111 @@
 const NumbersSection = () => {
   const stats = [
     {
-      number: "1000+",
-      label: "Students Helped"
+      number: "3000+",
+      label: "Happy Clients"
     },
     {
-      number: "95%",
-      label: "Success Rate"
+      number: "15+",
+      label: "Expert Therapists"
     },
     {
-      number: "50+",
-      label: "Expert Counselors"
-    },
-    {
-      number: "10+",
-      label: "Years Experience"
+      number: "4+",
+      label: "Languages"
     }
   ];
 
-return (
-    <section className="bg-gradient-to-r from-pink-50 to-purple-50 py-16 sm:py-20 lg:py-24">
-        <div className="container">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                {stats.map((stat, index) => (
-                    <div key={index} className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-8 text-center shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
-                        <div className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-2" style={{color: '#E91E63'}}>
-                            {stat.number}
-                        </div>
-                        <p className="text-sm sm:text-base text-gray-600 font-medium">{stat.label}</p>
-                    </div>
-                ))}
+  return (
+    <section
+      style={{
+        background: 'linear-gradient(135deg, #f7f8fb 20%, #e6f7ff 100%)',
+        paddingTop: '80px',
+        paddingBottom: '80px',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          paddingLeft: '20px',
+          paddingRight: '20px',
+        }}
+      >
+        {/* Section Heading */}
+        <h2
+          style={{
+            textAlign: 'center',
+            fontSize: '32px',
+            fontWeight: '500',
+            color: '#464545ff',
+            marginBottom: '60px',
+            fontStyle: 'italic',
+          }}
+        >
+          A Safe Space for Our Psymates
+        </h2>
+
+        {/* Stats Grid */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '24px',
+            marginBottom: '48px',
+          }}
+        >
+          {stats.map((stat, index) => (
+            <div
+              key={index}
+              style={{
+                background: 'linear-gradient(135deg, #ffd7ec 0%, #fad5e9 50%, #ffeef6 100%)',
+                borderRadius: '12px',
+                padding: '40px 24px',
+                textAlign: 'center',
+                transition: 'box-shadow 0.3s ease, transform 0.25s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(202, 0, 86, 0.18)';
+                e.currentTarget.style.transform = 'translateY(-6px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.transform = 'none';
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '48px',
+                  fontWeight: '700',
+                  color: '#ca0056',
+                  marginBottom: '8px',
+                }}
+              >
+                {stat.number}
+              </div>
+              <p
+                style={{
+                  fontSize: '16px',
+                  color: '#38232fff',
+                  fontWeight: '500',
+                  margin: 0,
+                }}
+              >
+                {stat.label}
+              </p>
             </div>
+          ))}
         </div>
+
+        {/* Quote */}
+        <div
+          style={{
+            textAlign: 'center',
+          }}
+        >
+        </div>
+      </div>
     </section>
-);
+  );
 };
 
 export default NumbersSection;

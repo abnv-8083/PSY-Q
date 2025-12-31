@@ -1,9 +1,8 @@
 import Hero from '../components/Hero'
 import FeatureCards from '../components/FeatureCards'
 import NumbersSection from '../components/NumbersSection'
-import FacultySection from '../components/FacultySection'
 import FAQSection from '../components/FAQSection'
-import CTABanner from '../components/CTABanner'
+import Therapists from './Therapists'
 
 
 const Home = () => {
@@ -11,10 +10,9 @@ const Home = () => {
     <main>
       <Hero />
       <FeatureCards />
-      {/* <NumbersSection /> */}
-      <FacultySection />
+      <NumbersSection />
+      <Therapists />
       <FAQSection />
-      <CTABanner />
     </main>
   );
 };

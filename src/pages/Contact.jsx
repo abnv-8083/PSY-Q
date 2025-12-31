@@ -121,8 +121,8 @@ const Contact = () => {
                 </Box>
                 <Box>
                   <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>Email</Typography>
-                  <Typography variant="body2" color="text.secondary">info@psyq.com</Typography>
-                  <Typography variant="body2" color="text.secondary">support@psyq.com</Typography>
+                  <Typography variant="body2" color="text.secondary">psyqonline@gmail.com</Typography>
+                
                 </Box>
               </CardContent>
             </Card>
@@ -143,8 +143,7 @@ const Contact = () => {
                 </Box>
                 <Box>
                   <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>Phone</Typography>
-                  <Typography variant="body2" color="text.secondary">+1 (555) 123-4567</Typography>
-                  <Typography variant="body2" color="text.secondary">+1 (555) 987-6543</Typography>
+                  <Typography variant="body2" color="text.secondary">+919207010098</Typography>
                 </Box>
               </CardContent>
             </Card>

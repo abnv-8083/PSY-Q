@@ -5,11 +5,11 @@ import PublicIcon from '@mui/icons-material/Public';
 
 const About = () => {
   return (
-    <Box component="main" sx={{ bgcolor: '#f5f5f5', py: { xs: 6, sm: 8, lg: 10 } }}>
-      <Container maxWidth="lg">
+    <Box component="main" sx={{ bgcolor: '#f5f5f5', py: { xs: 7, md: 10 } }}>
+      <Container maxWidth="xl">
         {/* Welcome to PSYQ Section */}
         <Box sx={{ mb: 8 }}>
-          <Grid container spacing={4} alignItems="center">
+          <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
             <Grid item xs={12} md={6}>
               <Chip 
                 label="Evidence-Based Care" 
@@ -18,6 +18,7 @@ const About = () => {
                   bgcolor: '#fae0edff', 
                   color: '#ca0056',
                   mb: 3,
+                  marginLeft: 5,
                   fontWeight: 600,
                   p: 1.5,
                   height: 'auto',
@@ -27,6 +28,7 @@ const About = () => {
               <Typography variant="h2" sx={{ 
                 fontWeight: 700, 
                 mb: 3,
+                ml: 5,
                 fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
                 lineHeight: 1
               }}>
@@ -35,14 +37,17 @@ const About = () => {
               <Typography variant="h5" sx={{ 
                 color: '#00388C', 
                 fontWeight: 500,
-                mb: 2
+                mb: 2,
+                ml: 5,
               }}>
                 No mind left behind
               </Typography>
               <Typography sx={{ 
                 color: '#64748b', 
                 lineHeight: 1.8,
-                fontSize: '14px'
+                fontSize: '14px',
+                maxWidth: 640,
+                ml: 5,
               }}>
                 PSYQ Learning is an initiative introduced by a group of psychologists that
                 strives to make professional psychological support accessible and
@@ -52,15 +57,15 @@ const About = () => {
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ position: 'relative', display: 'flex', justifyContent: { xs: 'center', md: 'flex-end' } }}>
+              <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-end' } }}>
                 <Box sx={{
                   width: '100%',
-                  maxWidth: { xs: 360, md: 520 },
+                  maxWidth: { xs: 360, md: 540 },
                   bgcolor: 'white',
-                  borderRadius: { xs: 4, md: 6 },
-                  p: { xs: 3, md: 6 },
-                  boxShadow: 1,
-                  overflow: 'hidden'
+                  borderRadius: { xs: 6, md: 8 },
+                  p: { xs: 3.5, md: 7 },
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
+                  border: '1px solid #e5e7eb'
                 }}>
                   <Box component="img"
                     src="/images/story-graphic.png"
@@ -68,52 +73,19 @@ const About = () => {
                     sx={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }}
                   />
                 </Box>
-
-                {/* Focus card - overlaps the image on md+ */}
-                <Paper elevation={3} sx={{
-                  position: { xs: 'static', md: 'absolute' },
-                  bottom: { md: -20 },
-                  left: { md: 'calc(50% + 20px)' },
-                  transform: { md: 'translateX(-50%)' },
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  p: 2,
-                  borderRadius: 3,
-                  bgcolor: 'white',
-                  width: { xs: '100%', md: 260 },
-                  maxWidth: '90%'
-                }}>
-                  <Box sx={{
-                    bgcolor: '#fae0edff',
-                    borderRadius: 2,
-                    p: 1.25,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: 44,
-                    minHeight: 44
-                  }}>
-                    <Box component="span" sx={{ fontSize: '1.25rem' }}>🎯</Box>
-                  </Box>
-                  <Box>
-                    <Typography variant="caption" sx={{ color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>
-                      FOCUS
-                    </Typography>
-                    <Typography variant="body1" sx={{ fontWeight: 700, color: '#1e293b' }}>
-                      Holistic Wellbeing
-                    </Typography>
-                  </Box>
-                </Paper>
               </Box>
             </Grid>
           </Grid>
         </Box>
 
         {/* Mission and Vision Cards */}
-        <Grid container spacing={4} sx={{ mb: 8 }}>
+        <Grid
+          container
+          spacing={4}
+          sx={{ mb: 8, mx:5, flexDirection: { xs: 'column', sm: 'row' } }}
+        >
           {/* Our Mission */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <Paper elevation={0} sx={{ 
               bgcolor: 'white',
               borderRadius: 4,
@@ -151,19 +123,14 @@ const About = () => {
                 lineHeight: 1.8,
                 fontSize: '0.95rem'
               }}>
-                To provide compassionate, evidence-based, and personalized
-                mental health care through a holistic and multidisciplinary
-                approach. We address a wide spectrum of needs through
-                psychotherapy, counseling, rehabilitation, and career guidance.
-                By advancing innovative research and fostering continuous
-                learning, we empower individuals to achieve personal growth and
-                lead meaningful lives.
+             Our mission is to provide affordable, ethical, and professional mental health support through counselling, therapy, and learning programs. We aim to help people build emotional strength, mental well-being, and long-term personal growth in a safe and supportive environment.
+
               </Typography>
             </Paper>
           </Grid>
 
           {/* Our Vision */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <Paper elevation={0} sx={{ 
               bgcolor: '#00368c',
               borderRadius: 4,
@@ -191,29 +158,28 @@ const About = () => {
                 lineHeight: 1.8,
                 fontSize: '0.95rem'
               }}>
-                Fostering mental health, well-being, and inclusivity through
-                psychological care, education, research, and holistic rehabilitation
-                —delivered with evidence-based, compassionate services that
-                empower individuals across all walks of life to recover, grow, and
-                flourish.
+               The PSYQ was created by a group of passionate psychologists who wanted to make mental health care easily accessible to everyone. They saw how many people silently struggled with stress, anxiety, depression, and emotional pain, often without anyone to talk to.
+                That is why PSYQ was born: a safe and supportive space where people can share, heal, and grow with care and understanding.
+                Here, healing is a personal journey. We walk with you through tough times, help you understand your thoughts and emotions, and support you in building a healthier mindset. Along with mental health care, the PSYQ also supports athletes and performers by helping them improve their focus, confidence, and emotional strength.
+                At PSYQ, no problem is too small, and no one is ignored. We believe that everyone deserves care, hope, and the opportunity to become stronger.
               </Typography>
             </Paper>
           </Grid>
         </Grid>
 
         {/* Features Grid */}
-        <Grid container spacing={2} columns={{ xs: 1, md: 3, lg: 3 }} sx={{ mb: 8 }}>
-          <Grid item xs={1} md={1}>
+        <Grid container spacing={2} sx={{ mb: 8, px: 5 }}>
+          <Grid item xs={4}>
             <Paper elevation={0} sx={{ 
               bgcolor: 'white',
               borderRadius: 3,
-              p: 3,
+              p: 2.5,
               textAlign: 'center',
               height: '100%'
             }}>
               <Box sx={{ 
-                width: 64,
-                height: 64,
+                width: 56,
+                height: 56,
                 bgcolor: '#f0f9ff',
                 borderRadius: '50%',
                 display: 'flex',
@@ -222,28 +188,28 @@ const About = () => {
                 mx: 'auto',
                 mb: 2
               }}>
-                <Box component="span" sx={{ fontSize: '2rem' }}>💡</Box>
+                <Box component="span" sx={{ fontSize: '1.75rem' }}>💡</Box>
               </Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5, fontSize: { xs: '0.95rem', sm: '1.15rem' } }}>
                 Expert Guidance
               </Typography>
-              <Typography sx={{ color: '#64748b', fontSize: '0.95rem' }}>
+              <Typography sx={{ color: '#64748b', fontSize: { xs: '0.8rem', sm: '0.95rem' } }}>
                 Our experienced faculty provides personalized guidance tailored to each student's needs.
               </Typography>
             </Paper>
           </Grid>
           
-          <Grid item xs={1} md={1}>
+          <Grid item xs={4}>
             <Paper elevation={0} sx={{ 
               bgcolor: 'white',
               borderRadius: 3,
-              p: 3,
+              p: 2.5,
               textAlign: 'center',
               height: '100%'
             }}>
               <Box sx={{ 
-                width: 64,
-                height: 64,
+                width: 56,
+                height: 56,
                 bgcolor: '#f0fdf4',
                 borderRadius: '50%',
                 display: 'flex',
@@ -252,28 +218,28 @@ const About = () => {
                 mx: 'auto',
                 mb: 2
               }}>
-                <Box component="span" sx={{ fontSize: '2rem' }}>🧠</Box>
+                <Box component="span" sx={{ fontSize: '1.75rem' }}>🧠</Box>
               </Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5, fontSize: { xs: '0.95rem', sm: '1.15rem' } }}>
                 Psychological Support
               </Typography>
-              <Typography sx={{ color: '#64748b', fontSize: '0.95rem' }}>
+              <Typography sx={{ color: '#64748b', fontSize: { xs: '0.8rem', sm: '0.95rem' } }}>
                 We provide counseling services to help students manage stress and build confidence.
               </Typography>
             </Paper>
           </Grid>
           
-          <Grid item xs={1} md={1}>
+          <Grid item xs={4}>
             <Paper elevation={0} sx={{ 
               bgcolor: 'white',
               borderRadius: 3,
-              p: 3,
+              p: 2.5,
               textAlign: 'center',
               height: '100%'
             }}>
               <Box sx={{ 
-                width: 64,
-                height: 64,
+                width: 56,
+                height: 56,
                 bgcolor: '#fef3c7',
                 borderRadius: '50%',
                 display: 'flex',
@@ -282,12 +248,12 @@ const About = () => {
                 mx: 'auto',
                 mb: 2
               }}>
-                <Box component="span" sx={{ fontSize: '2rem' }}>📚</Box>
+                <Box component="span" sx={{ fontSize: '1.75rem' }}>📚</Box>
               </Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5, fontSize: { xs: '0.95rem', sm: '1.15rem' } }}>
                 Interactive Learning
               </Typography>
-              <Typography sx={{ color: '#64748b', fontSize: '0.95rem' }}>
+              <Typography sx={{ color: '#64748b', fontSize: { xs: '0.8rem', sm: '0.95rem' } }}>
                 Our dynamic modules and webinars make learning engaging and effective.
               </Typography>
             </Paper>
@@ -317,21 +283,9 @@ const About = () => {
                 mb: 3,
                 fontSize: '1rem'
               }}>
-                PSYQ Learning started as a student-led initiative in Kerala, founded by a group
-                of psychology professionals who are passionate about mental health and
-                education. What began as a digital classroom soon grew into a platform
-                connecting learners, counsellors, and educators.
-              </Typography>
-              <Typography sx={{ 
-                color: '#64748b', 
-                lineHeight: 1.8,
-                fontSize: '1rem'
-              }}>
-                The goal was simple — to make psychology relevant, reachable, and rooted in
-                real experiences. Over time, PSYQ developed a range of programs focusing on
-                skill-building, awareness, and practical application. Today, it stands as a
-                growing community dedicated to bringing professionalism and purpose into
-                psychological education.
+              PSYQ started with a simple idea: mental health care should be available to everyone. The founders saw people suffering quietly, unable to find the right support or someone who would truly listen to them.
+              To address this, PSYQ was created as a safe space for counselling, therapy, and guidance. Here, healing is considered a personal journey. We support individuals through emotional struggles, help them manage stress, and guide them towards a healthier mindset.
+              PSYQ also works in the field of sports psychology, helping athletes build confidence, focus, and emotional balance in sports and life. At PSYQ, every story is important. Every struggle is respected and acknowledged. Every person is supported with care and compassion.
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>

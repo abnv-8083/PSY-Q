@@ -8,6 +8,12 @@ import Therapists from './pages/Therapists';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import Soon from './pages/Soon';
+import Individual from './pages/Individual';
+import SexualWellness from './pages/SexualWellness';
+import CoupleCounseling from './pages/CoupleCounseling';
+import Psychospiritual from './pages/Psychospiritual';
+import ChildRehabilitation from './pages/ChildRehabilitation';
+import SportsMentalHealth from './pages/SportsMentalHealth';
 
 function App() {
   return (
@@ -21,6 +27,12 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/soon" element={<Layout><Soon /></Layout>} />
+        <Route path="/individual" element={<Layout><Individual /></Layout>} />
+        <Route path="/sexual-wellness" element={<Layout><SexualWellness /></Layout>} />
+        <Route path="/couple-counseling" element={<Layout><CoupleCounseling /></Layout>} />
+        <Route path="/psychospiritual" element={<Layout><Psychospiritual /></Layout>} />
+        <Route path="/child-rehabilitation" element={<Layout><ChildRehabilitation /></Layout>} />
+        <Route path="/sports-mental-health" element={<Layout><SportsMentalHealth /></Layout>} />
       </Routes>
     </Router>
   );

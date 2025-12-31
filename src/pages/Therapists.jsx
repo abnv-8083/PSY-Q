@@ -135,92 +135,67 @@ export default function Therapists() {
       id: 1,
       name: "Suhail VH",
       title: "Consultant psychologist",
-      credentials: "BSc · MA",
-      additionalInfo: "+1 more",
+      credentials: "5+ Years of experience",
       languages: "Malayalam, English",
       specializations: ["Family & Relationship Counselling", "Career Guidance"],
+      price: "₹999/-",
       image: "/images/faculty/suhail.jpeg",
     },
     {
       id: 2,
       name: "Kallu Sajeev",
       title: "Corporate Wellbeing coach & Consultant Psychologist",
-      credentials: "MA · PGDRP",
+      credentials: "3.5+ Years of experience",
       additionalInfo: "",
       languages: "Malayalam, English",
-      specializations: ["Relationship issues" , "anger and stress management" , "corporate mentalWellness" ,  "Occupational Well-being"],
+      specializations: ["Rehabilitation", "Relationship issues" , "Anger and Stress management" , "Corporate Mental Wellness" ,  "Occupational Well-being"],
+      price: "₹999/-",
       image: "images/faculty/kallu.jpeg",
     },
     {
       id: 3,
       name: "Nasif Ahmed",
       title: "Consultant Psychologist",
-      credentials: "BA · MA",
+      credentials: "3+ Years of experience",
       additionalInfo: "",
       languages: "Malayalam, English",
-      specializations: ["Family", "Relationship Difficulties"],
+      specializations: ["Family", "Relationship Counselling"],
+      price: "₹999/-",
       image: "/images/faculty/nasif.jpeg",
     },
     {
       id: 4,
       name: "Parvathi K",
       title: "Sports Psychologist",
-      credentials: "BSc Sports psychology",
+      credentials: "3+ Years of experience",
       additionalInfo: "",
-      languages: "Malayalam, English",
-      specializations: ["Training", "Educational & Sports Counselling"],
+      languages: "Malayalam, English, Hindi, Tamil",
+      specializations: ["Sports and performance counseling", "Exercise population", "Rehabilitation athletes"],
+      price: "₹999/-",
       image: "/images/faculty/parvathi.jpeg",
     },
     {
       id: 5,
       name: "Nafih PK",
       title: "Sports Psychologist",
-      credentials: "BA · MA",
+      credentials: "2+ Years of experience",
       additionalInfo: "",
       languages: "Malayalam, English",
-      specializations: ["Team Sports", "esports", "Athletics"],
+      specializations: ["Team Sports", "E-Sports", "Athletics"],
+      price: "₹999/-",
       image: "/images/faculty/nafih.jpeg",
     },
-    // {
-    //   id: 6,
-    //   name: "Junaid Rafeeq",
-    //   title: "Consultant Psychologist",
-    //   credentials: "BA · MA",
-    //   additionalInfo: "",
-    //   languages: "Malayalam, English",
-    //   specializations: ["Relationship Difficulties", "Behavioral Issues", "Mental Health Support"],
-    //   image: "/male-therapist-professional-headshot.jpg",
-    // },
-    // {
-    //   id: 7,
-    //   name: "Murshid Puthur",
-    //   title: "Psychologist & Trainer (RCI Licensed)",
-    //   credentials: "BSc · MA",
-    //   additionalInfo: "+1 more",
-    //   languages: "Malayalam, English",
-    //   specializations: ["Training", "Educational & Academic Counselling"],
-    //   image: "/male-therapist-professional-headshot.jpg",
-    // },
-    // {
-    //   id: 8,
-    //   name: "Shibina Azeez",
-    //   title: "Child Rehabilitation Psychologist (RCI Licensed)",
-    //   credentials: "MA · PGDRP",
-    //   additionalInfo: "",
-    //   languages: "Malayalam, English",
-    //   specializations: ["Child Rehabilitation Services", "Behavior Therapy"],
-    //   image: "/female-therapist-wearing-hijab-professional.jpg",
-    // },
-    // {
-    //   id: 9,
-    //   name: "Junaid Rafeeq",
-    //   title: "Consultant Psychologist",
-    //   credentials: "BA · MA",
-    //   additionalInfo: "",
-    //   languages: "Malayalam, English",
-    //   specializations: ["Relationship Difficulties", "Behavioral Issues"],
-    //   image: "/male-therapist-professional-headshot.jpg",
-    // },
+    {
+      id: 6,
+      name: "Gazzala Tharola",
+      title: "Consultant Psychologist and Assistant professor",
+      credentials: "6+ Years of experience",
+      additionalInfo: "",
+      languages: "Malayalam, English",
+      specializations: ["Clinical Psychology"],
+      price: "₹999/-",
+      image: "images/faculty/gazzala.jpeg",
+    },
   ]
 
   // Filter therapists based on search query
@@ -233,25 +208,30 @@ export default function Therapists() {
 
   return (
     <div
-      className="min-h-screen bg-gray-50 py-32 px-56"
+      className="min-h-screen bg-gray-50"
       style={{
         backgroundColor: "#f9fafb",
-        margin: '56px'
+        paddingTop: "80px",
+        paddingBottom: "40px",
+        paddingLeft: "16px",
+        paddingRight: "16px",
       }}
     >
-      <div className="max-w-7xl mx-auto">
+      <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         {/* Search bar section */}
-        <div className="mb-12 flex justify-center">
-          <div className="relative w-full max-w-2xl">
+        <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center" }}>
+          <div style={{ position: "relative", width: "100%", maxWidth: "672px" }}>
             {/* Search input with icon */}
-            <div className="relative">
+            <div style={{ position: "relative" }}>
               <Search
-                className="absolutetransform -translate-y-1/2 text-gray-400 w-5 h-5"
+                size={20}
                 style={{
                   color: "#9ca3af",
                   position: "absolute",
-                  top: "16px",
-                  left: "14px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  left: "16px",
+                  zIndex: 1,
                 }}
               />
               <input
@@ -259,12 +239,18 @@ export default function Therapists() {
                 placeholder="Search therapist name or service"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-6 py-4 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-600 text-gray-700"
                 style={{
+                  width: "100%",
+                  paddingLeft: "48px",
+                  paddingRight: "24px",
+                  paddingTop: "12px",
+                  paddingBottom: "12px",
+                  borderRadius: "9999px",
+                  border: "1px solid #d1d5db",
                   fontSize: "15px",
                   backgroundColor: "#ffffff",
                   boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                  paddingLeft: "48px",
+                  outline: "none",
                 }}
               />
             </div>
@@ -272,32 +258,33 @@ export default function Therapists() {
         </div>
 
         <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           style={{
             display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 350px), 1fr))",
             gap: "24px",
           }}
         >
           {filteredTherapists.map((therapist) => (
             <div
               key={therapist.id}
-              className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden transition-shadow hover:shadow-md"
               style={{
                 backgroundColor: "#ffffff",
-                borderColor: "#e5e7eb",
                 boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
                 border: "1px solid #e5e7eb",
-                borderRadius: "12px 0 0 12px",
+                borderRadius: "12px",
                 transition: "box-shadow 0.3s ease",
                 display: "flex",
                 flexDirection: "row",
-                height: "280px",
+                minHeight: "280px",
+                overflow: "hidden",
               }}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)"}
+              onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.08)"}
             >
               <div
-                className="rounded-l-xl overflow-hidden bg-gray-200 flex-shrink-0"
                 style={{
-                  width: "25%",
+                  width: "50%",
+                  minWidth: "100px",
                   height: "100%",
                   borderRadius: "12px 0 0 12px",
                   backgroundColor: "#e5e7eb",
@@ -308,10 +295,10 @@ export default function Therapists() {
                 <img
                   src={therapist.image || "/placeholder.svg"}
                   alt={therapist.name}
-                  className="w-full h-full object-cover"
                   style={{
                     width: "100%",
                     height: "100%",
+                    minHeight: "280px",
                     objectFit: "cover",
                   }}
                   onError={(e) => {
@@ -321,9 +308,8 @@ export default function Therapists() {
               </div>
 
               <div
-                className="p-4 flex flex-col gap-2 flex-1 overflow-hidden"
                 style={{
-                  padding: "16px",
+                  padding: "12px",
                   gap: "8px",
                   display: "flex",
                   flexDirection: "column",
@@ -332,13 +318,12 @@ export default function Therapists() {
                 }}
               >
                 {/* Therapist info section */}
-                <div>
-                  {/* Name - dark blue color to match screenshot */}
+                <div style={{ minHeight: 0 }}>
                   <h3
                     className="text-sm font-bold text-blue-900 leading-tight"
                     style={{
                       color: "#1e3a8a",
-                      fontSize: "14px",
+                      fontSize: "12px",
                       fontWeight: "700",
                       lineHeight: "1.2",
                     }}
@@ -362,13 +347,13 @@ export default function Therapists() {
 
                   {/* Credentials row */}
                   <div
-                    className="flex items-center gap-1 mt-1 text-xs text-gray-500"
+                    className="flex items-center gap-1 mt-1 text-xs text-gray-500 font-bold"
                     style={{
                       display: "flex",
                       gap: "4px",
                       marginTop: "4px",
                       fontSize: "11px",
-                      color: "#6b7280",
+                      color: "#ca0056",
                     }}
                   >
                     <span>{therapist.credentials}</span>
@@ -377,7 +362,7 @@ export default function Therapists() {
 
                   {/* Languages row */}
                   <p
-                    className="text-xs italic text-gray-500 mt-1"
+                    className="text-xs italic text-gray-500 mt-1 font-medium"
                     style={{
                       fontSize: "11px",
                       color: "#6b7280",
@@ -385,34 +370,34 @@ export default function Therapists() {
                       fontStyle: "italic",
                     }}
                   >
-                    Speaks: {therapist.languages}
+                    {therapist.languages}
                   </p>
                 </div>
 
                 {/* Specialization tags/pills - light pink background */}
                 <div
-                  className="flex flex-wrap gap-1"
                   style={{
                     display: "flex",
                     flexWrap: "wrap",
-                    gap: "6px",
+                    gap: "4px",
                     marginTop: "4px",
+                    minHeight: 0,
                   }}
                 >
-                  {therapist.specializations.slice(0, 5).map((spec, index) => (
+                  {therapist.specializations.slice(0, 4).map((spec, index) => (
                     <span
                       key={index}
-                      className="text-xs px-2 py-1 rounded-full bg-pink-100 text-gray-700 font-medium whitespace-nowrap"
                       style={{
-                        fontSize: "10px",
-                        padding: "3px 8px",
-                        borderRadius: "16px",
+                        fontSize: "9px",
+                        padding: "2px 6px",
+                        borderRadius: "12px",
                         backgroundColor: "#fce7f3",
                         color: "#374151",
                         fontWeight: "500",
                         whiteSpace: "nowrap",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                        maxWidth: "100%",
                       }}
                     >
                       {spec}
@@ -434,41 +419,41 @@ export default function Therapists() {
                 </p> */}
 
                 {/* Price */}
-                {/* <p
-                  className="text-xs text-gray-600 font-medium"
+                <p
+                  className="text-xs text-gray-600 font-bold"
                   style={{
-                    fontSize: "11px",
-                    color: "#4b5563",
+                    fontSize: "18px",
+                    color: "#ca0056",
                     fontWeight: "600",
                   }}
                 >
                   {therapist.price}
-                </p> */}
+                </p>
 
                 {/* Action buttons */}
                 <div
-                  className="flex gap-2 mt-auto"
                   style={{
                     display: "flex",
-                    gap: "8px",
+                    gap: "6px",
                     marginTop: "auto",
+                    paddingTop: "8px",
                   }}
                 >
                   <button
                     onClick={() => setBookingTherapist(therapist)}
-                    className="flex-1 bg-green-700 text-white py-2 px-2 rounded-lg font-semibold text-xs hover:bg-green-800 transition-colors"
                     style={{
                       flex: 1,
                       backgroundColor: "#CA0056",
                       color: "#ffffff",
-                      padding: "6px 8px",
+                      padding: "8px 6px",
                       borderRadius: "6px",
-                      fontSize: "11px",
+                      fontSize: "10px",
                       fontWeight: "700",
                       cursor: "pointer",
                       border: "none",
                       transition: "background-color 0.2s ease",
                       boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                      whiteSpace: "nowrap",
                     }}
                     onMouseOver={(e) => (e.target.style.backgroundColor = "#ff006fff")}
                     onMouseOut={(e) => (e.target.style.backgroundColor = "#CA0056")}
@@ -476,24 +461,23 @@ export default function Therapists() {
                     Book now
                   </button>
                   <button
-                    // onClick={() => setBookingTherapist(therapist)}
-                    className="flex-1 bg-green-700 text-white py-2 px-2 rounded-lg font-semibold text-xs hover:bg-green-800 transition-colors flex items-center justify-center gap-1"
                     style={{
                       flex: 1,
                       backgroundColor: "#CA0056",
                       color: "#ffffff",
-                      padding: "6px 8px",
+                      padding: "8px 6px",
                       borderRadius: "6px",
-                      fontSize: "11px",
+                      fontSize: "10px",
                       fontWeight: "700",
                       cursor: "pointer",
                       border: "none",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: "4px",
+                      gap: "3px",
                       transition: "background-color 0.2s ease",
                       boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                      whiteSpace: "nowrap",
                     }}
                     onMouseOver={(e) => (e.target.style.backgroundColor = "#ff006fff")}
                     onMouseOut={(e) => (e.target.style.backgroundColor = "#CA0056")}
@@ -509,17 +493,15 @@ export default function Therapists() {
         {/* No results message */}
         {filteredTherapists.length === 0 && (
           <div
-            className="text-center py-12"
             style={{
               textAlign: "center",
-              padding: "48px 0",
+              padding: "48px 16px",
             }}
           >
             <p
-              className="text-gray-500 text-lg"
               style={{
                 color: "#6b7280",
-                fontSize: "18px",
+                fontSize: "16px",
               }}
             >
               No therapists found matching your search.

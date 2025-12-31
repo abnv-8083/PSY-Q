@@ -113,7 +113,7 @@ const SignUp = () => {
           {/* Logo/Header */}
           <div className="mb-8">
             <img 
-              src="/logos/psyg-logo-footer.png" 
+              src="/logos/new-logo.jpeg" 
               alt="Psy-Q Logo"
               className="h-12 mb-8"
               onError={(e) => {

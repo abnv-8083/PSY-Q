@@ -9,55 +9,89 @@ import Paper from '@mui/material/Paper';
 const Hero = () => {
 
   return (
-    <Box component="section" sx={{ py: { xs: 6, sm: 8, lg: 10 }, bgcolor: '#ffffff' }}>
-      <Container>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, alignItems: 'center', minHeight: '70vh' }}>
-          {/* Left Content */}
-          <Box sx={{ 
-            flex: 1, 
-            display: 'flex', 
-            flexDirection: 'column', 
-            gap: 3, 
-            pr: { lg: 4 },
-            mb: { xs: 4, lg: 0 }
-          }}>
-            <Typography variant="h2" component="h1" sx={{ fontSize: { xs: 32, sm: 40, md: 48, lg: 56 }, fontWeight: 800, color: 'black' }}>
-              No Mind Left Behind, PSYQ Leads the Way
-            </Typography>
-            <Typography variant="body1" sx={{ maxWidth: 560, color: 'rgba(0, 0, 0, 0.85)' }}>
-              A dynamic e-learning platform designed to support learners with focused, flexible, and expertly guided sessions. We tailor our content to your goals and help you achieve success.
-            </Typography>
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, pt: 1 }}>
-              <Button component={RouterLink} to="/about" variant="outlined" size="large" sx={{ borderColor: 'black', color: 'black', '&:hover': { borderColor: 'black', bgcolor: 'rgba(0, 0, 0, 0.04)' } }}>
-                Learn More
-              </Button>
-            </Box>
-          </Box>
-          
-          {/* Right Image */}
-          <Box sx={{ 
-            flex: 1,
-            height: { xs: 400, sm: 500, lg: '60vh' },
-            width: '100%',
-            borderRadius: 2, 
-            overflow: 'hidden',
-            position: 'relative'
-          }}>
-            <Box
-              component="img"
-              src="/images/hero-1.jpg"
-              alt="Psy-Q Education Platform"
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block'
+    <Box
+      component="section"
+      sx={{
+        position: 'relative',
+        minHeight: { xs: '600px', md: '700px', lg: '85vh' },
+        backgroundImage: `url('/images/hero-2.jpg')`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center right',
+        backgroundSize: 'cover',
+        display: 'flex',
+        alignItems: 'center',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: {
+            xs: 'linear-gradient(to bottom, rgba(240, 230, 220, 0.75) 0%, rgba(240, 230, 220, 0.75) 30%, transparent 100%)',
+            md: 'linear-gradient(to right, rgba(240, 230, 220, 0.95) 0%, rgba(240, 230, 220, 0.85) 20%, rgba(240, 230, 220, 0.3) 50%, transparent 60%)'
+          },
+          pointerEvents: 'none',
+        }
+      }}
+    >
+      <Container sx={{ position: 'relative', zIndex: 1 }}>
+        <Box sx={{ 
+          maxWidth: { xs: '100%', md: '600px', lg: '650px' },
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 3,
+          py: { xs: 8, md: 10 }
+        }}>
+          <Typography 
+            variant="h1" 
+            component="h1" 
+            sx={{ 
+              fontSize: { xs: 36, sm: 44, md: 52, lg: 60 }, 
+              fontWeight: 700, 
+              color: '#ca0056',
+              lineHeight: 1.2,
+              letterSpacing: '-0.02em'
+            }}
+          >
+            No Mind Left Behind
+          </Typography>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              fontSize: { xs: 16, md: 18 },
+              color: '#000',
+              lineHeight: 1.6,
+              maxWidth: '540px'
+            }}
+          >
+            Life can be overwhelming sometimes and it is okay to ask for help. We are here to support your mental and emotional well-being
+          </Typography>
+          <Box sx={{ pt: 2 }}>
+            <Button 
+              component={RouterLink} 
+              to="/about" 
+              variant="contained" 
+              size="large" 
+              sx={{ 
+                bgcolor: '#ca0056',
+                color: '#ffffff',
+                fontSize: '16px',
+                fontWeight: 600,
+                px: 4,
+                py: 1.5,
+                borderRadius: '50px',
+                textTransform: 'none',
+                boxShadow: '0 4px 14px rgba(202, 0, 86, 0.3)',
+                '&:hover': { 
+                  bgcolor: '#ca0056',
+                  boxShadow: '0 6px 20px rgba(251, 146, 60, 0.3)',
+                }
               }}
-              onError={(e) => {
-                e.target.style.display = 'none';
-                if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
-              }}
-            />
+            >
+              Learn More
+            </Button>
           </Box>
         </Box>
       </Container>

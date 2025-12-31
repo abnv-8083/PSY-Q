@@ -32,8 +32,8 @@ const Footer = () => {
     <Box 
       component="footer" 
       sx={{ 
-        bgcolor: '#fff',
-        color: 'black',
+        bgcolor: '#00388C',
+        color: 'white',
         py: 6
       }}
     >
@@ -51,11 +51,11 @@ const Footer = () => {
                   component={RouterLink}
                   to={link.href}
                   sx={{
-                    color: 'rgba(0, 0, 0, 0.8)',
+                    color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',
                     fontSize: '0.9rem',
                     '&:hover': {
-                      color: 'black',
+                      color: 'white',
                       textDecoration: 'underline'
                     }
                   }}
@@ -81,11 +81,11 @@ const Footer = () => {
                   target={link.href.startsWith('http') ? '_blank' : undefined}
                   rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   sx={{
-                    color: 'rgba(0, 0, 0, 0.8)',
+                    color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',
                     fontSize: '0.9rem',
                     '&:hover': {
-                      color: 'black',
+                      color: 'white',
                       textDecoration: 'underline'
                     }
                   }}
@@ -107,11 +107,11 @@ const Footer = () => {
                   key={index}
                   href={link.href}
                   sx={{
-                    color: 'rgba(0, 0, 0, 0.8)',
+                    color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',
                     fontSize: '0.9rem',
                     '&:hover': {
-                      color: 'black',
+                      color: 'white',
                       textDecoration: 'underline'
                     }
                   }}
@@ -129,12 +129,12 @@ const Footer = () => {
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <IconButton
-                href="https://linkedin.com"
+                href="https://www.linkedin.com/company/psy-q-learning/"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
                   bgcolor: 'rgba(255, 255, 255, 0.1)',
-                  color: 'black',
+                  color: 'white',
                   '&:hover': {
                     bgcolor: 'rgba(255, 255, 255, 0.2)'
                   }
@@ -143,12 +143,12 @@ const Footer = () => {
                 <LinkedInIcon />
               </IconButton>
               <IconButton
-                href="https://instagram.com"
+                href="https://www.instagram.com/psyq_learning/"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
                   bgcolor: 'rgba(255, 255, 255, 0.1)',
-                  color: 'black',
+                  color: 'white',
                   '&:hover': {
                     bgcolor: 'rgba(255, 255, 255, 0.2)'
                   }
@@ -157,12 +157,12 @@ const Footer = () => {
                 <InstagramIcon />
               </IconButton>
               <IconButton
-                href="https://youtube.com"
+                href="https://www.youtube.com/@psyqlearning"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
                   bgcolor: 'rgba(255, 255, 255, 0.1)',
-                  color: 'black',
+                  color: 'white',
                   '&:hover': {
                     bgcolor: 'rgba(255, 255, 255, 0.2)'
                   }

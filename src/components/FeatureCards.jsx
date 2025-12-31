@@ -5,7 +5,7 @@ const FeatureCards = () => {
   const features = [
     {
       title: "Counselling",
-      description: "Professional counseling services to support your mental health and academic journey.",
+      description: "Professional Counselling service to support your mental and emotional health",
       link: "/therapists",
       image: "/images/counselling.jpg"
     },
@@ -27,8 +27,8 @@ const FeatureCards = () => {
     <section className="bg-gradient-to-br from-[#ece9e6] via-[#f5f5f5] to-[#ffffff] py-16 sm:py-16 lg:py-20">
       <div className="container">
         <div className="text-center space-y-6 lg:space-y-8 mb-12 lg:mb-16">
-          <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Discover the essential aspects of Psy-Q that help students succeed.
+          <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed italic">
+            Discover the essential aspects of Psy-Q that help you succeed.
           </p>
         </div>
         
