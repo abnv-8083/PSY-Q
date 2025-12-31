@@ -79,7 +79,7 @@ const ChildRehabilitation = () => {
           }}>
             Choose The <Box component="span" sx={{ fontWeight: 700 }}>Package</Box> for you
           </Typography>
-          <Button
+          {/* <Button
             variant="contained"
             sx={{
               bgcolor: 'white',
@@ -95,7 +95,7 @@ const ChildRehabilitation = () => {
             }}
           >
             Why Package? ⌄
-          </Button>
+          </Button> */}
         </Box>
 
         <Grid container spacing={2} sx={{ flexWrap: 'nowrap', alignItems: 'stretch' }}>

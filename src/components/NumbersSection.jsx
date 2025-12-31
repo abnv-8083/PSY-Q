@@ -1,7 +1,7 @@
 const NumbersSection = () => {
   const stats = [
     {
-      number: "3000+",
+      number: "1500+",
       label: "Happy Clients"
     },
     {
@@ -9,8 +9,12 @@ const NumbersSection = () => {
       label: "Expert Therapists"
     },
     {
-      number: "4+",
+      number: "5+",
       label: "Languages"
+    },
+    {
+      number: "10+",
+      label: "Countries Served"
     }
   ];
 
@@ -48,7 +52,7 @@ const NumbersSection = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(4, 1fr)',
             gap: '24px',
             marginBottom: '48px',
           }}

@@ -180,7 +180,7 @@ export default function Therapists() {
       title: "Sports Psychologist",
       credentials: "2+ Years of experience",
       additionalInfo: "",
-      languages: "Malayalam, English",
+      languages: "Malayalam, English, Hindi",
       specializations: ["Team Sports", "E-Sports", "Athletics"],
       price: "₹999/-",
       image: "/images/faculty/nafih.jpeg",

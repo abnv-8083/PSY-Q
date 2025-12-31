@@ -4,32 +4,32 @@ import { Box, Container, Typography, Grid, Card, CardMedia, CardContent, Button 
 const Services = () => {
   const services = [
     {
-      title: "Individual therapy",
+      title: "Individual Therapy",
       image: "/services/individual.jpg",
       route: "/individual"
     },
     {
-      title: "Child Rehabilitation counseling",
+      title: "Child Rehabilitation Counselling",
       image: "/services/child-rehabilation.jpg",
       route: "/child-rehabilitation"
     },
     {
-      title: "Couple counseling",
+      title: "Couple Counselling",
       image: "/services/couple.jpg",
       route: "/couple-counseling"
     },
     {
-      title: "Psychospiritual and meditation",
+      title: "Psychospiritual and Meditation",
       image: "/services/spiritual.jpg",
       route: "/psychospiritual"
     },
     {
-      title: "Sexual wellness",
+      title: "Sexual Wellness",
       image: "/services/sexual-wellness.jpg",
       route: "/sexual-wellness"
     },
     {
-      title: "Sports mental health services",
+      title: "Sports Mental Health Services",
       image: "/services/sports-counselling.jpg",
       route: "/sports-mental-health"
     }
