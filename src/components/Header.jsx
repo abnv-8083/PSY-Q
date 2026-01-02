@@ -66,33 +66,34 @@ const Header = () => {
         left: 0,
         right: 0,
         zIndex: 1200,
-        pt: 3,
-        px: 2,
+        pt: { xs: 2, sm: 2.5, md: 3 },
+        px: { xs: 1, sm: 2, md: 2 },
         pointerEvents: 'none'
       }}
     >
-      <Container maxWidth="lg" sx={{ pointerEvents: 'auto' }}>
+      <Container maxWidth="lg" sx={{ pointerEvents: 'auto', px: { xs: 1, sm: 2 } }}>
         <Box
           sx={{
             bgcolor: headerBgColor,
             // backdropFilter: 'blur(20px)',
-            borderRadius: '20px',
-            px: { xs: 2, sm: 4 },
-            py: 0.5,
+            borderRadius: { xs: '16px', sm: '20px' },
+            px: { xs: 1.5, sm: 3, md: 4 },
+            py: { xs: 0.25, sm: 0.5 },
             boxShadow: '0 8px 28px rgba(0, 0, 0, 0.12)',
             transition: 'all 0.3s ease',
             border: '1px solid rgba(255, 255, 255, 0.2)'
           }}
         >
-        <Box sx={{ display: 'flex', alignItems: 'center', minHeight: { xs: 50, sm: 55 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: { xs: 48, sm: 56, md: 64 }, gap: { xs: 1, sm: 2 } }}>
           {/* Logo */}
           <Box
             component={RouterLink}
             to="/"
             sx={{
-              display: 'block',
-              mr: 2,
+              display: 'flex',
+              alignItems: 'center',
               cursor: 'pointer',
+              flexShrink: 0,
               '&:hover': {
                 opacity: 0.8,
                 transition: 'opacity 0.2s ease'
@@ -104,7 +105,7 @@ const Header = () => {
               src="/logos/new-logo.jpeg"
               alt="Psy-Q Logo"
               sx={{
-                height: { xs: 60, sm: 80 },
+                height: { xs: '50px', sm: '60px', md: '70px' },
                 width: 'auto',
                 display: 'block'
               }}
@@ -112,12 +113,12 @@ const Header = () => {
           </Box>
 
           {/* Desktop Nav */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3, ml: 'auto', mr: 2 }}>          
-            <Button component={RouterLink} to="/" sx={{ color: isLightText ? 'white' : 'inherit' }}>Home</Button>
-            <Button component={RouterLink} to="/therapists" sx={{ color: isLightText ? 'white' : 'inherit' }}>Therapists</Button>
-            <Button component={RouterLink} to="/services" sx={{ color: isLightText ? 'white' : 'inherit' }}>Services</Button>
-            <Button component={RouterLink} to="/about" sx={{ color: isLightText ? 'white' : 'inherit' }}>About Us</Button>
-            <Button component={RouterLink} to="/contact" sx={{ color: isLightText ? 'white' : 'inherit' }}>Contact Us</Button>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: { md: 1.5, lg: 3 }, ml: 'auto', mr: 1 }}>          
+            <Button component={RouterLink} to="/" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>Home</Button>
+            <Button component={RouterLink} to="/therapists" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>Therapists</Button>
+            <Button component={RouterLink} to="/services" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>Services</Button>
+            <Button component={RouterLink} to="/about" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>About Us</Button>
+            <Button component={RouterLink} to="/contact" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>Contact Us</Button>
           </Box>
 
           {/* Desktop CTAs */}
@@ -141,9 +142,9 @@ const Header = () => {
           </Box> */}
 
           {/* Mobile Menu Button */}
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, ml: 'auto' }}>
-            <IconButton onClick={handleOpenMenu} sx={{ color: isLightText ? 'white' : 'inherit' }}>
-              <MenuIcon />
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, flexShrink: 0 }}>
+            <IconButton onClick={handleOpenMenu} sx={{ color: isLightText ? 'white' : 'inherit', p: { xs: 0.5, sm: 1 } }}>
+              <MenuIcon sx={{ fontSize: { xs: '1.5rem', sm: '1.75rem' } }} />
             </IconButton>
           </Box>
 
@@ -163,7 +164,7 @@ const Header = () => {
     </Box>
 
     {/* Spacer to offset the fixed header so page content isn't hidden underneath it */}
-    <Box sx={{ height: { xs: '80px', sm: '96px' }, width: '100%', display: 'block' }} aria-hidden="true" />
+    <Box sx={{ height: { xs: '80px', sm: '92px', md: '104px' }, width: '100%', display: 'block' }} aria-hidden="true" />
     </>
   );
 };

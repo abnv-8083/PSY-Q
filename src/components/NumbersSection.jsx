@@ -38,7 +38,7 @@ const NumbersSection = () => {
         <h2
           style={{
             textAlign: 'center',
-            fontSize: '32px',
+            fontSize: 'clamp(24px, 5vw, 32px)',
             fontWeight: '500',
             color: '#464545ff',
             marginBottom: 'var(--space-7)',
@@ -52,7 +52,7 @@ const NumbersSection = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: 'var(--space-3)',
             marginBottom: 'var(--space-6)',
           }}
@@ -78,7 +78,7 @@ const NumbersSection = () => {
             >
               <div
                 style={{
-                  fontSize: '48px',
+                  fontSize: 'clamp(32px, 8vw, 48px)',
                   fontWeight: '700',
                   color: '#ca0056',
                   marginBottom: 'var(--space-1)',
@@ -88,7 +88,7 @@ const NumbersSection = () => {
               </div>
               <p
                 style={{
-                  fontSize: '16px',
+                  fontSize: 'clamp(14px, 3vw, 16px)',
                   color: '#38232fff',
                   fontWeight: '500',
                   margin: 0,
