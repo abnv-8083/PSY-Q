@@ -67,14 +67,14 @@ const ChildRehabilitation = () => {
   ];
 
   return (
-    <Box component="main" sx={{ bgcolor: '#ca0056', py: { xs: 8, md: 10 }, minHeight: '100vh' }}>
-      <Container maxWidth="xl">
-        <Box sx={{ mb: 6, textAlign: 'center' }}>
+    <Box component="main" sx={{ bgcolor: '#ca0056', py: { xs: 6, sm: 8, md: 10 }, px: { xs: 2, sm: 0 }, minHeight: '100vh' }}>
+      <Container maxWidth="lg" sx={{ px: { xs: 1, sm: 2 } }}>
+        <Box sx={{ mb: { xs: 4, md: 6 }, textAlign: 'center', px: { xs: 1, sm: 0 } }}>
           <Typography variant="h2" sx={{ 
             fontWeight: 400,
             color: 'white',
             mb: 3,
-            fontSize: { xs: '2rem', md: '2.75rem' },
+            fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
             letterSpacing: '0.5px'
           }}>
             Choose The <Box component="span" sx={{ fontWeight: 700 }}>Package</Box> for you
@@ -98,14 +98,14 @@ const ChildRehabilitation = () => {
           </Button> */}
         </Box>
 
-        <Grid container spacing={2} sx={{ flexWrap: 'nowrap', alignItems: 'stretch' }}>
+        <Grid container spacing={{ xs: 2, sm: 2, md: 2 }} sx={{ flexWrap: 'nowrap',alignItems: 'stretch' }}>
           {packages.map((pkg, index) => (
-            <Grid item key={index} sx={{ flex: 1, minWidth: 0, display: 'flex' }}>
+            <Grid item xs={12} sm={6} md={4} key={index} sx={{ display: 'flex' }}>
               <Paper sx={{
-                borderRadius: 4,
-                p: 2,
+                borderRadius: 2,
+                p: { xs: 2, sm: 2.5, md: 2 },
                 width: '100%',
-                minHeight: 600,
+                minHeight: { xs: 'auto', sm: 600, md: 600 },
                 display: 'flex',
                 flexDirection: 'column',
                 bgcolor: 'rgba(255, 230, 242, 0.7)',
@@ -124,8 +124,8 @@ const ChildRehabilitation = () => {
                   }
                 }
               }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: 1, flexWrap: 'wrap' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' } }}>
                     {pkg.name}
                   </Typography>
                   <Chip 
@@ -134,12 +134,13 @@ const ChildRehabilitation = () => {
                       bgcolor: 'rgba(202, 0, 86, 0.2)',
                       color: '#ca0056',
                       fontWeight: 600,
-                      fontSize: '0.85rem'
+                      fontSize: { xs: '0.7rem', sm: '0.85rem' },
+                      py: 0.5
                     }}
                   />
                 </Box>
 
-                <Typography sx={{ color: '#64748b', fontSize: '0.95rem', mb: 1 }}>
+                <Typography sx={{ color: '#64748b', fontSize: { xs: '0.85rem', sm: '0.95rem' }, mb: 1 }}>
                   {pkg.sessions} · {pkg.price} {pkg.pricePerSession}
                 </Typography>
 
@@ -147,16 +148,16 @@ const ChildRehabilitation = () => {
                   color: '#1e293b',
                   fontStyle: 'italic',
                   mb: 3,
-                  fontSize: '0.95rem'
+                  fontSize: { xs: '0.85rem', sm: '0.95rem' }
                 }}>
                   {pkg.tagline}
                 </Typography>
 
                 <Box sx={{ flexGrow: 1, mb: 3 }}>
                   {pkg.features.map((feature, featureIndex) => (
-                    <Box key={featureIndex} sx={{ display: 'flex', mb: 2, alignItems: 'flex-start' }}>
-                      <CheckIcon sx={{ color: '#ca0056', fontSize: 18, mr: 1, mt: 0.3, flexShrink: 0 }} />
-                      <Typography sx={{ color: '#1e293b', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                    <Box key={featureIndex} sx={{ display: 'flex', mb: { xs: 1.5, sm: 2 }, alignItems: 'flex-start' }}>
+                      <CheckIcon sx={{ color: '#ca0056', fontSize: { xs: 16, sm: 18 }, mr: 1, mt: 0.3, flexShrink: 0 }} />
+                      <Typography sx={{ color: '#1e293b', fontSize: { xs: '0.8rem', sm: '0.9rem' }, lineHeight: 1.5 }}>
                         {feature}
                       </Typography>
                     </Box>
@@ -168,7 +169,7 @@ const ChildRehabilitation = () => {
                     fontWeight: 700,
                     color: '#1e293b',
                     mb: 3,
-                    fontSize: '2.5rem'
+                    fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' }
                   }}>
                     {pkg.totalPrice}
                   </Typography>
@@ -179,14 +180,15 @@ const ChildRehabilitation = () => {
                     sx={{
                       bgcolor: 'white',
                       color: '#1e293b',
-                      py: 1.5,
+                      py: { xs: 1.25, sm: 1.5 },
                       borderRadius: 3,
                       fontWeight: 600,
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.9rem', sm: '1rem' },
                       boxShadow: 'none',
+                      transition: 'all 0.2s',
                       '&:hover': {
                         bgcolor: '#f0f0f0',
-                        boxShadow: 'none'
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                       }
                     }}
                   >

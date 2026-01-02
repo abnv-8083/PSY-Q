@@ -8,8 +8,8 @@ const About = () => {
     <Box component="main" sx={{ bgcolor: '#f5f5f5', py: { xs: 7, md: 10 } }}>
       <Container maxWidth="xl" sx={{ px: { xs: 3, md: 5 } }}>
         {/* Welcome to PSY-Q Section */}
-        <Box sx={{ mb: 8,  px: { xs: 0, md: 10 }}}>
-          <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
+        <Box sx={{ mb: 8,  px: { xs: 0, sm: 2, md: 10 } }}>
+          <Grid container spacing={{ xs: 3, sm: 4, md: 6 }} alignItems="center">
             <Grid item xs={12} md={6}>
               <Chip 
                 label="Evidence-Based Care" 
@@ -76,11 +76,11 @@ const About = () => {
         {/* Mission and Vision Cards */}
         <Grid
           container
-          spacing={4}
-          sx={{ mb: 8, px: { xs: 0, md: 5 }, flexDirection: { xs: 'column', sm: 'row' } }}
+          spacing={{ xs: 3, sm: 3, md: 4 }}
+          sx={{ mb: 8, px: { xs: 1, sm: 2, md: 5 } }}
         >
           {/* Our Mission */}
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={6} sx={{ display: 'flex' }}>
             <Paper elevation={0} sx={{ 
               bgcolor: 'white',
               borderRadius: 4,
@@ -125,7 +125,7 @@ const About = () => {
           </Grid>
 
           {/* Our Vision */}
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12} sm={6} sx={{ display: 'flex' }}>
             <Paper elevation={0} sx={{ 
               bgcolor: '#00368c',
               borderRadius: 4,
@@ -166,10 +166,11 @@ const About = () => {
         <Paper elevation={0} sx={{ 
           bgcolor: 'white',
           borderRadius: 4,
-          p: { xs: 4, md: 6 },
-          mb: 8
+          p: { xs: 3, sm: 4, md: 6 },
+          mb: 8,
+          mx: { xs: 1, sm: 0 }
         }}>
-          <Grid container spacing={4} alignItems="center">
+          <Grid container spacing={{ xs: 3, md: 4 }} alignItems="center">
             <Grid item xs={12} md={6}>
               <Typography variant="h4" sx={{ 
                 fontWeight: 700, 
@@ -204,11 +205,12 @@ const About = () => {
         {/* Meet Our Founders Section */}
         <Box sx={{ 
           bgcolor: '#ca0056',
-          p: { xs: 6, md: 8 },
+          p: { xs: 3, sm: 4, md: 8 },
           mb: 8,
-
+          mx: { xs: -3, sm: -2, md: 0 },
+          px: { xs: 3, sm: 2, md: 'auto' }
         }}>
-          <Container maxWidth="xl" sx={{ bgcolor: '#ca0056'}}>
+          <Container maxWidth="lg" sx={{ bgcolor: 'transparent', px: { xs: 1, sm: 2, md: 'auto' } }}>
             <Box sx={{ textAlign: 'center', mb: 8 }}>
               {/* <Typography sx={{ 
                 color: 'rgba(255, 255, 255, 0.7)',
@@ -239,16 +241,17 @@ const About = () => {
               </Typography>
             </Box>
 
-            <Grid container spacing={3} sx={{ maxWidth: 1100, mx: 'auto' }}>
+            <Grid container spacing={{ xs: 2, sm: 3, md: 3 }} sx={{ display: 'flex', justifyContent: 'center' }}>
             {/* Mohammed Sinan*/}
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
               <Paper elevation={0} sx={{ 
                 bgcolor: 'rgba(255, 255, 255, 0.95)',
                 borderRadius: 2,
                 overflow: 'hidden',
                 height: '100%',
                 minHeight: 400,
-                width: '350px',
+                width: '100%',
+                maxWidth: { xs: '100%', sm: '100%', md: '350px' },
                 display: 'flex',
                 flexDirection: 'column',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -322,14 +325,15 @@ const About = () => {
             </Grid>
 
             {/* Muhammed Salih KC */}
-            <Grid item xs={12} sm={6  } md={4}>
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
               <Paper elevation={0} sx={{ 
                 bgcolor: 'rgba(255, 255, 255, 0.95)',
                 borderRadius: 2,
                 overflow: 'hidden',
                 height: '100%',
                 minHeight: 400,
-                width: '350px',
+                width: '100%',
+                maxWidth: { xs: '100%', sm: '100%', md: '350px' },
                 display: 'flex',
                 flexDirection: 'column',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -403,14 +407,15 @@ const About = () => {
             </Grid>
 
             {/* Umair Abdul Latheef */}
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
               <Paper elevation={0} sx={{ 
                 bgcolor: 'rgba(255, 255, 255, 0.95)',
                 borderRadius: 2,
                 overflow: 'hidden',
                 height: '100%',
                 minHeight: 400,
-                width: '350px',
+                width: '100%',
+                maxWidth: { xs: '100%', sm: '100%', md: '350px' },
                 display: 'flex',
                 flexDirection: 'column',
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -490,38 +495,40 @@ const About = () => {
         <Paper elevation={0} sx={{ 
           bgcolor: 'white',
           borderRadius: 4,
-          p: { xs: 4, md: 6 },
-          textAlign: 'center'
+          p: { xs: 3, sm: 4, md: 6 },
+          textAlign: 'center',
+          mx: { xs: 1, sm: 0 }
         }}>
           <Typography variant="h4" sx={{ 
             fontWeight: 700, 
             color: '#1e293b',
             mb: 2,
-            fontSize: { xs: '1.75rem', md: '2rem' }
+            fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }
           }}>
             Ready to Start Your Journey?
           </Typography>
           <Typography sx={{ 
-            fontSize: '1.1rem',
+            fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
             color: '#64748b',
             mb: 4,
             maxWidth: 600,
-            mx: 'auto'
+            mx: 'auto',
+            px: { xs: 1, sm: 0 }
           }}>
             Join thousands of students who have achieved their goals with Psy-Q's comprehensive support system.
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap', px: { xs: 2, sm: 0 } }}>
             <Link to="/contact" style={{ textDecoration: 'none' }}>
               <Box
                 component="button"
                 sx={{
                   bgcolor: '#ca0056',
                   color: 'white',
-                  px: 4,
-                  py: 1.5,
+                  px: { xs: 3, sm: 4 },
+                  py: { xs: 1.25, sm: 1.5 },
                   borderRadius: 2,
                   border: 'none',
-                  fontSize: '1rem',
+                  fontSize: { xs: '0.9rem', sm: '1rem' },
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.2s',
