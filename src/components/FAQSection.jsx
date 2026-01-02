@@ -32,10 +32,10 @@ const FAQSection = () => {
 
   return (
     <section 
-      className="bg-gray-50 py-16 sm:py-20 lg:py-24"
+      className="bg-gray-50"
       style={{
         backgroundColor: '#f9fafb',
-        padding: '64px 0',
+        padding: 'var(--space-8) 0',
       }}
     >
       <div className="container" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
@@ -43,7 +43,7 @@ const FAQSection = () => {
           className="text-center space-y-6 lg:space-y-8 mb-12 lg:mb-16"
           style={{
             textAlign: 'center',
-            marginBottom: '64px',
+            marginBottom: 'var(--space-8)',
           }}
         >
           <h2 
@@ -78,7 +78,7 @@ const FAQSection = () => {
             margin: '0 auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: '24px',
+            gap: 'var(--space-3)',
           }}
         >
           {faqs.map((faq, index) => (
@@ -99,7 +99,7 @@ const FAQSection = () => {
                 onClick={() => toggleFAQ(index)}
                 style={{
                   width: '100%',
-                  padding: '24px 32px',
+                  padding: 'var(--space-3) var(--space-4)',
                   textAlign: 'left',
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -116,7 +116,7 @@ const FAQSection = () => {
                     fontSize: '1.25rem',
                     fontWeight: '600',
                     color: '#111827',
-                    paddingRight: '16px',
+                    paddingRight: 'var(--space-2)',
                   }}
                 >{faq.question}</span>
                 <div 
@@ -148,7 +148,7 @@ const FAQSection = () => {
                 <div 
                   className="px-8 pb-6 border-t border-gray-100"
                   style={{
-                    padding: '0 32px 24px',
+                    padding: '0 var(--space-4) var(--space-3)',
                     borderTop: '1px solid #f3f4f6',
                   }}
                 >
@@ -157,7 +157,7 @@ const FAQSection = () => {
                     style={{
                       color: '#6b7280',
                       lineHeight: '1.75',
-                      paddingTop: '16px',
+                      paddingTop: 'var(--space-2)',
                       fontSize: '1rem',
                     }}
                   >{faq.answer}</p>

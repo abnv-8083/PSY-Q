@@ -22,16 +22,16 @@ const NumbersSection = () => {
     <section
       style={{
         background: 'linear-gradient(135deg, #f7f8fb 20%, #e6f7ff 100%)',
-        paddingTop: '80px',
-        paddingBottom: '80px',
+        paddingTop: 'var(--space-10)',
+        paddingBottom: 'var(--space-10)',
       }}
     >
       <div
         style={{
           maxWidth: '1200px',
           margin: '0 auto',
-          paddingLeft: '20px',
-          paddingRight: '20px',
+          paddingLeft: 'var(--space-2)',
+          paddingRight: 'var(--space-2)',
         }}
       >
         {/* Section Heading */}
@@ -41,7 +41,7 @@ const NumbersSection = () => {
             fontSize: '32px',
             fontWeight: '500',
             color: '#464545ff',
-            marginBottom: '60px',
+            marginBottom: 'var(--space-7)',
             fontStyle: 'italic',
           }}
         >
@@ -53,8 +53,8 @@ const NumbersSection = () => {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '24px',
-            marginBottom: '48px',
+            gap: 'var(--space-3)',
+            marginBottom: 'var(--space-6)',
           }}
         >
           {stats.map((stat, index) => (
@@ -63,7 +63,7 @@ const NumbersSection = () => {
               style={{
                 background: 'linear-gradient(135deg, #ffd7ec 0%, #fad5e9 50%, #ffeef6 100%)',
                 borderRadius: '12px',
-                padding: '40px 24px',
+                padding: 'var(--space-5) var(--space-3)',
                 textAlign: 'center',
                 transition: 'box-shadow 0.3s ease, transform 0.25s ease',
               }}
@@ -81,7 +81,7 @@ const NumbersSection = () => {
                   fontSize: '48px',
                   fontWeight: '700',
                   color: '#ca0056',
-                  marginBottom: '8px',
+                  marginBottom: 'var(--space-1)',
                 }}
               >
                 {stat.number}

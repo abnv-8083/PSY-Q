@@ -98,9 +98,9 @@ const SexualWellness = () => {
           </Button> */}
         </Box>
 
-        <Grid container spacing={2} sx={{ flexWrap: 'nowrap', alignItems: 'stretch' }}>
+        <Grid container spacing={{ xs: 3, md: 3 }} sx={{ alignItems: 'stretch' }}>
           {packages.map((pkg, index) => (
-            <Grid item key={index} sx={{ flex: 1, minWidth: 0, display: 'flex' }}>
+            <Grid item key={index} xs={12} sm={6} md={4} sx={{ display: 'flex' }}>
               <Paper sx={{
                 borderRadius: 4,
                 p: 2,
@@ -109,7 +109,20 @@ const SexualWellness = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 bgcolor: 'rgba(255, 230, 242, 0.7)',
-                position: 'relative'
+                position: 'relative',
+                animation: 'slideInUp 0.6s ease-out',
+                animationDelay: `${index * 0.1}s`,
+                animationFillMode: 'both',
+                '@keyframes slideInUp': {
+                  '0%': {
+                    opacity: 0,
+                    transform: 'translateY(60px)'
+                  },
+                  '100%': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  }
+                }
               }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                   <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>

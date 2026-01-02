@@ -112,10 +112,11 @@ const Header = () => {
           </Box>
 
           {/* Desktop Nav */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3, ml: 'auto', mr: 2 }}>
-            <Button component={RouterLink} to="/about" sx={{ color: isLightText ? 'white' : 'inherit' }}>About Us</Button>
-            <Button component={RouterLink} to="/services" sx={{ color: isLightText ? 'white' : 'inherit' }}>Services</Button>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 3, ml: 'auto', mr: 2 }}>          
+            <Button component={RouterLink} to="/" sx={{ color: isLightText ? 'white' : 'inherit' }}>Home</Button>
             <Button component={RouterLink} to="/therapists" sx={{ color: isLightText ? 'white' : 'inherit' }}>Therapists</Button>
+            <Button component={RouterLink} to="/services" sx={{ color: isLightText ? 'white' : 'inherit' }}>Services</Button>
+            <Button component={RouterLink} to="/about" sx={{ color: isLightText ? 'white' : 'inherit' }}>About Us</Button>
             <Button component={RouterLink} to="/contact" sx={{ color: isLightText ? 'white' : 'inherit' }}>Contact Us</Button>
           </Box>
 
@@ -148,8 +149,10 @@ const Header = () => {
 
           {/* Mobile Menu */}
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu} keepMounted>
-            <MenuItem component={RouterLink} to="/about" onClick={handleCloseMenu}>About Us</MenuItem>
+            <MenuItem component={RouterLink} to="/" onClick={handleCloseMenu}>Home</MenuItem>
+            <MenuItem component={RouterLink} to="/therapists" onClick={handleCloseMenu}>Therapists</MenuItem>
             <MenuItem component={RouterLink} to="/services" onClick={handleCloseMenu}>Services</MenuItem>
+            <MenuItem component={RouterLink} to="/about" onClick={handleCloseMenu}>About Us</MenuItem>
             <MenuItem component={RouterLink} to="/contact" onClick={handleCloseMenu}>Contact Us</MenuItem>
             {/* <MenuItem component={RouterLink} to="/signin" onClick={handleCloseMenu}>Sign In</MenuItem>
             <MenuItem component={RouterLink} to="/signup" onClick={handleCloseMenu}>Sign Up</MenuItem> */}

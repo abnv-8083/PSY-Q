@@ -2,6 +2,7 @@
 import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
+  spacing: 8,
   typography: {
     fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif',
     h1: { fontWeight: 800 },

@@ -6,9 +6,9 @@ import PublicIcon from '@mui/icons-material/Public';
 const About = () => {
   return (
     <Box component="main" sx={{ bgcolor: '#f5f5f5', py: { xs: 7, md: 10 } }}>
-      <Container maxWidth="xl">
-        {/* Welcome to PSYQ Section */}
-        <Box sx={{ mb: 8 }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 3, md: 5 } }}>
+        {/* Welcome to PSY-Q Section */}
+        <Box sx={{ mb: 8,  px: { xs: 0, md: 10 }}}>
           <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
             <Grid item xs={12} md={6}>
               <Chip 
@@ -18,7 +18,6 @@ const About = () => {
                   bgcolor: '#fae0edff', 
                   color: '#ca0056',
                   mb: 3,
-                  marginLeft: 5,
                   fontWeight: 600,
                   p: 1.5,
                   height: 'auto',
@@ -28,17 +27,15 @@ const About = () => {
               <Typography variant="h2" sx={{ 
                 fontWeight: 700, 
                 mb: 3,
-                ml: 5,
                 fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
                 lineHeight: 1
               }}>
-                Welcome to <Box component="span" sx={{ color: '#ca0056' }}>PSYQ</Box>
+                Welcome to <Box component="span" sx={{ color: '#ca0056' }}>PSY-Q</Box>
               </Typography>
               <Typography variant="h5" sx={{ 
                 color: '#00388C', 
                 fontWeight: 500,
                 mb: 2,
-                ml: 5,
               }}>
                 No mind left behind
               </Typography>
@@ -46,10 +43,9 @@ const About = () => {
                 color: '#64748b', 
                 lineHeight: 1.8,
                 fontSize: '14px',
-                maxWidth: 640,
-                ml: 5,
+                maxWidth: 640
               }}>
-                PSYQ Learning is an initiative introduced by a group of psychologists that
+                PSY-Q Learning is an initiative introduced by a group of psychologists that
                 strives to make professional psychological support accessible and
                 approachable. Our work spans therapy, trauma care, rehabilitation,
                 education, and workplace wellbeing. We aim to create a supportive
@@ -63,14 +59,13 @@ const About = () => {
                   maxWidth: { xs: 360, md: 540 },
                   bgcolor: 'white',
                   borderRadius: { xs: 6, md: 8 },
-                  p: { xs: 3.5, md: 7 },
                   boxShadow: '0 20px 50px rgba(0,0,0,0.05)',
                   border: '1px solid #e5e7eb'
                 }}>
                   <Box component="img"
-                    src="/images/story-graphic.png"
+                    src="/images/welcome.png"
                     alt="Healing Pathways"
-                    sx={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain' }}
+                    sx={{ width: '100%', height: 'auto', display: 'flex', objectFit: 'contain', borderRadius: 2, }}
                   />
                 </Box>
               </Box>
@@ -82,7 +77,7 @@ const About = () => {
         <Grid
           container
           spacing={4}
-          sx={{ mb: 8, mx:5, flexDirection: { xs: 'column', sm: 'row' } }}
+          sx={{ mb: 8, px: { xs: 0, md: 5 }, flexDirection: { xs: 'column', sm: 'row' } }}
         >
           {/* Our Mission */}
           <Grid item xs={12} sm={6}>
@@ -158,103 +153,10 @@ const About = () => {
                 lineHeight: 1.8,
                 fontSize: '0.95rem'
               }}>
-               The PSYQ was created by a group of passionate psychologists who wanted to make mental health care easily accessible to everyone. They saw how many people silently struggled with stress, anxiety, depression, and emotional pain, often without anyone to talk to.
-                That is why PSYQ was born: a safe and supportive space where people can share, heal, and grow with care and understanding.
-                Here, healing is a personal journey. We walk with you through tough times, help you understand your thoughts and emotions, and support you in building a healthier mindset. Along with mental health care, the PSYQ also supports athletes and performers by helping them improve their focus, confidence, and emotional strength.
-                At PSYQ, no problem is too small, and no one is ignored. We believe that everyone deserves care, hope, and the opportunity to become stronger.
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
-
-        {/* Features Grid */}
-        <Grid container spacing={2} sx={{ mb: 8, px: 5 }}>
-          <Grid item xs={4}>
-            <Paper elevation={0} sx={{ 
-              bgcolor: 'white',
-              borderRadius: 3,
-              p: 2.5,
-              textAlign: 'center',
-              height: '100%'
-            }}>
-              <Box sx={{ 
-                width: 56,
-                height: 56,
-                bgcolor: '#f0f9ff',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mx: 'auto',
-                mb: 2
-              }}>
-                <Box component="span" sx={{ fontSize: '1.75rem' }}>💡</Box>
-              </Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5, fontSize: { xs: '0.95rem', sm: '1.15rem' } }}>
-                Expert Guidance
-              </Typography>
-              <Typography sx={{ color: '#64748b', fontSize: { xs: '0.8rem', sm: '0.95rem' } }}>
-                Our experienced faculty provides personalized guidance tailored to each student's needs.
-              </Typography>
-            </Paper>
-          </Grid>
-          
-          <Grid item xs={4}>
-            <Paper elevation={0} sx={{ 
-              bgcolor: 'white',
-              borderRadius: 3,
-              p: 2.5,
-              textAlign: 'center',
-              height: '100%'
-            }}>
-              <Box sx={{ 
-                width: 56,
-                height: 56,
-                bgcolor: '#f0fdf4',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mx: 'auto',
-                mb: 2
-              }}>
-                <Box component="span" sx={{ fontSize: '1.75rem' }}>🧠</Box>
-              </Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5, fontSize: { xs: '0.95rem', sm: '1.15rem' } }}>
-                Psychological Support
-              </Typography>
-              <Typography sx={{ color: '#64748b', fontSize: { xs: '0.8rem', sm: '0.95rem' } }}>
-                We provide counseling services to help students manage stress and build confidence.
-              </Typography>
-            </Paper>
-          </Grid>
-          
-          <Grid item xs={4}>
-            <Paper elevation={0} sx={{ 
-              bgcolor: 'white',
-              borderRadius: 3,
-              p: 2.5,
-              textAlign: 'center',
-              height: '100%'
-            }}>
-              <Box sx={{ 
-                width: 56,
-                height: 56,
-                bgcolor: '#fef3c7',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mx: 'auto',
-                mb: 2
-              }}>
-                <Box component="span" sx={{ fontSize: '1.75rem' }}>📚</Box>
-              </Box>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#1e293b', mb: 1.5, fontSize: { xs: '0.95rem', sm: '1.15rem' } }}>
-                Interactive Learning
-              </Typography>
-              <Typography sx={{ color: '#64748b', fontSize: { xs: '0.8rem', sm: '0.95rem' } }}>
-                Our dynamic modules and webinars make learning engaging and effective.
+               The PSY-Q was created by a group of passionate psychologists who wanted to make mental health care easily accessible to everyone. They saw how many people silently struggled with stress, anxiety, depression, and emotional pain, often without anyone to talk to.
+                That is why PSY-Q was born: a safe and supportive space where people can share, heal, and grow with care and understanding.
+                Here, healing is a personal journey. We walk with you through tough times, help you understand your thoughts and emotions, and support you in building a healthier mindset. Along with mental health care, the PSY-Q also supports athletes and performers by helping them improve their focus, confidence, and emotional strength.
+                At PSY-Q, no problem is too small, and no one is ignored. We believe that everyone deserves care, hope, and the opportunity to become stronger.
               </Typography>
             </Paper>
           </Grid>
@@ -275,7 +177,7 @@ const About = () => {
                 fontSize: { xs: '1.75rem', md: '2.25rem' }
               }}>
                 <Box component="span" sx={{ color: '#1e40af' }}>The Story of</Box>{' '}
-                <Box component="span" sx={{ color: '#be185d' }}>PSYQ Learning</Box>
+                <Box component="span" sx={{ color: '#be185d' }}>PSY-Q Learning</Box>
               </Typography>
               <Typography sx={{ 
                 color: '#64748b', 
@@ -283,9 +185,9 @@ const About = () => {
                 mb: 3,
                 fontSize: '1rem'
               }}>
-              PSYQ started with a simple idea: mental health care should be available to everyone. The founders saw people suffering quietly, unable to find the right support or someone who would truly listen to them.
-              To address this, PSYQ was created as a safe space for counselling, therapy, and guidance. Here, healing is considered a personal journey. We support individuals through emotional struggles, help them manage stress, and guide them towards a healthier mindset.
-              PSYQ also works in the field of sports psychology, helping athletes build confidence, focus, and emotional balance in sports and life. At PSYQ, every story is important. Every struggle is respected and acknowledged. Every person is supported with care and compassion.
+              PSY-Q started with a simple idea: mental health care should be available to everyone. The founders saw people suffering quietly, unable to find the right support or someone who would truly listen to them.
+              To address this, PSY-Q was created as a safe space for counselling, therapy, and guidance. Here, healing is considered a personal journey. We support individuals through emotional struggles, help them manage stress, and guide them towards a healthier mindset.
+              PSY-Q also works in the field of sports psychology, helping athletes build confidence, focus, and emotional balance in sports and life. At PSY-Q, every story is important. Every struggle is respected and acknowledged. Every person is supported with care and compassion.
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -294,28 +196,295 @@ const About = () => {
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-                <Box sx={{ 
-                  width: '100%',
-                  maxWidth: 320,
-                  aspectRatio: '1',
-                  borderRadius: 6,
-                  overflow: 'hidden'
-                }}>
-                  <Box 
-                    component="img"
-                    src="/images/story-graphic.png" 
-                    alt="PSYQ Learning Story"
-                    sx={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover'
-                    }}
-                  />
-                </Box>
               </Box>
             </Grid>
           </Grid>
         </Paper>
+
+        {/* Meet Our Founders Section */}
+        <Box sx={{ 
+          bgcolor: '#ca0056',
+          p: { xs: 6, md: 8 },
+          mb: 8,
+
+        }}>
+          <Container maxWidth="xl" sx={{ bgcolor: '#ca0056'}}>
+            <Box sx={{ textAlign: 'center', mb: 8 }}>
+              {/* <Typography sx={{ 
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.15em',
+                mb: 2
+              }}>
+                The Visionaries
+              </Typography> */}
+              <Typography variant="h2" sx={{ 
+                fontWeight: 700,
+                color: 'white',
+                mb: 3,
+                fontSize: { xs: '2rem', md: '3rem' }
+              }}>
+                Trace the behind
+              </Typography>
+              <Typography sx={{ 
+                color: 'rgba(255, 255, 255, 0.85)',
+                fontSize: { xs: '1rem', md: '1rem' },
+                maxWidth: 700,
+                mx: 'auto',
+                lineHeight: 1.7
+              }}>
+                Three distinct voices, one shared mission: to redefine mental healthcare with empathy and expertise.
+              </Typography>
+            </Box>
+
+            <Grid container spacing={3} sx={{ maxWidth: 1100, mx: 'auto' }}>
+            {/* Mohammed Sinan*/}
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper elevation={0} sx={{ 
+                bgcolor: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: 2,
+                overflow: 'hidden',
+                height: '100%',
+                minHeight: 400,
+                width: '350px',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                animation: 'slideInUp 0.6s ease-out',
+                animationDelay: '0s',
+                animationFillMode: 'both',
+                '@keyframes slideInUp': {
+                  '0%': {
+                    opacity: 0,
+                    transform: 'translateY(60px)'
+                  },
+                  '100%': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  }
+                },
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
+                }
+              }}>
+                <Box sx={{ 
+                  height: 300,
+                  bgcolor: '#e8f4f1',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Box 
+                    component="img"
+                    src="/images/founders/sinan.jpg"
+                    alt="Mohammed Sinan E"
+                    sx={{ 
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </Box>
+                <Box sx={{ p: 3, bgcolor: 'rgba(108, 1, 53, 1)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Typography variant="h5" sx={{ 
+                    fontWeight: 700,
+                    color: 'white',
+                    mb: 0.5,
+                    fontSize: '1.4rem'
+                  }}>
+                    Mohammed Sinan E
+                  </Typography>
+                  <Typography sx={{ 
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    mb: 2
+                  }}>
+                    FOUNDER, CEO
+                  </Typography>
+                  <Typography sx={{ 
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '0.9rem',
+                    fontStyle: 'italic',
+                    lineHeight: 1.6
+                  }}>
+                    "Mental health is the foundation of human potential. Awareness creates understanding, understanding builds empathy, and empathy drives change. Our mission is to normalize care, compassion, and psychological well-being for all."
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+
+            {/* Muhammed Salih KC */}
+            <Grid item xs={12} sm={6  } md={4}>
+              <Paper elevation={0} sx={{ 
+                bgcolor: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: 2,
+                overflow: 'hidden',
+                height: '100%',
+                minHeight: 400,
+                width: '350px',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                animation: 'slideInUp 0.6s ease-out',
+                animationDelay: '0.1s',
+                animationFillMode: 'both',
+                '@keyframes slideInUp': {
+                  '0%': {
+                    opacity: 0,
+                    transform: 'translateY(60px)'
+                  },
+                  '100%': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  }
+                },
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
+                }
+              }}>
+                <Box sx={{ 
+                  height: 300,
+                  bgcolor: '#e8f4f1',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Box 
+                    component="img"
+                    src="/images/founders/salih.jpg"
+                    alt="Muhammed Salih KC"
+                    sx={{ 
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </Box>
+                <Box sx={{ p: 3, bgcolor: 'rgba(108, 1, 53, 1)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Typography variant="h5" sx={{ 
+                    fontWeight: 700,
+                    color: 'white',
+                    mb: 0.5,
+                    fontSize: '1.4rem'
+                  }}>
+                    Muhammed Salih KC
+                  </Typography>
+                  <Typography sx={{ 
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    mb: 2
+                  }}>
+                    CO-FOUNDER, CMO
+                  </Typography>
+                  <Typography sx={{ 
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '0.9rem',
+                    fontStyle: 'italic',
+                    lineHeight: 1.6
+                  }}>
+                    "Mental health awareness empowers individuals to speak, seek, and heal. When minds are supported, communities grow stronger. We strive to replace stigma with strength through education, connection, and accessible mental health support."
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+
+            {/* Umair Abdul Latheef */}
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper elevation={0} sx={{ 
+                bgcolor: 'rgba(255, 255, 255, 0.95)',
+                borderRadius: 2,
+                overflow: 'hidden',
+                height: '100%',
+                minHeight: 400,
+                width: '350px',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                animation: 'slideInUp 0.6s ease-out',
+                animationDelay: '0.2s',
+                animationFillMode: 'both',
+                '@keyframes slideInUp': {
+                  '0%': {
+                    opacity: 0,
+                    transform: 'translateY(60px)'
+                  },
+                  '100%': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  }
+                },
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
+                }
+              }}>
+                <Box sx={{ 
+                  height: 300,
+                  bgcolor: '#e8f4f1',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <Box 
+                    component="img"
+                    src="/images/founders/arya.jpg"
+                    alt="Arya Damodaran"
+                    sx={{ 
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </Box>
+                <Box sx={{ p: 3, bgcolor: 'rgba(108, 1, 53, 1)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Typography variant="h5" sx={{ 
+                    fontWeight: 700,
+                    color: 'white',
+                    mb: 0.5,
+                    fontSize: '1.4rem'
+                  }}>
+                    Umair Abdul Latheef
+                  </Typography>
+                  <Typography sx={{ 
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    mb: 2
+                  }}>
+                    CO-FOUNDER, COO
+                  </Typography>
+                  <Typography sx={{ 
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '0.9rem',
+                    fontStyle: 'italic',
+                    lineHeight: 1.6
+                  }}>
+                    "Mental well-being is not a luxury but a necessity. Sustainable systems must prioritize emotional health. Our commitment is to build supportive environments where people feel valued, heard, and mentally resilient every day."
+                  </Typography>
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
+          </Container>
+        </Box>
 
         {/* CTA Section */}
         <Paper elevation={0} sx={{ 
@@ -357,7 +526,7 @@ const About = () => {
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   '&:hover': {
-                    bgcolor: '#059669'
+                    bgcolor: '#e60073'
                   }
                 }}
               >

@@ -128,18 +128,30 @@ const OldBookingModal = ({ isOpen, therapist, onClose }) => {
 export default function Therapists() {
   const [searchQuery, setSearchQuery] = useState("")
   const [bookingTherapist, setBookingTherapist] = useState(null)
-
-
+  
+  
   const therapists = [
     {
       id: 1,
-      name: "Suhail VH",
-      title: "Consultant psychologist",
+      name: "Ameena Jebin",
+      title: "Psychologist",
       credentials: "5+ Years of experience",
+      additionalInfo: "",
       languages: "Malayalam, English",
-      specializations: ["Family & Relationship Counselling", "Career Guidance"],
+      specializations: ["Clinical Psychology"],
       price: "₹999/-",
-      image: "/images/faculty/suhail.jpeg",
+      image: "/images/faculty/ameena.jpg",
+    },
+    {
+      id: 2,
+      name: "Gazzala Tharola",
+      title: "Consultant Psychologist and Assistant professor",
+      credentials: "6+ Years of experience",
+      additionalInfo: "",
+      languages: "Malayalam, English, Hindi",
+      specializations: ["Clinical Psychology", "Wellness Specialist", "Personal Growth", "Maternal Mental Health"],
+      price: "₹999/-",
+      image: "/images/faculty/gazala.jpg",
     },
     {
       id: 2,
@@ -150,32 +162,10 @@ export default function Therapists() {
       languages: "Malayalam, English",
       specializations: ["Rehabilitation", "Relationship issues" , "Anger and Stress management" , "Corporate Mental Wellness" ,  "Occupational Well-being"],
       price: "₹999/-",
-      image: "images/faculty/kallu.jpeg",
+      image: "/images/faculty/kallu.jpg",
     },
     {
       id: 3,
-      name: "Nasif Ahmed",
-      title: "Consultant Psychologist",
-      credentials: "3+ Years of experience",
-      additionalInfo: "",
-      languages: "Malayalam, English",
-      specializations: ["Family", "Relationship Counselling"],
-      price: "₹999/-",
-      image: "/images/faculty/nasif.jpeg",
-    },
-    {
-      id: 4,
-      name: "Parvathi K",
-      title: "Sports Psychologist",
-      credentials: "3+ Years of experience",
-      additionalInfo: "",
-      languages: "Malayalam, English, Hindi, Tamil",
-      specializations: ["Sports and performance counseling", "Exercise population", "Rehabilitation athletes"],
-      price: "₹999/-",
-      image: "/images/faculty/parvathi.jpeg",
-    },
-    {
-      id: 5,
       name: "Nafih PK",
       title: "Sports Psychologist",
       credentials: "2+ Years of experience",
@@ -183,18 +173,39 @@ export default function Therapists() {
       languages: "Malayalam, English, Hindi",
       specializations: ["Team Sports", "E-Sports", "Athletics"],
       price: "₹999/-",
-      image: "/images/faculty/nafih.jpeg",
+      image: "/images/faculty/nafih.jpg",
+    },
+    {
+      id: 4,
+      name: "Nasif Ahmed",
+      title: "Consultant Psychologist",
+      credentials: "3+ Years of experience",
+      additionalInfo: "",
+      languages: "Malayalam, English",
+      specializations: ["Family", "Relationship Counselling"],
+      price: "₹999/-",
+      image: "/images/faculty/nasif.jpg",
+    },
+    {
+      id: 5,
+      name: "Parvathi K",
+      title: "Sports Psychologist",
+      credentials: "3+ Years of experience",
+      additionalInfo: "",
+      languages: "Malayalam, English, Hindi, Tamil",
+      specializations: ["Sports and performance counseling", "Exercise population", "Rehabilitation athletes"],
+      price: "₹999/-",
+      image: "/images/faculty/parvathy.jpg",
     },
     {
       id: 6,
-      name: "Gazzala Tharola",
-      title: "Consultant Psychologist and Assistant professor",
-      credentials: "6+ Years of experience",
-      additionalInfo: "",
+      name: "Suhail VH",
+      title: "Consultant psychologist",
+      credentials: "5+ Years of experience",
       languages: "Malayalam, English",
-      specializations: ["Clinical Psychology"],
+      specializations: ["Family & Relationship Counselling", "Career Guidance"],
       price: "₹999/-",
-      image: "images/faculty/gazzala.jpeg",
+      image: "/images/faculty/suhail.jpg",
     },
   ]
 
@@ -211,15 +222,15 @@ export default function Therapists() {
       className="min-h-screen bg-gray-50"
       style={{
         backgroundColor: "#f9fafb",
-        paddingTop: "80px",
-        paddingBottom: "40px",
-        paddingLeft: "16px",
-        paddingRight: "16px",
+        paddingTop: "var(--space-10)",
+        paddingBottom: "var(--space-5)",
+        paddingLeft: "var(--space-2)",
+        paddingRight: "var(--space-2)",
       }}
     >
       <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
         {/* Search bar section */}
-        <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center" }}>
+        <div style={{ marginBottom: "var(--space-6)", display: "flex", justifyContent: "center" }}>
           <div style={{ position: "relative", width: "100%", maxWidth: "672px" }}>
             {/* Search input with icon */}
             <div style={{ position: "relative" }}>
@@ -241,10 +252,10 @@ export default function Therapists() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   width: "100%",
-                  paddingLeft: "48px",
-                  paddingRight: "24px",
-                  paddingTop: "12px",
-                  paddingBottom: "12px",
+                  paddingLeft: "var(--space-6)",
+                  paddingRight: "var(--space-3)",
+                  paddingTop: "var(--space-2)",
+                  paddingBottom: "var(--space-2)",
                   borderRadius: "9999px",
                   border: "1px solid #d1d5db",
                   fontSize: "15px",
@@ -261,7 +272,7 @@ export default function Therapists() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 350px), 1fr))",
-            gap: "24px",
+            gap: "var(--space-3)",
           }}
         >
           {filteredTherapists.map((therapist) => (
@@ -309,8 +320,8 @@ export default function Therapists() {
 
               <div
                 style={{
-                  padding: "12px",
-                  gap: "8px",
+                  padding: "var(--space-2)",
+                  gap: "var(--space-2)",
                   display: "flex",
                   flexDirection: "column",
                   flex: 1,
@@ -379,7 +390,7 @@ export default function Therapists() {
                   style={{
                     display: "flex",
                     flexWrap: "wrap",
-                    gap: "4px",
+                    gap: "var(--space-1)",
                     marginTop: "4px",
                     minHeight: 0,
                   }}
@@ -434,9 +445,9 @@ export default function Therapists() {
                 <div
                   style={{
                     display: "flex",
-                    gap: "6px",
+                    gap: "var(--space-1)",
                     marginTop: "auto",
-                    paddingTop: "8px",
+                    paddingTop: "var(--space-1)",
                   }}
                 >
                   <button
@@ -445,7 +456,7 @@ export default function Therapists() {
                       flex: 1,
                       backgroundColor: "#CA0056",
                       color: "#ffffff",
-                      padding: "8px 6px",
+                      padding: "var(--space-1) var(--space-2)",
                       borderRadius: "6px",
                       fontSize: "10px",
                       fontWeight: "700",
@@ -465,7 +476,7 @@ export default function Therapists() {
                       flex: 1,
                       backgroundColor: "#CA0056",
                       color: "#ffffff",
-                      padding: "8px 6px",
+                      padding: "var(--space-1) var(--space-2)",
                       borderRadius: "6px",
                       fontSize: "10px",
                       fontWeight: "700",

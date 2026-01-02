@@ -67,7 +67,7 @@ const Psychospiritual = () => {
   ];
 
   return (
-    <Box component="main" sx={{ bgcolor: '#17a2b8', py: { xs: 8, md: 10 }, minHeight: '100vh' }}>
+    <Box component="main" sx={{ bgcolor: '#ca0056', py: { xs: 8, md: 10 }, minHeight: '100vh' }}>
       <Container maxWidth="xl">
         <Box sx={{ mb: 6, textAlign: 'center' }}>
           <Typography variant="h2" sx={{ 
@@ -83,7 +83,7 @@ const Psychospiritual = () => {
             variant="contained"
             sx={{
               bgcolor: 'white',
-              color: '#17a2b8',
+              color: '#ca0056',
               px: 4,
               py: 1.5,
               borderRadius: 3,
@@ -109,10 +109,23 @@ const Psychospiritual = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 bgcolor: 'rgba(255, 230, 242, 0.7)',
-                position: 'relative'
+                position: 'relative',
+                animation: 'slideInUp 0.6s ease-out',
+                animationDelay: `${index * 0.1}s`,
+                animationFillMode: 'both',
+                '@keyframes slideInUp': {
+                  '0%': {
+                    opacity: 0,
+                    transform: 'translateY(60px)'
+                  },
+                  '100%': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  }
+                }
               }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#11151cff' }}>
                     {pkg.name}
                   </Typography>
                   <Chip 
@@ -131,7 +144,7 @@ const Psychospiritual = () => {
                 </Typography>
 
                 <Typography sx={{ 
-                  color: '#1e293b',
+                  color: '#3d2731ff',
                   fontStyle: 'italic',
                   mb: 3,
                   fontSize: '0.95rem'
@@ -143,7 +156,7 @@ const Psychospiritual = () => {
                   {pkg.features.map((feature, featureIndex) => (
                     <Box key={featureIndex} sx={{ display: 'flex', mb: 2, alignItems: 'flex-start' }}>
                       <CheckIcon sx={{ color: '#ca0056', fontSize: 18, mr: 1, mt: 0.3, flexShrink: 0 }} />
-                      <Typography sx={{ color: '#1e293b', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                      <Typography sx={{ color: '#11151cff', fontSize: '0.9rem', lineHeight: 1.6 }}>
                         {feature}
                       </Typography>
                     </Box>
@@ -153,7 +166,7 @@ const Psychospiritual = () => {
                 <Box sx={{ mt: 'auto' }}>
                   <Typography variant="h3" sx={{ 
                     fontWeight: 700,
-                    color: '#1e293b',
+                    color: '#11151cff',
                     mb: 3,
                     fontSize: '2.5rem'
                   }}>
@@ -165,7 +178,7 @@ const Psychospiritual = () => {
                     onClick={() => handleBookNow(pkg)}
                     sx={{
                       bgcolor: 'white',
-                      color: '#1e293b',
+                      color: '#11151cff',
                       py: 1.5,
                       borderRadius: 3,
                       fontWeight: 600,
