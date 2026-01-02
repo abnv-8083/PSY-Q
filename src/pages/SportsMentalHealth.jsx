@@ -26,7 +26,6 @@ const SportsMentalHealth = () => {
         "Gain clarity around your thoughts, behaviours, and reactions",
         "Receive structured, personalised guidance",
         "Experience continuous support and care throughout the process",
-        "FREE 4-month access to SPACE by Psyra (journaling, mood tracking, daily reflections)"
       ]
     },
     {
@@ -38,12 +37,11 @@ const SportsMentalHealth = () => {
       discount: "Save 25%",
       tagline: "Go deeper and heal stronger.",
       features: [
-        "Work through long-standing emotional patterns with consistent guidance",
+        "Work through long-standing emotional patterns with consistent",
         "Identify root causes behind recurring thoughts and feelings",
         "Anytime chat support between sessions",
         "Explore emotions through structured therapeutic exercises",
         "One exclusive offline event entry",
-        "FREE access to SPACE by Psyra (track progress, reflect daily, build healthier habits)"
       ],
       popular: true
     },
@@ -56,19 +54,18 @@ const SportsMentalHealth = () => {
       discount: "Save 30%",
       tagline: "Your complete support system.",
       features: [
-        "12 personalised therapy sessions for long-term emotional transformation",
+        "12 personalised therapy sessions for long-term emotional",
         "Free access to all Online Psyra Events",
         "One exclusive offline event entry",
         "24/7 call & chat support for continuous emotional care",
         "Build emotional consistency with structured guidance",
-        "FREE 1-year access to SPACE by Psyra (daily routines, emotional check-ins, habit building & guided growth tools)"
       ]
     }
   ];
 
-  return (
+return (
     <Box component="main" sx={{ bgcolor: '#ca0056', py: { xs: 6, sm: 8, md: 10 }, px: { xs: 2, sm: 0 }, minHeight: '100vh' }}>
-      <Container maxWidth="lg" sx={{ px: { xs: 1, sm: 2 } }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2 } }}>
         <Box sx={{ mb: { xs: 4, md: 6 }, textAlign: 'center', px: { xs: 1, sm: 0 } }}>
           <Typography variant="h2" sx={{ 
             fontWeight: 400,
@@ -98,14 +95,14 @@ const SportsMentalHealth = () => {
           </Button> */}
         </Box>
 
-        <Grid container spacing={{ xs: 2, sm: 2, md: 2 }} sx={{flexWrap: 'nowrap',alignItems: 'stretch' }}>
+        <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
           {packages.map((pkg, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index} sx={{ display: 'flex' }}>
+            <Grid item xs={12} sm={12} md={4} lg={4} key={index} sx={{ display: 'flex' }}>
               <Paper sx={{
                 borderRadius: 2,
-                p: { xs: 2, sm: 2.5, md: 2 },
+                p: { xs: 2, sm: 2.5, md: 1.5, lg: 1.5 },
                 width: '100%',
-                minHeight: { xs: 'auto', sm: 600, md: 600 },
+                minHeight: { xs: 'auto', sm: 500, md: 400, lg: 500 },
                 display: 'flex',
                 flexDirection: 'column',
                 bgcolor: 'rgba(255, 230, 242, 0.7)',
@@ -125,10 +122,10 @@ const SportsMentalHealth = () => {
                 }
               }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: 1, flexWrap: 'wrap' }}>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b', fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' } }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', fontSize: { xs: '1rem', sm: '1.2rem', md: '1.2rem' }, overflow: 'hidden', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
                     {pkg.name}
                   </Typography>
-                  <Chip 
+                  {/* <Chip 
                     label={pkg.discount}
                     sx={{
                       bgcolor: 'rgba(202, 0, 86, 0.2)',
@@ -137,10 +134,10 @@ const SportsMentalHealth = () => {
                       fontSize: { xs: '0.7rem', sm: '0.85rem' },
                       py: 0.5
                     }}
-                  />
+                  /> */}
                 </Box>
 
-                <Typography sx={{ color: '#64748b', fontSize: { xs: '0.85rem', sm: '0.95rem' }, mb: 1 }}>
+                <Typography sx={{ color: '#64748b', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.9rem' }, mb: 1 }}>
                   {pkg.sessions} · {pkg.price} {pkg.pricePerSession}
                 </Typography>
 
@@ -148,7 +145,10 @@ const SportsMentalHealth = () => {
                   color: '#1e293b',
                   fontStyle: 'italic',
                   mb: 3,
-                  fontSize: { xs: '0.85rem', sm: '0.95rem' }
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
+                  overflow: 'hidden',
+                  overflowWrap: 'break-word',
+                  wordBreak: 'break-word'
                 }}>
                   {pkg.tagline}
                 </Typography>
@@ -156,8 +156,8 @@ const SportsMentalHealth = () => {
                 <Box sx={{ flexGrow: 1, mb: 3 }}>
                   {pkg.features.map((feature, featureIndex) => (
                     <Box key={featureIndex} sx={{ display: 'flex', mb: { xs: 1.5, sm: 2 }, alignItems: 'flex-start' }}>
-                      <CheckIcon sx={{ color: '#ca0056', fontSize: { xs: 16, sm: 18 }, mr: 1, mt: 0.3, flexShrink: 0 }} />
-                      <Typography sx={{ color: '#1e293b', fontSize: { xs: '0.8rem', sm: '0.9rem' }, lineHeight: 1.5 }}>
+                      <CheckIcon sx={{ color: '#ca0056', fontSize: { xs: 16, sm: 16 }, mr: 1, mt: 0.3, flexShrink: 0 }} />
+                      <Typography sx={{ color: '#1e293b', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.9rem' }, lineHeight: 1.5, overflow: 'hidden', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
                         {feature}
                       </Typography>
                     </Box>
@@ -169,7 +169,7 @@ const SportsMentalHealth = () => {
                     fontWeight: 700,
                     color: '#1e293b',
                     mb: 3,
-                    fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.5rem' }
+                    fontSize: { xs: '1.7rem', sm: '2.2rem', md: '2rem' }
                   }}>
                     {pkg.totalPrice}
                   </Typography>
@@ -209,5 +209,6 @@ const SportsMentalHealth = () => {
     </Box>
   );
 };
+
 
 export default SportsMentalHealth;

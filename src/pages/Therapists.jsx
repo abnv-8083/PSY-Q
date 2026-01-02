@@ -159,7 +159,7 @@ export default function Therapists() {
       title: "Corporate Wellbeing coach & Consultant Psychologist",
       credentials: "3.5+ Years of experience",
       additionalInfo: "",
-      languages: "Malayalam, English",
+      languages: "Malayalam, English, Tamil",
       specializations: ["Rehabilitation", "Relationship issues" , "Anger and Stress management" , "Corporate Mental Wellness" ,  "Occupational Well-being"],
       price: "₹999/-",
       image: "/images/faculty/kallu.jpg",
