@@ -208,11 +208,12 @@ const About = () => {
           p: { xs: 3, sm: 4, md: 8 },
           mb: 8,
           mx: { xs: -3, sm: -2, md: 0 },
-          px: { xs: 3, sm: 2, md: 'auto' }
+          px: { xs: 3, sm: 2, md: 'auto' },
+          borderRadius: 4
         }}>
           <Container maxWidth="lg" sx={{ bgcolor: 'transparent', px: { xs: 1, sm: 2, md: 'auto' } }}>
-            <Box sx={{ textAlign: 'center', mb: 8 }}>
-              {/* <Typography sx={{ 
+            <Box sx={{ textAlign: 'center', mb: 8}}>
+              <Typography sx={{ 
                 color: 'rgba(255, 255, 255, 0.7)',
                 fontSize: '0.875rem',
                 fontWeight: 600,
@@ -220,8 +221,8 @@ const About = () => {
                 letterSpacing: '0.15em',
                 mb: 2
               }}>
-                The Visionaries
-              </Typography> */}
+                they made it happen
+              </Typography>
               <Typography variant="h2" sx={{ 
                 fontWeight: 700,
                 color: 'white',
@@ -284,7 +285,7 @@ const About = () => {
                 }}>
                   <Box 
                     component="img"
-                    src="/images/founders/sinan.jpg"
+                    src="/images/founders/sinan.jpeg"
                     alt="Mohammed Sinan E"
                     sx={{ 
                       width: '100%',
@@ -294,24 +295,14 @@ const About = () => {
                   />
                 </Box>
                 <Box sx={{ p: 3, bgcolor: 'rgba(108, 1, 53, 1)', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h5" sx={{ 
+                  {/* <Typography variant="h5" sx={{ 
                     fontWeight: 700,
                     color: 'white',
                     mb: 0.5,
                     fontSize: '1.4rem'
                   }}>
                     Mohammed Sinan E
-                  </Typography>
-                  <Typography sx={{ 
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    mb: 2
-                  }}>
-                    FOUNDER, CEO
-                  </Typography>
+                  </Typography> */}
                   <Typography sx={{ 
                     color: 'rgba(255, 255, 255, 0.9)',
                     fontSize: '0.9rem',
@@ -366,7 +357,7 @@ const About = () => {
                 }}>
                   <Box 
                     component="img"
-                    src="/images/founders/salih.jpg"
+                    src="/images/founders/salih.jpeg"
                     alt="Muhammed Salih KC"
                     sx={{ 
                       width: '100%',
@@ -376,24 +367,6 @@ const About = () => {
                   />
                 </Box>
                 <Box sx={{ p: 3, bgcolor: 'rgba(108, 1, 53, 1)', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h5" sx={{ 
-                    fontWeight: 700,
-                    color: 'white',
-                    mb: 0.5,
-                    fontSize: '1.4rem'
-                  }}>
-                    Muhammed Salih KC
-                  </Typography>
-                  <Typography sx={{ 
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    mb: 2
-                  }}>
-                    CO-FOUNDER, CMO
-                  </Typography>
                   <Typography sx={{ 
                     color: 'rgba(255, 255, 255, 0.9)',
                     fontSize: '0.9rem',
@@ -448,8 +421,8 @@ const About = () => {
                 }}>
                   <Box 
                     component="img"
-                    src="/images/founders/arya.jpg"
-                    alt="Arya Damodaran"
+                    src="/images/founders/umair.jpeg"
+                    alt="Umair Abdul Latheef"
                     sx={{ 
                       width: '100%',
                       height: '100%',
@@ -458,24 +431,6 @@ const About = () => {
                   />
                 </Box>
                 <Box sx={{ p: 3, bgcolor: 'rgba(108, 1, 53, 1)', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h5" sx={{ 
-                    fontWeight: 700,
-                    color: 'white',
-                    mb: 0.5,
-                    fontSize: '1.4rem'
-                  }}>
-                    Umair Abdul Latheef
-                  </Typography>
-                  <Typography sx={{ 
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    mb: 2
-                  }}>
-                    CO-FOUNDER, COO
-                  </Typography>
                   <Typography sx={{ 
                     color: 'rgba(255, 255, 255, 0.9)',
                     fontSize: '0.9rem',

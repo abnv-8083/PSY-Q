@@ -1,8 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { Search } from "lucide-react"
 import BookingModal from "../components/booking-modal.jsx"
+import { therapists } from "../data/therapists"
 
 // BookingModal component for displaying booking form
 const OldBookingModal = ({ isOpen, therapist, onClose }) => {
@@ -128,86 +130,6 @@ const OldBookingModal = ({ isOpen, therapist, onClose }) => {
 export default function Therapists() {
   const [searchQuery, setSearchQuery] = useState("")
   const [bookingTherapist, setBookingTherapist] = useState(null)
-  
-  
-  const therapists = [
-    {
-      id: 1,
-      name: "Ameena Jebin",
-      title: "Psychologist",
-      credentials: "5+ Years of experience",
-      additionalInfo: "",
-      languages: "Malayalam, English",
-      specializations: ["Clinical Psychology"],
-      price: "₹999/-",
-      image: "/images/faculty/ameena.jpg",
-    },
-    {
-      id: 2,
-      name: "Gazzala Tharola",
-      title: "Consultant Psychologist and Assistant professor",
-      credentials: "6+ Years of experience",
-      additionalInfo: "",
-      languages: "Malayalam, English, Hindi",
-      specializations: ["Clinical Psychology", "Wellness Specialist", "Personal Growth", "Maternal Mental Health"],
-      price: "₹999/-",
-      image: "/images/faculty/gazala.jpg",
-    },
-    {
-      id: 2,
-      name: "Kallu Sajeev",
-      title: "Corporate Wellbeing coach & Consultant Psychologist",
-      credentials: "3.5+ Years of experience",
-      additionalInfo: "",
-      languages: "Malayalam, English, Tamil",
-      specializations: ["Rehabilitation", "Relationship issues" , "Anger and Stress management" , "Corporate Mental Wellness" ,  "Occupational Well-being"],
-      price: "₹999/-",
-      image: "/images/faculty/kallu.jpg",
-    },
-    {
-      id: 3,
-      name: "Nafih PK",
-      title: "Sports Psychologist",
-      credentials: "2+ Years of experience",
-      additionalInfo: "",
-      languages: "Malayalam, English, Hindi",
-      specializations: ["Team Sports", "E-Sports", "Athletics"],
-      price: "₹999/-",
-      image: "/images/faculty/nafih.jpg",
-    },
-    {
-      id: 4,
-      name: "Nasif Ahmed",
-      title: "Consultant Psychologist",
-      credentials: "3+ Years of experience",
-      additionalInfo: "",
-      languages: "Malayalam, English",
-      specializations: ["Family", "Relationship Counselling"],
-      price: "₹999/-",
-      image: "/images/faculty/nasif.jpg",
-    },
-    {
-      id: 5,
-      name: "Parvathi K",
-      title: "Sports Psychologist",
-      credentials: "3+ Years of experience",
-      additionalInfo: "",
-      languages: "Malayalam, English, Hindi, Tamil",
-      specializations: ["Sports and performance counseling", "Exercise population", "Rehabilitation athletes"],
-      price: "₹999/-",
-      image: "/images/faculty/parvathy.jpg",
-    },
-    {
-      id: 6,
-      name: "Suhail VH",
-      title: "Consultant psychologist",
-      credentials: "5+ Years of experience",
-      languages: "Malayalam, English",
-      specializations: ["Family & Relationship Counselling", "Career Guidance"],
-      price: "₹999/-",
-      image: "/images/faculty/suhail.jpg",
-    },
-  ]
 
   // Filter therapists based on search query
   const filteredTherapists = therapists.filter(
@@ -381,7 +303,7 @@ export default function Therapists() {
                       fontStyle: "italic",
                     }}
                   >
-                    {therapist.languages}
+                    {Array.isArray(therapist.languages) ? therapist.languages.join(", ") : therapist.languages}
                   </p>
                 </div>
 
@@ -466,35 +388,40 @@ export default function Therapists() {
                       boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
                       whiteSpace: "nowrap",
                     }}
-                    onMouseOver={(e) => (e.target.style.backgroundColor = "#ff006fff")}
+                    onMouseOver={(e) => (e.target.style.backgroundColor = "#ff006f")}
                     onMouseOut={(e) => (e.target.style.backgroundColor = "#CA0056")}
                   >
                     Book now
                   </button>
-                  <button
-                    style={{
-                      flex: 1,
-                      backgroundColor: "#CA0056",
-                      color: "#ffffff",
-                      padding: "var(--space-1) var(--space-2)",
-                      borderRadius: "6px",
-                      fontSize: "10px",
-                      fontWeight: "700",
-                      cursor: "pointer",
-                      border: "none",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "3px",
-                      transition: "background-color 0.2s ease",
-                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-                      whiteSpace: "nowrap",
-                    }}
-                    onMouseOver={(e) => (e.target.style.backgroundColor = "#ff006fff")}
-                    onMouseOut={(e) => (e.target.style.backgroundColor = "#CA0056")}
+                  <Link
+                    to={`/therapists/${therapist.id}`}
+                    style={{ flex: 1, textDecoration: "none" }}
                   >
-                    ⓘ About
-                  </button>
+                    <button
+                      style={{
+                        width: "100%",
+                        backgroundColor: "#CA0056",
+                        color: "#ffffff",
+                        padding: "var(--space-1) var(--space-2)",
+                        borderRadius: "6px",
+                        fontSize: "10px",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                        border: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "3px",
+                        transition: "background-color 0.2s ease",
+                        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                        whiteSpace: "nowrap",
+                      }}
+                      onMouseOver={(e) => (e.target.style.backgroundColor = "#ff006f")}
+                      onMouseOut={(e) => (e.target.style.backgroundColor = "#CA0056")}
+                    >
+                      ⓘ About
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>

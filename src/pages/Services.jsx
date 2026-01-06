@@ -118,7 +118,7 @@ const Services = () => {
                         textTransform: 'uppercase',
                         boxShadow: 'none',
                         '&:hover': {
-                          bgcolor: '#f0f0f0',
+                          bgcolor: '#F2B8C1',
                           boxShadow: 'none'
                         }
                       }}

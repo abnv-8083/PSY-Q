@@ -5,6 +5,7 @@ import About from './pages/About';
 import Services from './pages/Services';
 import Contact from './pages/Contact';
 import Therapists from './pages/Therapists';
+import TherapistProfile from './pages/TherapistProfile';
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import Soon from './pages/Soon';
@@ -24,6 +25,7 @@ function App() {
         <Route path="/services" element={<Layout><Services /></Layout>} />
         <Route path="/contact" element={<Layout><Contact /></Layout>} />
         <Route path="/therapists" element={<Layout><Therapists /></Layout>} />
+        <Route path="/therapists/:id" element={<Layout><TherapistProfile /></Layout>} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/soon" element={<Layout><Soon /></Layout>} />

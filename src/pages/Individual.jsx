@@ -1,211 +1,252 @@
 import { useState } from 'react';
-import { Box, Container, Typography, Grid, Paper, Button, Chip } from '@mui/material';
-import CheckIcon from '@mui/icons-material/Check';
-import BookingModal from '../components/BookingModal';
+import { Box, Container, Typography, Grid, Paper, Button, Chip, Table, TableBody, TableCell, TableRow } from '@mui/material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+// import BookingModal from '../components/BookingModal';
 
 const Individual = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
 
   const handleBookNow = (pkg) => {
-    setSelectedPackage({ ...pkg, serviceName: 'Individual therapy' });
+    setSelectedPackage({ ...pkg, serviceName: 'Individual services' });
     setModalOpen(true);
   };
+  
   const packages = [
     {
-      name: "Basic Growth Plan",
-      sessions: "4 Sessions",
-      price: "₹800",
-      pricePerSession: "per session",
-      totalPrice: "₹3200",
-      discount: "Save 20%",
-      tagline: "Start your journey towards clarity",
-      features: [
-        "Build deeper trust and rapport with your therapist",
-        "Understand your emotional patterns with guided support",
-        "Gain clarity around your thoughts, behaviours, and reactions",
-        "Receive structured, personalised guidance",
-        "Experience continuous support and care throughout the process",
-      ]
+      name: "Starter",
+      description: "1 Session, Experience our service",
+      price: "₹999",
+      color: "#d4887d",
+      bgColor: "linear-gradient(135deg, #F2B8C1 0%, #dcadb4ff 100%)"
     },
     {
-      name: "Deep Healing Plan",
-      sessions: "8 Sessions",
-      price: "₹750",
-      pricePerSession: "per session",
-      totalPrice: "₹6000",
-      discount: "Save 25%",
-      tagline: "Go deeper and heal stronger.",
-      features: [
-        "Work through long-standing emotional patterns with consistent",
-        "Identify root causes behind recurring thoughts and feelings",
-        "Anytime chat support between sessions",
-        "Explore emotions through structured therapeutic exercises",
-        "One exclusive offline event entry",
-      ],
+      name: "Basic",
+      description: "Best for offering multiple experiences",
+      price: "₹3200",
+      color: "#7d9fb3",
+      bgColor: "linear-gradient(135deg, #c5e4f8 0%, #8fbdd8 100%)",
       popular: true
     },
     {
-      name: "Premium Plan",
-      sessions: "12 Sessions",
-      price: "₹600",
-      pricePerSession: "per session",
-      totalPrice: "₹8400",
-      discount: "Save 30%",
-      tagline: "Your complete support system.",
-      features: [
-        "12 personalised therapy sessions for long-term emotional",
-        "Free access to all Online Psyra Events",
-        "One exclusive offline event entry",
-        "24/7 call & chat support for continuous emotional care",
-        "Build emotional consistency with structured guidance",
-      ]
+      name: "Standard",
+      description: "Best for global, complex use cases",
+      price: "₹6000",
+      color: "#8fae8d",
+      bgColor: "linear-gradient(135deg, #e6b0f6 0%, #ca95d9ff 100%)"
+    },
+    {
+      name: "Advanced",
+      description: "Best for global, complex use cases",
+      price: "₹8400",
+      color: "#8fae8d",
+      bgColor: "linear-gradient(135deg, #B3CED6 0%, #93bcc8 100%)"
     }
   ];
 
+  const features = [
+    { name: "Hosting & Visualization of 3D Assets*", essentials: true, professional: true, enterprise: true },
+    { name: "Configuration", essentials: true, professional: true, enterprise: true },
+    { name: "Analytics", essentials: true, professional: true, enterprise: true },
+    { name: "Augmented Reality", essentials: false, professional: true, enterprise: true },
+    { name: "Virtual Photographer", essentials: false, professional: true, enterprise: true },
+    { name: "Threekit AI", essentials: false, professional: true, enterprise: true }
+  ];
+
 return (
-    <Box component="main" sx={{ bgcolor: '#ca0056', py: { xs: 6, sm: 8, md: 10 }, px: { xs: 2, sm: 0 }, minHeight: '100vh' }}>
-      <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2 } }}>
-        <Box sx={{ mb: { xs: 4, md: 6 }, textAlign: 'center', px: { xs: 1, sm: 0 } }}>
-          <Typography variant="h2" sx={{ 
-            fontWeight: 400,
-            color: 'white',
-            mb: 3,
-            fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' },
-            letterSpacing: '0.5px'
-          }}>
-            Choose The <Box component="span" sx={{ fontWeight: 700 }}>Package</Box> for you
-          </Typography>
-          {/* <Button
-            variant="contained"
-            sx={{
-              bgcolor: 'white',
-              color: '#ca0056',
-              px: 4,
-              py: 1.5,
-              borderRadius: 3,
-              fontWeight: 600,
-              textTransform: 'none',
-              '&:hover': {
-                bgcolor: '#f0f0f0'
-              }
-            }}
-          >
-            Why Package? ⌄
-          </Button> */}
-        </Box>
-
-        <Grid container spacing={2} sx={{ alignItems: 'stretch' }}>
-          {packages.map((pkg, index) => (
-            <Grid item xs={12} sm={12} md={4} lg={4} key={index} sx={{ display: 'flex' }}>
-              <Paper sx={{
-                borderRadius: 2,
-                p: { xs: 2, sm: 2.5, md: 1.5, lg: 1.5 },
-                width: '100%',
-                minHeight: { xs: 'auto', sm: 500, md: 400, lg: 500 },
-                display: 'flex',
-                flexDirection: 'column',
-                bgcolor: 'rgba(255, 230, 242, 0.7)',
-                position: 'relative',
-                animation: 'slideInUp 0.6s ease-out',
-                animationDelay: `${index * 0.1}s`,
-                animationFillMode: 'both',
-                '@keyframes slideInUp': {
-                  '0%': {
-                    opacity: 0,
-                    transform: 'translateY(60px)'
-                  },
-                  '100%': {
-                    opacity: 1,
-                    transform: 'translateY(0)'
-                  }
-                }
-              }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: 1, flexWrap: 'wrap' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', fontSize: { xs: '1rem', sm: '1.2rem', md: '1.2rem' }, overflow: 'hidden', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                    {pkg.name}
-                  </Typography>
-                  {/* <Chip 
-                    label={pkg.discount}
-                    sx={{
-                      bgcolor: 'rgba(202, 0, 86, 0.2)',
-                      color: '#ca0056',
-                      fontWeight: 600,
-                      fontSize: { xs: '0.7rem', sm: '0.85rem' },
-                      py: 0.5
-                    }}
-                  /> */}
-                </Box>
-
-                <Typography sx={{ color: '#64748b', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.9rem' }, mb: 1 }}>
-                  {pkg.sessions} · {pkg.price} {pkg.pricePerSession}
-                </Typography>
-
-                <Typography sx={{ 
-                  color: '#1e293b',
-                  fontStyle: 'italic',
-                  mb: 3,
-                  fontSize: { xs: '0.8rem', sm: '0.9rem' },
-                  overflow: 'hidden',
-                  overflowWrap: 'break-word',
-                  wordBreak: 'break-word'
-                }}>
-                  {pkg.tagline}
-                </Typography>
-
-                <Box sx={{ flexGrow: 1, mb: 3 }}>
-                  {pkg.features.map((feature, featureIndex) => (
-                    <Box key={featureIndex} sx={{ display: 'flex', mb: { xs: 1.5, sm: 2 }, alignItems: 'flex-start' }}>
-                      <CheckIcon sx={{ color: '#ca0056', fontSize: { xs: 16, sm: 16 }, mr: 1, mt: 0.3, flexShrink: 0 }} />
-                      <Typography sx={{ color: '#1e293b', fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.9rem' }, lineHeight: 1.5, overflow: 'hidden', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                        {feature}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-
-                <Box sx={{ mt: 'auto' }}>
-                  <Typography variant="h3" sx={{ 
-                    fontWeight: 700,
-                    color: '#1e293b',
-                    mb: 3,
-                    fontSize: { xs: '1.7rem', sm: '2.2rem', md: '2rem' }
+    <Box component="main" sx={{ bgcolor: '#ca0056', py: { xs: 4, sm: 6, md: 8, lg: 10 }, px: { xs: 2, sm: 3 }, minHeight: '100vh' }}>
+      <Container maxWidth="lg">
+        <Grid container spacing={{ xs: 3, sm: 4 }} sx={{ mb: { xs: 4, sm: 6 } }}>
+          <Grid item xs={12} md={4} sx={{ mb: { xs: 2, md: 0 } }}>
+            <Typography variant="h2" sx={{ 
+              fontWeight: 300,
+              color: 'white',
+              mb: { xs: 0.5, sm: 1 },
+              fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem', lg: '3rem' }
+            }}>
+              Simple <Box component="span" sx={{ color: 'rgba(255, 255, 255, 0.73)' }}>pricing</Box>
+            </Typography>
+            <Typography sx={{ 
+              color: 'white',
+              fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem', lg: '1.5rem' },
+              fontWeight: 300,
+              lineHeight: 1.3
+            }}>
+              choose <br />your package
+            </Typography>
+          </Grid>
+          
+          <Grid item xs={12} md={8}>
+            <Grid container spacing={{ xs: 2, sm: 2 }}>
+              {packages.map((pkg, index) => (
+                <Grid item xs={12} sm={6} md={6} lg={3} key={index}>
+                  <Paper sx={{
+                    borderRadius: { xs: 2, sm: 3, md: 2 },
+                    p: { xs: 2.5, sm: 3 },
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    background: pkg.bgColor,
+                    position: 'relative',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                    minHeight: { xs: 'auto', sm: 280 }
                   }}>
-                    {pkg.totalPrice}
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={() => handleBookNow(pkg)}
-                    sx={{
-                      bgcolor: 'white',
-                      color: '#1e293b',
-                      py: { xs: 1.25, sm: 1.5 },
-                      borderRadius: 3,
+                    {pkg.popular && (
+                      <Chip 
+                        label="Most Popular!"
+                        size="small"
+                        sx={{
+                          position: 'absolute',
+                          top: 12,
+                          right: 12,
+                          bgcolor: 'rgba(0,0,0,0.2)',
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '0.7rem',
+                          height: 24
+                        }}
+                      />
+                    )}
+                    
+                    <Typography variant="h5" sx={{ 
                       fontWeight: 600,
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      boxShadow: 'none',
-                      transition: 'all 0.2s',
-                      '&:hover': {
-                        bgcolor: '#f0f0f0',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-                      }
-                    }}
-                  >
-                    Book Now
-                  </Button>
-                </Box>
-              </Paper>
+                      color: 'white',
+                      mb: { xs: 0.75, sm: 1 },
+                      fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem', lg: '1.5rem' }
+                    }}>
+                      {pkg.name}
+                    </Typography>
+                    
+                    <Typography sx={{ 
+                      color: 'rgba(255,255,255,0.95)',
+                      fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                      mb: { xs: 2, sm: 3 },
+                      minHeight: { xs: 36, sm: 40 },
+                      lineHeight: 1.4
+                    }}>
+                      {pkg.description}
+                    </Typography>
+                    
+                    <Typography variant="h4" sx={{ 
+                      fontWeight: 600,
+                      color: 'white',
+                      mb: { xs: 2, sm: 3 },
+                      fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }
+                    }}>
+                      {pkg.price}
+                    </Typography>
+                    
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={() => handleBookNow(pkg)}
+                      sx={{
+                        bgcolor: '#ca0056',
+                        color: 'white',
+                        py: { xs: 1.25, sm: 1.5 },
+                        borderRadius: { xs: 1.5, sm: 2 },
+                        fontWeight: 600,
+                        fontSize: { xs: '0.9rem', sm: '0.95rem' },
+                        textTransform: 'none',
+                        boxShadow: 'none',
+                        '&:hover': {
+                          bgcolor: '#ca0056',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                        }
+                      }}
+                    >
+                      Get started
+                    </Button>
+                  </Paper>
+                </Grid>
+              ))}
             </Grid>
-          ))}
+          </Grid>
         </Grid>
+
+        {/* Key Features Table */}
+        <Box sx={{ mt: { xs: 6, sm: 8 } }}>
+          <Typography variant="h4" sx={{ 
+            color: 'white',
+            mb: { xs: 3, sm: 4 },
+            fontWeight: 600,
+            fontSize: { xs: '1.3rem', sm: '1.75rem', md: '2rem' }
+          }}>
+            Key Features
+          </Typography>
+          
+          <Box sx={{ 
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            overflowX: { xs: 'auto', md: 'visible' },
+            '&::-webkit-scrollbar': {
+              height: 8
+            },
+            '&::-webkit-scrollbar-track': {
+              bgcolor: 'rgba(255,255,255,0.05)'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              bgcolor: 'rgba(255,255,255,0.2)',
+              borderRadius: 4
+            }
+          }}>
+            {features.map((feature, index) => (
+              <Box 
+                key={index}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  py: { xs: 2, sm: 2.5 },
+                  borderBottom: '1px solid rgba(255,255,255,0.1)',
+                  minWidth: { xs: 600, md: 'auto' }
+                }}
+              >
+                <Box sx={{ flex: 1, pr: { xs: 2, sm: 3 }, minWidth: { xs: 200, sm: 'auto' } }}>
+                  <Typography sx={{ color: 'white', fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>
+                    {feature.name}
+                  </Typography>
+                </Box>
+                
+                <Box sx={{ display: 'flex', gap: { xs: 4, sm: 5, md: 6 }, minWidth: { xs: 280, sm: 320, md: 380 } }}>
+                  <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 60 }}>
+                    {feature.essentials ? (
+                      <CheckCircleIcon sx={{ color: '#F2B8C1', fontSize: { xs: 20, sm: 24 } }} />
+                    ) : (
+                      <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: { xs: '0.9rem', sm: '1rem' } }}>-</Typography>
+                    )}
+                  </Box>
+                  <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 60 }}>
+                    {feature.professional ? (
+                      <CheckCircleIcon sx={{ color: '#c5e4f8', fontSize: { xs: 20, sm: 24 } }} />
+                    ) : (
+                      <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: { xs: '0.9rem', sm: '1rem' } }}>-</Typography>
+                    )}
+                  </Box>
+                  <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 60 }}>
+                    {feature.enterprise ? (
+                      <CheckCircleIcon sx={{ color: '#e6b0f6', fontSize: { xs: 20, sm: 24 } }} />
+                    ) : (
+                      <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: { xs: '0.9rem', sm: '1rem' } }}>-</Typography>
+                    )}
+                  </Box>
+                  <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 60 }}>
+                      {feature.enterprise ? (
+                        <CheckCircleIcon sx={{ color: '#B3CED6', fontSize: { xs: 20, sm: 24 } }} />
+                      ) : (
+                        <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: { xs: '0.9rem', sm: '1rem' } }}>-</Typography>
+                      )}
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
       </Container>
 
-      <BookingModal
+      {/* <BookingModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         packageDetails={selectedPackage}
-      />
+      /> */}
     </Box>
   );
 };
