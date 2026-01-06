@@ -121,7 +121,7 @@ const Contact = () => {
                 </Box>
                 <Box>
                   <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>Email</Typography>
-                  <Typography variant="body2" color="text.secondary">PSY-Qonline@gmail.com</Typography>
+                  <Typography variant="body2" color="text.secondary">psyqonline@gmail.com</Typography>
                 
                 </Box>
               </CardContent>

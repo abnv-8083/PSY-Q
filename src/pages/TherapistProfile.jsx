@@ -59,16 +59,55 @@ export default function TherapistProfile() {
   }
 
   return (
-    <div
-      style={{
-        backgroundColor: "#f9fafb",
-        minHeight: "100vh",
-        padding: "48px 16px 64px",
-      }}
-    >
-      <div style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.1fr 0.9fr", gap: 24 }}>
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .therapist-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .therapist-container {
+            padding: 24px 12px 32px !important;
+          }
+          .therapist-card {
+            padding: 16px !important;
+          }
+          .therapist-name {
+            font-size: 22px !important;
+          }
+          .section-title {
+            font-size: 16px !important;
+          }
+          .calendar-grid {
+            gap: 4px !important;
+          }
+          .time-slot {
+            min-width: 70px !important;
+            font-size: 11px !important;
+            padding: 8px 10px !important;
+          }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .therapist-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .booking-section {
+            grid-column: 1 / -1 !important;
+            max-width: 400px !important;
+            margin: 0 auto !important;
+          }
+        }
+      `}</style>
+      <div
+        className="therapist-container"
+        style={{
+          backgroundColor: "#f9fafb",
+          minHeight: "100vh",
+          padding: "48px 16px 64px",
+        }}
+      >
+        <div className="therapist-grid" style={{ maxWidth: 1180, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.1fr 0.9fr", gap: 24 }}>
         {/* Left column: photo + contact */}
-        <div style={{ background: "white", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(0,0,0,0.05)" }}>
+        <div className="therapist-card" style={{ background: "white", borderRadius: 18, padding: 20, boxShadow: "0 12px 30px rgba(0,0,0,0.05)" }}>
           <div
             style={{
               background: "#f3f4f6",
@@ -91,7 +130,7 @@ export default function TherapistProfile() {
           </ul>
           <div style={{ marginTop: 14 }}>
             <p style={{ color: "#111827", fontWeight: 700, marginBottom: 6, fontSize: 14 }}>Languages</p>
-            <ul style={{ listStyle: "disc", paddingLeft: 18, color: "#4b5563", fontWeight: 600, display: "grid", gap: 4 }}>
+            <ul style={{ listStyle: "disc", paddingLeft: 18, color: "#4b5563", fontWeight: 600, display: "grid", gap: 4, fontSize: 14 }}>
               {(therapist.languages || []).map((lang) => (
                 <li key={lang}>{lang}</li>
               ))}
@@ -101,9 +140,9 @@ export default function TherapistProfile() {
 
         {/* Middle column: details */}
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          <div style={{ background: "white", borderRadius: 18, padding: "20px 22px", boxShadow: "0 12px 30px rgba(0,0,0,0.05)" }}>
-            <p style={{ color: "#6b7280", fontWeight: 700, letterSpacing: "0.05em", fontSize: 12 }}>INTERNAL MEDICINE, CARDIOLOGY</p>
-            <h1 style={{ color: "#0f172a", fontSize: 28, margin: "4px 0 6px", fontWeight: 800 }}>{therapist.name}</h1>
+          <div className="therapist-card" style={{ background: "white", borderRadius: 18, padding: "20px 22px", boxShadow: "0 12px 30px rgba(0,0,0,0.05)" }}>
+            <p style={{ color: "#6b7280", fontWeight: 700, letterSpacing: "0.05em", fontSize: 12 }}>COUNSELLING THERAPY AND WELLNESS</p>
+            <h1 className="therapist-name" style={{ color: "#0f172a", fontSize: 28, margin: "4px 0 6px", fontWeight: 800 }}>{therapist.name}</h1>
             <p style={{ color: "#4b5563", fontWeight: 600, marginBottom: 14, fontSize: 15 }}>{therapist.title}</p>
 
             <div
@@ -123,14 +162,14 @@ export default function TherapistProfile() {
             </div>
           </div>
 
-          <div style={{ background: "white", borderRadius: 18, padding: "20px 22px", boxShadow: "0 12px 30px rgba(0,0,0,0.05)", display: "grid", gap: 16 }}>
+          <div className="therapist-card" style={{ background: "white", borderRadius: 18, padding: "20px 22px", boxShadow: "0 12px 30px rgba(0,0,0,0.05)", display: "grid", gap: 16 }}>
             {/* <h3 style={{ color: "#0f172a", fontSize: 18, fontWeight: 800, margin: 0 }}>Top Patient Visit Reasons</h3> */}
             {/* <div>
               {(therapist.visitReasons || []).map((reason) => (
                 <ReasonRow key={reason.label} label={reason.label} value={reason.value} />
               ))}
             </div> */}
-            <h3 style={{ color: "#0f172a", fontSize: 18, fontWeight: 800, margin: 0 }}>Professional Activities</h3>
+            <h3 className="section-title" style={{ color: "#0f172a", fontSize: 18, fontWeight: 800, margin: 0 }}>Professional Activities</h3>
             <div style={{ display: "grid", gap: 10 }}>
               {(therapist.activities || []).map((activity) => (
                 <ActivityBar key={activity.label} label={activity.label} value={activity.value} color={activity.color} />
@@ -264,6 +303,7 @@ export default function TherapistProfile() {
         therapist={bookingTherapist}
         onClose={() => setBookingTherapist(null)}
       />
-    </div>
+      </div>
+    </>
   )
 }
