@@ -143,7 +143,7 @@ const Footer = () => {
                 <LinkedInIcon />
               </IconButton>
               <IconButton
-                href="https://www.instagram.com/PSY-Q_learning/"
+                href="https://www.instagram.com/psyq_learning?igsh=N2NpdjViOGZhZ2Rj"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
@@ -157,7 +157,7 @@ const Footer = () => {
                 <InstagramIcon />
               </IconButton>
               <IconButton
-                href="https://www.youtube.com/@PSY-Qlearning"
+                href="https://youtube.com/@psyqlearning?si=4XGXIRXu2tyZnWSa"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
