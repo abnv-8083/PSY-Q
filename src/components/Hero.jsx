@@ -14,7 +14,7 @@ const Hero = () => {
       sx={{
         position: 'relative',
         minHeight: { xs: 'auto', sm: '600px', md: '700px', lg: '85vh' },
-        backgroundImage: `url('/images/hero-2.jpg')`,
+        backgroundImage: `url('/images/hero-2.webp'), url('/images/hero-2.jpg')`,
         backgroundRepeat: 'no-repeat',
         backgroundPosition: { xs: 'center center', sm: 'center right', md: 'center right' },
         backgroundSize: 'cover',

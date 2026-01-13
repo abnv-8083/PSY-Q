@@ -21,7 +21,13 @@ export default defineConfig({
           'vendor': ['react', 'react-dom', 'react-router-dom'],
         }
       }
-    }
+    },
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@mui/material']

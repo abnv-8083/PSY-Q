@@ -1,3 +1,5 @@
+import ResponsiveImage from './ResponsiveImage';
+
 const EmpoweringStudents = () => {
   const features = [
     {
@@ -33,11 +35,11 @@ const EmpoweringStudents = () => {
            {/* Right Content - Image */}
            <div className="mt-8 lg:mt-0">
             <div className="rounded-lg h-80 sm:h-96 lg:h-[500px] overflow-hidden">
-              <img 
-                src="/images/hero-2.png" 
+              <ResponsiveImage 
+                src="/images/hero-2.jpg" 
                 alt="Empowering students"
                 className="w-full h-full object-cover"
-                loading="lazy"
+                priority={false}
               />
             </div>
           </div>
