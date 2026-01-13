@@ -12,8 +12,8 @@ const About = () => {
           <Grid container spacing={{ xs: 3, sm: 4, md: 6 }} alignItems="center">
             <Grid item xs={12} md={6}>
               <Chip 
-                label="Evidence-Based Care" 
-                icon={<Box component="span" sx={{ fontSize: '11px' }}>🛡️</Box>}
+                label="Non-judgemental Space" 
+                icon={<Box component="span" sx={{ fontSize: '11px' }}>🍃</Box>}
                 sx={{ 
                   bgcolor: '#fae0edff', 
                   color: '#ca0056',

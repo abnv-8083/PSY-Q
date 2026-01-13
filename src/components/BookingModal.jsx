@@ -12,7 +12,9 @@ import {
   Checkbox,
   FormControlLabel,
   LinearProgress,
-  Grid
+  Grid,
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -23,6 +25,9 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -83,9 +88,78 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
     setFormData({ ...formData, [field]: value });
   };
 
-  const handleBookSession = () => {
-    console.log('Booking session with:', { ...formData, selectedDate, selectedTime });
-    onClose();
+  const handleBookSession = async () => {
+    // Validate required fields
+    if (!formData.fullName || !formData.email || !formData.phone || !selectedDate || !selectedTime || !formData.agreedToTerms) {
+      setErrorMessage('Please complete all required fields');
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      // Format the selected date
+      const bookingDate = new Date(
+        currentMonth.getFullYear(),
+        currentMonth.getMonth(),
+        selectedDate
+      ).toISOString().slice(0, 10);
+
+      const bookingData = {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        age: formData.age,
+        modeOfTherapy: formData.modeOfTherapy,
+        primaryConcern: formData.primaryConcern,
+        sessionType: formData.sessionType,
+        selectedDate: bookingDate,
+        selectedTime: selectedTime,
+        packageName: packageDetails?.name || '',
+        packageDetails: packageDetails || null
+      };
+
+      // Call the API endpoint
+      const response = await fetch('/api/sendBookingEmails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bookingData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSuccessMessage(result.message);
+        // Reset form
+        setTimeout(() => {
+          setFormData({
+            fullName: '',
+            email: '',
+            phone: '',
+            age: '',
+            modeOfTherapy: '',
+            primaryConcern: '',
+            sessionType: '',
+            agreedToTerms: false
+          });
+          setSelectedDate(null);
+          setSelectedTime(null);
+          setStep(1);
+          onClose();
+        }, 1500);
+      } else {
+        setErrorMessage(result.message || 'Failed to book session. Please try again.');
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      setErrorMessage('An error occurred. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -131,6 +205,16 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
       </DialogTitle>
 
       <DialogContent sx={{ p: 4 }}>
+        {successMessage && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {successMessage}
+          </Alert>
+        )}
+        {errorMessage && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {errorMessage}
+          </Alert>
+        )}
         {step === 1 ? (
           <Grid container spacing={4}>
             <Grid item xs={12} md={6}>
@@ -401,14 +485,21 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
           <Button
             onClick={handleBookSession}
             variant="contained"
-            disabled={!formData.agreedToTerms}
+            disabled={!formData.agreedToTerms || isLoading}
             sx={{
               bgcolor: '#64748b',
               '&:hover': { bgcolor: '#475569' },
               '&:disabled': { bgcolor: '#e5e7eb' }
             }}
           >
-            Book Session
+            {isLoading ? (
+              <>
+                <CircularProgress size={20} sx={{ mr: 1, color: 'inherit' }} />
+                Booking...
+              </>
+            ) : (
+              'Book Session'
+            )}
           </Button>
         )}
       </Box>

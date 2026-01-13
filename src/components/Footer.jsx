@@ -21,7 +21,7 @@ const Footer = () => {
       { label: 'FAQs', href: '#' },
       { label: 'Privacy Policy', href: '#' },
       { label: 'Terms & Conditions', href: '#' },
-      { label: 'Refunds', href: '#' },
+      { label: 'Refund Policy', href: '#' },
       { label: 'Clinical Report Policy', href: '#' },
       { label: 'Minor Reporting Policy', href: '#' },
       { label: 'Information & Security Policy', href: '#' },
@@ -41,7 +41,7 @@ const Footer = () => {
         <Grid container spacing={4}>
           {/* Services Column */}
           <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            <Typography variant="h8" sx={{ fontWeight: 600, mb: 2 }}>
               Services
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -53,7 +53,7 @@ const Footer = () => {
                   sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',
-                    fontSize: '0.9rem',
+                    fontSize: '0.8rem',
                     '&:hover': {
                       color: 'white',
                       textDecoration: 'underline'
@@ -68,7 +68,7 @@ const Footer = () => {
 
           {/* Company Column */}
           <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            <Typography variant="h8" sx={{ fontWeight: 600, mb: 2 }}>
               Company
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -83,7 +83,7 @@ const Footer = () => {
                   sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',
-                    fontSize: '0.9rem',
+                    fontSize: '0.8rem',
                     '&:hover': {
                       color: 'white',
                       textDecoration: 'underline'
@@ -98,7 +98,7 @@ const Footer = () => {
 
           {/* Support Column */}
           <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            <Typography variant="h8" sx={{ fontWeight: 600, mb: 2 }}>
               Support
             </Typography>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -109,7 +109,7 @@ const Footer = () => {
                   sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',
-                    fontSize: '0.9rem',
+                    fontSize: '0.8rem',
                     '&:hover': {
                       color: 'white',
                       textDecoration: 'underline'
@@ -124,7 +124,7 @@ const Footer = () => {
 
           {/* Stay Connected Column */}
           <Grid item xs={12} sm={6} md={3}>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            <Typography variant="h8" sx={{ fontWeight: 600, mb: 2 }}>
               Stay connected
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>

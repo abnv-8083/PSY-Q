@@ -122,24 +122,24 @@ const Header = () => {
           </Box>
 
           {/* Desktop CTAs */}
-          {/* <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-            <Button 
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+            {/* <Button 
               component={RouterLink} 
               to="/signin" 
               variant="outlined"
               sx={isLightText ? { borderColor: 'white', color: 'white', '&:hover': { borderColor: 'white', bgcolor: 'rgba(255, 255, 255, 0.1)' } } : {}}
             >
               Sign In
-            </Button>
+            </Button> */}
             <Button 
               component={RouterLink} 
-              to="/signup" 
+              to="/therapists" 
               variant="contained"
               sx={isLightText ? { bgcolor: 'white', color: '#E91E63', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' } } : {}}
             >
-              Sign Up
+              Book a Therapy
             </Button>
-          </Box> */}
+          </Box>
 
           {/* Mobile Menu Button */}
           <Box sx={{ display: { xs: 'flex', md: 'none' }, flexShrink: 0 }}>
@@ -155,8 +155,8 @@ const Header = () => {
             <MenuItem component={RouterLink} to="/services" onClick={handleCloseMenu}>Services</MenuItem>
             <MenuItem component={RouterLink} to="/about" onClick={handleCloseMenu}>About Us</MenuItem>
             <MenuItem component={RouterLink} to="/contact" onClick={handleCloseMenu}>Contact Us</MenuItem>
-            {/* <MenuItem component={RouterLink} to="/signin" onClick={handleCloseMenu}>Sign In</MenuItem>
-            <MenuItem component={RouterLink} to="/signup" onClick={handleCloseMenu}>Sign Up</MenuItem> */}
+            <MenuItem component={RouterLink} to="/therapists" onClick={handleCloseMenu}>Book a Therapy</MenuItem>
+            {/* {/* <MenuItem component={RouterLink} to="/signin" onClick={handleCloseMenu}>Sign In</MenuItem> */}
           </Menu>
         </Box>
         </Box>

@@ -140,19 +140,66 @@ export default function Therapists() {
   )
 
   return (
-    <div
-      className="min-h-screen bg-gray-50"
-      style={{
-        backgroundColor: "#f9fafb",
-        paddingTop: "var(--space-10)",
-        paddingBottom: "var(--space-5)",
-        paddingLeft: "var(--space-2)",
-        paddingRight: "var(--space-2)",
-      }}
-    >
-      <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-        {/* Search bar section */}
-        <div style={{ marginBottom: "var(--space-6)", display: "flex", justifyContent: "center" }}>
+    <>
+      <style>{`
+        @media (max-width: 640px) {
+          .mobile-card {
+            min-height: 160px !important;
+          }
+          .mobile-image {
+            min-height: 160px !important;
+            width: 35% !important;
+          }
+          .mobile-content {
+            padding: 8px !important;
+            gap: 3px !important;
+          }
+          .mobile-name {
+            font-size: 11px !important;
+            line-height: 1.1 !important;
+          }
+          .mobile-title {
+            font-size: 9px !important;
+            margin-top: 1px !important;
+          }
+          .mobile-credentials {
+            font-size: 8px !important;
+            margin-top: 2px !important;
+          }
+          .mobile-languages {
+            font-size: 8px !important;
+            margin-top: 1px !important;
+          }
+          .mobile-spec-tag {
+            font-size: 7px !important;
+            padding: 1px 4px !important;
+          }
+          .mobile-price {
+            font-size: 13px !important;
+            margin-top: 2px !important;
+          }
+          .mobile-button {
+            font-size: 8px !important;
+            padding: 4px 6px !important;
+          }
+          .mobile-grid {
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)) !important;
+          }
+        }
+      `}</style>
+      <div
+        className="min-h-screen bg-gray-50"
+        style={{
+          backgroundColor: "#f9fafb",
+          paddingTop: "var(--space-10)",
+          paddingBottom: "var(--space-5)",
+          paddingLeft: "var(--space-2)",
+          paddingRight: "var(--space-2)",
+        }}
+      >
+        <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+          {/* Search bar section */}
+          <div style={{ marginBottom: "var(--space-6)", display: "flex", justifyContent: "center" }}>
           <div style={{ position: "relative", width: "100%", maxWidth: "672px" }}>
             {/* Search input with icon */}
             <div style={{ position: "relative" }}>
@@ -191,6 +238,7 @@ export default function Therapists() {
         </div>
 
         <div
+          className="mobile-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 350px), 1fr))",
@@ -200,6 +248,7 @@ export default function Therapists() {
           {filteredTherapists.map((therapist) => (
             <div
               key={therapist.id}
+              className="mobile-card"
               style={{
                 backgroundColor: "#ffffff",
                 boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
@@ -215,6 +264,7 @@ export default function Therapists() {
               onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.08)"}
             >
               <div
+                className="mobile-image"
                 style={{
                   width: "50%",
                   minWidth: "100px",
@@ -241,6 +291,7 @@ export default function Therapists() {
               </div>
 
               <div
+                className="mobile-content"
                 style={{
                   padding: "var(--space-2)",
                   gap: "var(--space-2)",
@@ -253,7 +304,7 @@ export default function Therapists() {
                 {/* Therapist info section */}
                 <div style={{ minHeight: 0 }}>
                   <h3
-                    className="text-sm font-bold text-blue-900 leading-tight"
+                    className="text-sm font-bold text-blue-900 leading-tight mobile-name"
                     style={{
                       color: "#1e3a8a",
                       fontSize: "12px",
@@ -266,7 +317,7 @@ export default function Therapists() {
 
                   {/* Title */}
                   <p
-                    className="text-xs font-semibold text-gray-600 leading-tight mt-1"
+                    className="text-xs font-semibold text-gray-600 leading-tight mt-1 mobile-title"
                     style={{
                       color: "#4b5563",
                       fontSize: "11px",
@@ -280,7 +331,7 @@ export default function Therapists() {
 
                   {/* Credentials row */}
                   <div
-                    className="flex items-center gap-1 mt-1 text-xs text-gray-500 font-bold"
+                    className="flex items-center gap-1 mt-1 text-xs text-gray-500 font-bold mobile-credentials"
                     style={{
                       display: "flex",
                       gap: "4px",
@@ -295,7 +346,7 @@ export default function Therapists() {
 
                   {/* Languages row */}
                   <p
-                    className="text-xs italic text-gray-500 mt-1 font-medium"
+                    className="text-xs italic text-gray-500 mt-1 font-medium mobile-languages"
                     style={{
                       fontSize: "11px",
                       color: "#6b7280",
@@ -320,6 +371,7 @@ export default function Therapists() {
                   {therapist.specializations.slice(0, 4).map((spec, index) => (
                     <span
                       key={index}
+                      className="mobile-spec-tag"
                       style={{
                         fontSize: "9px",
                         padding: "2px 6px",
@@ -352,7 +404,7 @@ export default function Therapists() {
                 </p> */}
 
                 {/* Price */}
-                <p
+                <p mobile-price
                   className="text-xs text-gray-600 font-bold"
                   style={{
                     fontSize: "18px",
@@ -373,6 +425,7 @@ export default function Therapists() {
                   }}
                 >
                   <button
+                    className="mobile-button"
                     onClick={() => setBookingTherapist(therapist)}
                     style={{
                       flex: 1,
@@ -398,12 +451,13 @@ export default function Therapists() {
                     style={{ flex: 1, textDecoration: "none" }}
                   >
                     <button
+                      className="mobile-button"
                       style={{
                         width: "100%",
                         backgroundColor: "#CA0056",
                         color: "#ffffff",
                         padding: "var(--space-1) var(--space-2)",
-                        borderRadius: "6px",
+                        borderRadius: "4px",
                         fontSize: "10px",
                         fontWeight: "700",
                         cursor: "pointer",
@@ -419,7 +473,7 @@ export default function Therapists() {
                       onMouseOver={(e) => (e.target.style.backgroundColor = "#ff006f")}
                       onMouseOut={(e) => (e.target.style.backgroundColor = "#CA0056")}
                     >
-                      ⓘ About
+                      About
                     </button>
                   </Link>
                 </div>
@@ -446,14 +500,14 @@ export default function Therapists() {
             </p>
           </div>
         )}
+        {/* Booking modal */}
+        <BookingModal
+          isOpen={!!bookingTherapist}
+          therapist={bookingTherapist}
+          onClose={() => setBookingTherapist(null)}
+        />
       </div>
-
-      {/* Booking modal */}
-      <BookingModal
-        isOpen={!!bookingTherapist}
-        therapist={bookingTherapist}
-        onClose={() => setBookingTherapist(null)}
-      />
     </div>
+      </>
   )
 }
