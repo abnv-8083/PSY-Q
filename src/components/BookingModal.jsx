@@ -248,7 +248,7 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
                     const isSelected = selectedDate === day;
                     return (
                       <Button
-                        key={day}
+                        key={`day-${currentMonth.getFullYear()}-${currentMonth.getMonth()}-${day}`}
                         onClick={() => handleDateSelect(day)}
                         sx={{
                           minWidth: 0,

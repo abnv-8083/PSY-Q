@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import { supabase } from '../lib/supabaseClient.js';
 
-const resend = new Resend(process.env.VITE_RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || import.meta.env.VITE_RESEND_API_KEY);
 
 const adminEmail = 'psyqonline@gmail.com';
 

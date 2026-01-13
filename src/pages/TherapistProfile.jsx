@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { getTherapistById } from "../data/therapists"
-import BookingModal from "../components/booking-modal.jsx"
+import BookingModal from "../components/BookingModal.jsx"
 
 function ReasonRow({ label, value }) {
   return (

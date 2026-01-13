@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Search } from "lucide-react"
-import BookingModal from "../components/booking-modal.jsx"
+import BookingModal from "../components/BookingModal.jsx"
 import { therapists } from "../data/therapists"
 
 // BookingModal component for displaying booking form
@@ -267,7 +267,7 @@ export default function Therapists() {
                 className="mobile-image"
                 style={{
                   width: "50%",
-                  minWidth: "100px",
+                  minWidth: "150px",
                   height: "100%",
                   borderRadius: "12px 0 0 12px",
                   backgroundColor: "#e5e7eb",
@@ -307,7 +307,7 @@ export default function Therapists() {
                     className="text-sm font-bold text-blue-900 leading-tight mobile-name"
                     style={{
                       color: "#1e3a8a",
-                      fontSize: "12px",
+                      fontSize: "24px",
                       fontWeight: "700",
                       lineHeight: "1.2",
                     }}
@@ -407,9 +407,10 @@ export default function Therapists() {
                 <p mobile-price
                   className="text-xs text-gray-600 font-bold"
                   style={{
-                    fontSize: "18px",
+                    fontSize: "24px",
                     color: "#ca0056",
                     fontWeight: "600",
+  
                   }}
                 >
                   {therapist.price}
@@ -502,8 +503,8 @@ export default function Therapists() {
         )}
         {/* Booking modal */}
         <BookingModal
-          isOpen={!!bookingTherapist}
-          therapist={bookingTherapist}
+          open={!!bookingTherapist}
+          packageDetails={bookingTherapist}
           onClose={() => setBookingTherapist(null)}
         />
       </div>
