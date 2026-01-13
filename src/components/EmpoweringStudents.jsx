@@ -37,6 +37,7 @@ const EmpoweringStudents = () => {
                 src="/images/hero-2.png" 
                 alt="Empowering students"
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
             </div>
           </div>

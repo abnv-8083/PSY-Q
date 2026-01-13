@@ -12,5 +12,18 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, '/api'),
       }
     }
+  },
+  build: {
+    assetsInlineLimit: 4096,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+        }
+      }
+    }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', '@mui/material']
   }
 })

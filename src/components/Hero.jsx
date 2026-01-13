@@ -22,6 +22,7 @@ const Hero = () => {
         display: 'flex',
         alignItems: 'center',
         overflow: 'hidden',
+        willChange: 'background-image',
         '&::before': {
           content: '""',
           position: 'absolute',
