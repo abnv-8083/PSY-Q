@@ -102,7 +102,7 @@ return (
                           bgcolor: 'rgba(0,0,0,0.2)',
                           color: 'white',
                           fontWeight: 600,
-                          fontSize: '0.7rem',
+                          fontSize: '14px',
                           height: 24
                         }}
                       />
@@ -112,14 +112,14 @@ return (
                       fontWeight: 600,
                       color: 'white',
                       mb: { xs: 0.75, sm: 1 },
-                      fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.4rem', lg: '1.5rem' }
+                      fontSize: { xs: '14px', sm: '14px', md: '14px', lg: '14px' }
                     }}>
                       {pkg.name}
                     </Typography>
                     
                     <Typography sx={{ 
                       color: 'rgba(255,255,255,0.95)',
-                      fontSize: { xs: '0.8rem', sm: '0.85rem' },
+                      fontSize: { xs: '14px', sm: '14px' },
                       mb: { xs: 2, sm: 3 },
                       minHeight: { xs: 36, sm: 40 },
                       lineHeight: 1.4
@@ -131,7 +131,7 @@ return (
                       fontWeight: 600,
                       color: 'white',
                       mb: { xs: 2, sm: 3 },
-                      fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }
+                      fontSize: { xs: '14px', sm: '14px', md: '14px' }
                     }}>
                       {pkg.price}
                     </Typography>
@@ -146,7 +146,7 @@ return (
                         py: { xs: 1.25, sm: 1.5 },
                         borderRadius: { xs: 1.5, sm: 2 },
                         fontWeight: 600,
-                        fontSize: { xs: '0.9rem', sm: '0.95rem' },
+                        fontSize: { xs: '14px', sm: '14px' },
                         textTransform: 'none',
                         boxShadow: 'none',
                         '&:hover': {
@@ -201,7 +201,7 @@ return (
                 }}
               >
                 <Box sx={{ flex: 1, pr: { xs: 2, sm: 3 }, minWidth: { xs: 200, sm: 'auto' } }}>
-                  <Typography sx={{ color: 'white', fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>
+                  <Typography sx={{ color: 'white', fontSize: '14px' }}>
                     {feature.name}
                   </Typography>
                 </Box>
@@ -211,28 +211,28 @@ return (
                     {feature.essentials ? (
                       <CheckCircleIcon sx={{ color: '#F2B8C1', fontSize: { xs: 20, sm: 24 } }} />
                     ) : (
-                      <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: { xs: '0.9rem', sm: '1rem' } }}>-</Typography>
+                      <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px' }}>-</Typography>
                     )}
                   </Box>
                   <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 60 }}>
                     {feature.professional ? (
                       <CheckCircleIcon sx={{ color: '#c5e4f8', fontSize: { xs: 20, sm: 24 } }} />
                     ) : (
-                      <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: { xs: '0.9rem', sm: '1rem' } }}>-</Typography>
+                      <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px' }}>-</Typography>
                     )}
                   </Box>
                   <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 60 }}>
                     {feature.enterprise ? (
                       <CheckCircleIcon sx={{ color: '#e6b0f6', fontSize: { xs: 20, sm: 24 } }} />
                     ) : (
-                      <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: { xs: '0.9rem', sm: '1rem' } }}>-</Typography>
+                      <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px' }}>-</Typography>
                     )}
                   </Box>
                   <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 60 }}>
                       {feature.enterprise ? (
                         <CheckCircleIcon sx={{ color: '#B3CED6', fontSize: { xs: 20, sm: 24 } }} />
                       ) : (
-                        <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: { xs: '0.9rem', sm: '1rem' } }}>-</Typography>
+                        <Typography sx={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px' }}>-</Typography>
                       )}
                   </Box>
                 </Box>

@@ -84,7 +84,7 @@ const FacultySection = () => {
           >
             Meet Our Therapists
           </Typography> */}
-          <Typography variant="body1" color="text.secondary" fontStyle="italic" sx={{ fontSize: { xs: 16, sm: 18 } }}>
+          <Typography variant="body1" color="text.secondary" fontStyle="italic" sx={{ fontSize: { xs: 14, sm: 14 } }}>
             Find the right therapist for your journey to wellness.
           </Typography>
         </Box>
@@ -160,7 +160,7 @@ const FacultySection = () => {
                       variant="caption"
                       sx={{
                         mb: 1,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: 600,
                         color: 'text.secondary',
                         textTransform: 'uppercase',
@@ -203,7 +203,7 @@ const FacultySection = () => {
                     variant="h6"
                     sx={{
                       fontWeight: 700,
-                      fontSize: isCenter ? 20 : 16,
+                      fontSize: isCenter ? 14 : 14,
                       mb: 0.5,
                       textAlign: 'center'
                     }}

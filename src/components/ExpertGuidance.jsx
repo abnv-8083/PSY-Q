@@ -39,7 +39,7 @@ const ExpertGuidance = () => {
           </p>
           <h2
             style={{
-              fontSize: '36px',
+              fontSize: '14px',
               fontWeight: '700',
               color: '#1e3a5f',
               lineHeight: '1.3',

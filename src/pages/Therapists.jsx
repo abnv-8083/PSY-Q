@@ -307,7 +307,7 @@ export default function Therapists() {
                     className="text-sm font-bold text-blue-900 leading-tight mobile-name"
                     style={{
                       color: "#1e3a8a",
-                      fontSize: "24px",
+                      fontSize: "18px",
                       fontWeight: "700",
                       lineHeight: "1.2",
                     }}
@@ -336,7 +336,7 @@ export default function Therapists() {
                       display: "flex",
                       gap: "4px",
                       marginTop: "4px",
-                      fontSize: "11px",
+                      fontSize: "10px",
                       color: "#ca0056",
                     }}
                   >
@@ -348,7 +348,7 @@ export default function Therapists() {
                   <p
                     className="text-xs italic text-gray-500 mt-1 font-medium mobile-languages"
                     style={{
-                      fontSize: "11px",
+                      fontSize: "10px",
                       color: "#6b7280",
                       marginTop: "2px",
                       fontStyle: "italic",
@@ -373,7 +373,7 @@ export default function Therapists() {
                       key={index}
                       className="mobile-spec-tag"
                       style={{
-                        fontSize: "9px",
+                        fontSize: "10px",
                         padding: "2px 6px",
                         borderRadius: "12px",
                         backgroundColor: "#fce7f3",
@@ -407,7 +407,7 @@ export default function Therapists() {
                 <p mobile-price
                   className="text-xs text-gray-600 font-bold"
                   style={{
-                    fontSize: "24px",
+                    fontSize: "18px",
                     color: "#ca0056",
                     fontWeight: "600",
   

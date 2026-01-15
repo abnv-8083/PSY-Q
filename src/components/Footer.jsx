@@ -53,7 +53,7 @@ const Footer = () => {
                   sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',
-                    fontSize: '0.8rem',
+                    fontSize: '14px',
                     '&:hover': {
                       color: 'white',
                       textDecoration: 'underline'
@@ -83,7 +83,7 @@ const Footer = () => {
                   sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',
-                    fontSize: '0.8rem',
+                    fontSize: '14px',
                     '&:hover': {
                       color: 'white',
                       textDecoration: 'underline'
@@ -109,7 +109,7 @@ const Footer = () => {
                   sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',
-                    fontSize: '0.8rem',
+                    fontSize: '14px',
                     '&:hover': {
                       color: 'white',
                       textDecoration: 'underline'

@@ -63,7 +63,7 @@ const About = () => {
                   border: '1px solid #e5e7eb'
                 }}>
                   <Box component="img"
-                    src="/images/welcome.png"
+                    src="/images/welcome.webp"
                     alt="Healing Pathways"
                     sx={{ width: '100%', height: 'auto', display: 'flex', objectFit: 'contain', borderRadius: 2, }}
                   />

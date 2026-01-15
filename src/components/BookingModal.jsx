@@ -236,7 +236,7 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
                 
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1 }}>
                   {dayNames.map((day) => (
-                    <Box key={day} sx={{ textAlign: 'center', fontWeight: 600, fontSize: '0.875rem', color: '#64748b' }}>
+                    <Box key={day} sx={{ textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#64748b' }}>
                       {day}
                     </Box>
                   ))}
@@ -306,7 +306,7 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
                             borderColor: selectedTime === time ? '#ca0056' : '#e5e7eb',
                             bgcolor: selectedTime === time ? '#ca0056' : 'white',
                             color: selectedTime === time ? 'white' : '#1e293b',
-                            fontSize: '0.9rem',
+                            fontSize: '14px',
                             fontWeight: 500,
                             '&:hover': {
                               borderColor: '#ca0056',

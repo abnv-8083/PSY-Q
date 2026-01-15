@@ -5,32 +5,32 @@ const Services = () => {
   const services = [
     {
       title: "Individual Therapy",
-      image: "/services/individual.jpg",
+      image: "/services/individual.webp",
       route: "/individual"
     },
     {
       title: "Child Rehabilitation Counselling",
-      image: "/services/child-rehabilation.jpg",
+      image: "/services/child-rehabilation.webp",
       route: "/child-rehabilitation"
     },
     {
       title: "Couple Counselling",
-      image: "/services/couple.jpg",
+      image: "/services/couple.webp",
       route: "/couple-counseling"
     },
     {
       title: "Psychospiritual and Meditation",
-      image: "/services/spiritual.jpg",
+      image: "/services/spiritual.webp",
       route: "/psychospiritual"
     },
     {
       title: "Sexual Wellness",
-      image: "/services/sexual-wellness.jpg",
+      image: "/services/sexual-wellness.webp",
       route: "/sexual-wellness"
     },
     {
       title: "Sports Mental Health Services",
-      image: "/services/sports-counselling.jpg",
+      image: "/services/sports-counselling.webp",
       route: "/sports-mental-health"
     }
   ];
@@ -49,8 +49,8 @@ const Services = () => {
           </Typography>
           <Typography sx={{ 
             color: 'rgba(255, 255, 255, 0.9)',
-            fontSize: { xs: '1rem', md: '1.25rem' },
-            maxWidth: 800,
+            fontSize: { xs: '14px', md: '14px' },
+            maxWidth: '800px',
             mx: 'auto'
           }}>
             Comprehensive mental health and wellness services tailored to your needs
@@ -114,7 +114,7 @@ const Services = () => {
                         py: 1.5,
                         borderRadius: 3,
                         fontWeight: 600,
-                        fontSize: '0.95rem',
+                        fontSize: '14px',
                         textTransform: 'uppercase',
                         boxShadow: 'none',
                         '&:hover': {

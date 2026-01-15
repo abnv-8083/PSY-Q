@@ -88,7 +88,7 @@ const NumbersSection = () => {
               </div>
               <p
                 style={{
-                  fontSize: 'clamp(14px, 3vw, 16px)',
+                  fontSize: '14px',
                   color: '#38232fff',
                   fontWeight: '500',
                   margin: 0,

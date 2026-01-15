@@ -111,9 +111,9 @@ const FAQSection = () => {
                 }}
               >
                 <span 
-                  className="text-xl font-semibold text-gray-900 pr-4"
+                  className="text-base font-semibold text-gray-900 pr-4"
                   style={{
-                    fontSize: '1.25rem',
+                    fontSize: '14px',
                     fontWeight: '600',
                     color: '#111827',
                     paddingRight: 'var(--space-2)',
@@ -158,7 +158,7 @@ const FAQSection = () => {
                       color: '#6b7280',
                       lineHeight: '1.75',
                       paddingTop: 'var(--space-2)',
-                      fontSize: '1rem',
+                      fontSize: '14px',
                     }}
                   >{faq.answer}</p>
                 </div>

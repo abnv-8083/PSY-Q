@@ -60,7 +60,7 @@ const FeatureCard = ({ icon, title, description, image }) => {
       >
         <h3
           style={{
-            fontSize: '18px',
+            fontSize: '14px',
             fontWeight: '700',
             color: '#1a1a1a',
             margin: 0,

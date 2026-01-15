@@ -152,7 +152,7 @@ export default async function handler(req, res) {
 
     // Send confirmation email to user
     const userEmailResult = await resend.emails.send({
-      from: 'noreply@psyq.com',
+      from: 'noreply@psyqlearning.com',
       to: bookingData.email,
       subject: `Booking Confirmation - ${bookingData.selectedDate}`,
       html: userEmailTemplate(bookingData)
@@ -165,7 +165,7 @@ export default async function handler(req, res) {
 
     // Send notification email to admin
     const adminEmailResult = await resend.emails.send({
-      from: 'noreply@psyq.com',
+      from: 'noreply@psyqlearning.com',
       to: adminEmail,
       subject: `New Booking: ${bookingData.fullName} - ${bookingData.selectedDate}`,
       html: adminEmailTemplate(bookingData)

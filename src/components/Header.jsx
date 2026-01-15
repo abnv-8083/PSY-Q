@@ -114,11 +114,11 @@ const Header = () => {
 
           {/* Desktop Nav */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: { md: 1.5, lg: 3 }, ml: 'auto', mr: 1 }}>          
-            <Button component={RouterLink} to="/" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>Home</Button>
-            <Button component={RouterLink} to="/therapists" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>Therapists</Button>
-            <Button component={RouterLink} to="/services" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>Services</Button>
-            <Button component={RouterLink} to="/about" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>About Us</Button>
-            <Button component={RouterLink} to="/contact" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '0.9rem', lg: '1rem' } }}>Contact Us</Button>
+            <Button component={RouterLink} to="/" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Home</Button>
+            <Button component={RouterLink} to="/therapists" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Therapists</Button>
+            <Button component={RouterLink} to="/services" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Services</Button>
+            <Button component={RouterLink} to="/about" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>About Us</Button>
+            <Button component={RouterLink} to="/contact" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Contact Us</Button>
           </Box>
 
           {/* Desktop CTAs */}

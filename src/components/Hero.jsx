@@ -14,7 +14,7 @@ const Hero = () => {
       sx={{
         position: 'relative',
         minHeight: { xs: 'auto', sm: '600px', md: '700px', lg: '85vh' },
-        backgroundImage: `url('/images/hero-2.webp'), url('/images/hero-2.jpg')`,
+        backgroundImage: `url('/images/hero-2.webp')`,
         backgroundRepeat: 'no-repeat',
         backgroundPosition: { xs: 'center center', sm: 'center right', md: 'center right' },
         backgroundSize: 'cover',
@@ -65,7 +65,7 @@ const Hero = () => {
           <Typography 
             variant="body1" 
             sx={{ 
-              fontSize: { xs: '0.95rem', sm: '1rem', md: '1.125rem' },
+              fontSize: { xs: '14px', sm: '14px', md: '14px' },
               color: '#000',
               lineHeight: 1.6,
               maxWidth: '540px'
@@ -81,7 +81,7 @@ const Hero = () => {
               sx={{ 
                 bgcolor: '#ca0056',
                 color: '#ffffff',
-                fontSize: { xs: '14px', sm: '16px' },
+                fontSize: { xs: '14px', sm: '14px' },
                 fontWeight: 600,
                 px: { xs: 3, sm: 4 },
                 py: { xs: 1.25, sm: 1.5 },
