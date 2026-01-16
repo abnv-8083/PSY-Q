@@ -15,6 +15,7 @@ import CoupleCounseling from './pages/CoupleCounseling';
 import Psychospiritual from './pages/Psychospiritual';
 import ChildRehabilitation from './pages/ChildRehabilitation';
 import SportsMentalHealth from './pages/SportsMentalHealth';
+import Academic from './pages/academic';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/psychospiritual" element={<Layout><Psychospiritual /></Layout>} />
         <Route path="/child-rehabilitation" element={<Layout><ChildRehabilitation /></Layout>} />
         <Route path="/sports-mental-health" element={<Layout><SportsMentalHealth /></Layout>} />
+        <Route path="/academic-support" element={<Layout><Academic /></Layout>} />
       </Routes>
     </Router>
   );

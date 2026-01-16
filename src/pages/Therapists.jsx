@@ -155,7 +155,7 @@ export default function Therapists() {
             gap: 3px !important;
           }
           .mobile-name {
-            font-size: 11px !important;
+            font-size: 16px !important;
             line-height: 1.1 !important;
           }
           .mobile-title {
@@ -257,7 +257,7 @@ export default function Therapists() {
                 transition: "box-shadow 0.3s ease",
                 display: "flex",
                 flexDirection: "row",
-                minHeight: "280px",
+                minHeight: "120px",
                 overflow: "hidden",
               }}
               onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)"}
@@ -281,7 +281,7 @@ export default function Therapists() {
                   style={{
                     width: "100%",
                     height: "100%",
-                    minHeight: "280px",
+                    minHeight: "120px",
                     objectFit: "cover",
                   }}
                   onError={(e) => {
@@ -293,8 +293,8 @@ export default function Therapists() {
               <div
                 className="mobile-content"
                 style={{
-                  padding: "var(--space-2)",
-                  gap: "var(--space-2)",
+                  padding: "16px",
+                  gap: "8px",
                   display: "flex",
                   flexDirection: "column",
                   flex: 1,
@@ -322,7 +322,7 @@ export default function Therapists() {
                       color: "#4b5563",
                       fontSize: "11px",
                       fontWeight: "600",
-                      marginTop: "2px",
+                      marginTop: "8px",
                       lineHeight: "1.2",
                     }}
                   >
@@ -335,7 +335,7 @@ export default function Therapists() {
                     style={{
                       display: "flex",
                       gap: "4px",
-                      marginTop: "4px",
+                      marginTop: "8px",
                       fontSize: "10px",
                       color: "#ca0056",
                     }}
@@ -350,7 +350,7 @@ export default function Therapists() {
                     style={{
                       fontSize: "10px",
                       color: "#6b7280",
-                      marginTop: "2px",
+                      marginTop: "8px",
                       fontStyle: "italic",
                     }}
                   >
@@ -363,8 +363,8 @@ export default function Therapists() {
                   style={{
                     display: "flex",
                     flexWrap: "wrap",
-                    gap: "var(--space-1)",
-                    marginTop: "4px",
+                    gap: "6px",
+                    marginTop: "8px",
                     minHeight: 0,
                   }}
                 >

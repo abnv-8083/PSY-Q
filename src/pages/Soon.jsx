@@ -14,7 +14,7 @@ const Soon = () => {
       textAlign: 'center'
     }}>
       Coming Soon
-      <img src="/images/soon.png" alt="Coming Soon Image" style={{ marginTop: '4rem', maxWidth: '25%', height: 'auto' }} />
+      <img src="/images/soon.webp" alt="Coming Soon Image" style={{ marginTop: '4rem', maxWidth: '25%', height: 'auto' }} />
     </div>
   );
 };
