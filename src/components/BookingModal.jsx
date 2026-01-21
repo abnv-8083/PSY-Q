@@ -22,6 +22,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 const BookingModal = ({ open, onClose, packageDetails }) => {
   const [step, setStep] = useState(1);
+  const [selectedPackage, setSelectedPackage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -39,6 +40,38 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
     sessionType: '',
     agreedToTerms: false
   });
+
+  // Available packages
+  const packages = [
+    {
+      id: 'basic',
+      name: 'Basic Plan',
+      sessions: 4,
+      price: 4676,
+      pricePerSession: 1299,
+      description: '4 Sessions Package',
+      savings: '10% OFF'
+    },
+    {
+      id: 'standard',
+      name: 'Standard Plan',
+      sessions: 8,
+      price: 8833,
+      pricePerSession: 1299,
+      description: '8 Sessions Package',
+      popular: true,
+      savings: '15% OFF'
+    },
+    {
+      id: 'advanced',
+      name: 'Advanced Plan',
+      sessions: 12,
+      price: 12470,
+      pricePerSession: 1039,
+      description: '12 Sessions Package',
+      savings: '20% OFF'
+    }
+  ];
 
   // Available time slots
   const timeSlots = [
@@ -73,13 +106,17 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
   };
 
   const handleContinue = () => {
-    if (step === 1 && selectedDate && selectedTime) {
+    if (step === 1 && selectedPackage) {
       setStep(2);
+    } else if (step === 2 && selectedDate && selectedTime) {
+      setStep(3);
     }
   };
 
   const handleBack = () => {
-    if (step === 2) {
+    if (step === 3) {
+      setStep(2);
+    } else if (step === 2) {
       setStep(1);
     }
   };
@@ -117,8 +154,8 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
         sessionType: formData.sessionType,
         selectedDate: bookingDate,
         selectedTime: selectedTime,
-        packageName: packageDetails?.name || '',
-        packageDetails: packageDetails || null
+        packageName: selectedPackage ? packages.find(p => p.id === selectedPackage)?.name : '',
+        packageDetails: selectedPackage ? packages.find(p => p.id === selectedPackage) : null
       };
 
       // Call the API endpoint
@@ -146,6 +183,7 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
             sessionType: '',
             agreedToTerms: false
           });
+          setSelectedPackage(null);
           setSelectedDate(null);
           setSelectedTime(null);
           setStep(1);
@@ -174,7 +212,7 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
           Book Consultation
         </Typography>
         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', mt: 0.5 }}>
-          {packageDetails?.name} - {packageDetails?.serviceName} - {step === 1 ? 'Select Date & Time' : 'Your Details'}
+          {step === 1 ? 'Select Package' : step === 2 ? 'Select Date & Time' : 'Your Details'}
         </Typography>
         <IconButton
           onClick={onClose}
@@ -189,7 +227,7 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
         </IconButton>
         <LinearProgress
           variant="determinate"
-          value={step === 1 ? 50 : 100}
+          value={step === 1 ? 33 : step === 2 ? 66 : 100}
           sx={{
             position: 'absolute',
             bottom: 0,
@@ -216,6 +254,82 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
           </Alert>
         )}
         {step === 1 ? (
+          <Box>
+            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#1e293b', textAlign: 'center' }}>
+              Select the package that works best for your therapy journey
+            </Typography>
+            <Grid container spacing={3}>
+              {packages.map((pkg) => (
+                <Grid item xs={12} sm={4} key={pkg.id}>
+                  <Box
+                    onClick={() => setSelectedPackage(pkg.id)}
+                    sx={{
+                      position: 'relative',
+                      p: 3,
+                      borderRadius: 2,
+                      border: 2,
+                      borderColor: selectedPackage === pkg.id ? '#ca0056' : '#e5e7eb',
+                      bgcolor: selectedPackage === pkg.id ? '#fff0f9' : 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      textAlign: 'center',
+                      '&:hover': {
+                        borderColor: '#ca0056',
+                        bgcolor: selectedPackage === pkg.id ? '#fff0f9' : '#fef2f2'
+                      }
+                    }}
+                  >
+                    {pkg.popular && (
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: -12,
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          bgcolor: '#ca0056',
+                          color: 'white',
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: 10,
+                          fontSize: '11px',
+                          fontWeight: 600
+                        }}
+                      >
+                        Most Popular
+                      </Box>
+                    )}
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b', mt: pkg.popular ? 1 : 0 }}>
+                      {pkg.description}
+                    </Typography>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#ca0056', my: 2 }}>
+                      ₹{pkg.price.toLocaleString()}
+                    </Typography>
+                    {pkg.savings && (
+                      <Box
+                        sx={{
+                          display: 'inline-block',
+                          bgcolor: '#fce7f3',
+                          color: '#9f1239',
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: 10,
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          mb: 1
+                        }}
+                      >
+                        {pkg.savings}
+                      </Box>
+                    )}
+                    <Typography variant="body2" sx={{ color: '#64748b', mt: 1 }}>
+                      ₹{pkg.pricePerSession}/session
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        ) : step === 2 ? (
           <Grid container spacing={4}>
             <Grid item xs={12} md={6}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1e293b' }}>
@@ -458,12 +572,30 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
       </DialogContent>
 
       <Box sx={{ p: 3, display: 'flex', gap: 2, justifyContent: 'flex-end', borderTop: '1px solid #e5e7eb' }}>
-        {step === 2 && (
+        {(step === 2 || step === 3) && (
           <Button onClick={handleBack} variant="outlined" sx={{ color: '#64748b', borderColor: '#e5e7eb' }}>
             Back
           </Button>
         )}
         {step === 1 ? (
+          <>
+            <Button onClick={onClose} variant="outlined" sx={{ color: '#64748b', borderColor: '#e5e7eb' }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleContinue}
+              variant="contained"
+              disabled={!selectedPackage}
+              sx={{
+                bgcolor: '#64748b',
+                '&:hover': { bgcolor: '#475569' },
+                '&:disabled': { bgcolor: '#e5e7eb' }
+              }}
+            >
+              Continue to Schedule
+            </Button>
+          </>
+        ) : step === 2 ? (
           <>
             <Button onClick={onClose} variant="outlined" sx={{ color: '#64748b', borderColor: '#e5e7eb' }}>
               Cancel

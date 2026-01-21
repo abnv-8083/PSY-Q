@@ -116,7 +116,7 @@ const Header = () => {
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: { md: 1.5, lg: 3 }, ml: 'auto', mr: 1 }}>          
             <Button component={RouterLink} to="/" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Home</Button>
             <Button component={RouterLink} to="/therapists" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Therapists</Button>
-            <Button component={RouterLink} to="/services" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Services</Button>
+            {/* <Button component={RouterLink} to="/services" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Services</Button> */}
             <Button component={RouterLink} to="/about" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>About Us</Button>
             <Button component={RouterLink} to="/contact" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Contact Us</Button>
           </Box>
@@ -152,7 +152,7 @@ const Header = () => {
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu} keepMounted>
             <MenuItem component={RouterLink} to="/" onClick={handleCloseMenu}>Home</MenuItem>
             <MenuItem component={RouterLink} to="/therapists" onClick={handleCloseMenu}>Therapists</MenuItem>
-            <MenuItem component={RouterLink} to="/services" onClick={handleCloseMenu}>Services</MenuItem>
+            {/* <MenuItem component={RouterLink} to="/services" onClick={handleCloseMenu}>Services</MenuItem> */}
             <MenuItem component={RouterLink} to="/about" onClick={handleCloseMenu}>About Us</MenuItem>
             <MenuItem component={RouterLink} to="/contact" onClick={handleCloseMenu}>Contact Us</MenuItem>
             <MenuItem component={RouterLink} to="/therapists" onClick={handleCloseMenu}>Book a Therapy</MenuItem>

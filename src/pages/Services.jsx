@@ -6,32 +6,32 @@ const Services = () => {
     {
       title: "Individual Therapy",
       image: "/services/individual.webp",
-      route: "/individual"
+      // route: "/individual"
     },
     {
       title: "Child Rehabilitation Counselling",
       image: "/services/child-rehabilation.webp",
-      route: "/child-rehabilitation"
+      // route: "/child-rehabilitation"
     },
     {
       title: "Couple Counselling",
       image: "/services/couple.webp",
-      route: "/couple-counseling"
+      // route: "/couple-counseling"
     },
     {
       title: "Psychospiritual and Meditation",
       image: "/services/spiritual.webp",
-      route: "/psychospiritual"
+      // route: "/psychospiritual"
     },
     {
       title: "Sexual Wellness",
       image: "/services/sexual-wellness.webp",
-      route: "/sexual-wellness"
+      // route: "/sexual-wellness"
     },
     {
       title: "Sports Mental Health Services",
       image: "/services/sports-counselling.webp",
-      route: "/sports-mental-health"
+      // route: "/sports-mental-health"
     }
   ];
 
@@ -104,7 +104,7 @@ const Services = () => {
                   }}>
                     {service.title}
                   </Typography>
-                  <Link to={service.route} style={{ textDecoration: 'none', width: '100%' }}>
+                  {/* <Link to={service.route} style={{ textDecoration: 'none', width: '100%' }}>
                     <Button
                       variant="contained"
                       fullWidth
@@ -125,7 +125,7 @@ const Services = () => {
                     >
                       Book Now
                     </Button>
-                  </Link>
+                  </Link> */}
                 </CardContent>
               </Card>
             </Grid>

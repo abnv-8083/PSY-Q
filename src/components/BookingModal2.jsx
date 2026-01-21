@@ -294,28 +294,28 @@ const Step1_TherapyType = ({ onNext, onClose, selectedTherapy, setSelectedTherap
 const Step2_Package = ({ onNext, onBack, selectedPackage, setSelectedPackage }) => {
   const packages = [
     {
-      id: "single",
-      title: "Single Session",
-      price: "₹999",
-      description: "Perfect for a first-time session",
+      id: "Basic Plan",
+      title: "4 Sessions Package",
+      price: "₹4676",
+      description: "₹1299/session",
       popular: false,
-      savings: null,
+      savings: "10% OFF",
     },
     {
-      id: "8sessions",
+      id: "Stadard Plan",
       title: "8 Sessions Package",
-      price: "₹6000",
-      description: "Best value for ongoing therapy",
+      price: "₹8833",
+      description: "1299/session",
       popular: true,
-      savings: "25% OFF",
+      savings: "15% OFF",
     },
     {
-      id: "24sessions",
-      title: "24 Sessions Package",
-      price: "₹14400",
+      id: "Advanced Plan",
+      title: "12 Sessions Package",
+      price: "₹12470",
       description: "Maximum savings with commitment",
       popular: false,
-      savings: "40% OFF",
+      savings: "20% OFF",
     },
   ]
 

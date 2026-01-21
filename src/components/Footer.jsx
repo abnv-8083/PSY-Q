@@ -7,10 +7,10 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 const Footer = () => {
   const footerLinks = {
     services: [
-      { label: 'Counselling & Psychotherapy', href: '/services' },
-      { label: 'Psychological Assessments', href: '/services' },
-      { label: 'Learning Support', href: '/services' },
-      { label: 'Referral & Support', href: '/services' },
+      { label: 'Counselling & Psychotherapy'},
+      { label: 'Psychological Assessments'},
+      { label: 'Learning Support'},
+      { label: 'Referral & Support'},
     ],
     company: [
       { label: 'About Us', href: '/about' },
