@@ -39,23 +39,23 @@ const ExpertGuidance = () => {
           </p>
           <h2
             style={{
-              fontSize: '14px',
+              fontSize: '18px',
               fontWeight: '700',
               color: '#1e3a5f',
               lineHeight: '1.3',
               marginBottom: 'var(--space-2)',
             }}
           >
-            Confused about choosing the right psychologist? We'll help you decide.
+            Feeling stuck? Let’s help you find the right psychologist! Find your therapist on WhatsApp
           </h2>
           <p
             style={{
-              fontSize: '16px',
-              color: '#6b7280',
-              lineHeight: '1.6',
+              fontSize: '14px',
+              color: '#4b5563',
+              lineHeight: '1.5',
             }}
           >
-            Get personalized therapist recommendations directly from our specialists via WhatsApp.
+            Our team is ready to assist you in connecting with a qualified psychologist who can support your mental well-being.
           </p>
         </div>
 

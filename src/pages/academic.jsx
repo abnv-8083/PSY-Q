@@ -43,7 +43,7 @@ const Academic = () => {
               letterSpacing: '0.05em'
             }}
             >
-            ACADEMIC SUPPORT
+            ACADEMIC
             </Typography>
             <Typography
             sx={{

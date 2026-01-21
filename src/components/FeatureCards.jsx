@@ -16,7 +16,7 @@ const FeatureCards = () => {
       image: "/images/webinar.webp"
     },
     {
-      title: "Academic Support",
+      title: "Academic",
       description: "Comprehensive academic support and competitive exam preparation.",
       link: "/academic-support",
       image: "/images/academic.webp"

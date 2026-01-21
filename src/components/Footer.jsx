@@ -18,13 +18,11 @@ const Footer = () => {
       { label: 'Contact Us', href: '/contact' },
     ],
     support: [
-      { label: 'FAQs', href: '#' },
-      { label: 'Privacy Policy', href: '#' },
-      { label: 'Terms & Conditions', href: '#' },
-      { label: 'Refund Policy', href: '#' },
-      { label: 'Clinical Report Policy', href: '#' },
-      { label: 'Minor Reporting Policy', href: '#' },
-      { label: 'Information & Security Policy', href: '#' },
+      { label: 'FAQs', href: '/policies#faqs' },
+      { label: 'Privacy Policy', href: '/policies#privacy' },
+      { label: 'Terms & Conditions', href: '/policies#terms' },
+      { label: 'Refund Policy', href: '/policies#refunds' },
+      { label: 'Information & Security Policy', href: '/policies#information-security' },
     ],
   };
 
@@ -105,7 +103,8 @@ const Footer = () => {
               {footerLinks.support.map((link, index) => (
                 <Link
                   key={index}
-                  href={link.href}
+                  component={RouterLink}
+                  to={link.href}
                   sx={{
                     color: 'rgba(255, 255, 255, 0.8)',
                     textDecoration: 'none',

@@ -118,7 +118,7 @@ const About = () => {
                 lineHeight: 1.8,
                 fontSize: '0.95rem'
               }}>
-             Our mission is to provide affordable, ethical, and professional mental health support through counselling, therapy, and learning programs. We aim to help people build emotional strength, mental well-being, and long-term personal growth in a safe and supportive environment.
+             Our mission is to provide affordable,ethical and skilled mental health support through counselling, therapy and learning programs. We aim to help people build emotional strength, foster mental well-being, allow healing and personal growth in a supportive environment. We guide passionate psychology learners through in-depth programs that bring psychological concepts to life
 
               </Typography>
             </Paper>
@@ -186,9 +186,7 @@ const About = () => {
                 mb: 3,
                 fontSize: '1rem'
               }}>
-              PSY-Q started with a simple idea: mental health care should be available to everyone. The founders saw people suffering quietly, unable to find the right support or someone who would truly listen to them.
-              To address this, PSY-Q was created as a safe space for counselling, therapy, and guidance. Here, healing is considered a personal journey. We support individuals through emotional struggles, help them manage stress, and guide them towards a healthier mindset.
-              PSY-Q also works in the field of sports psychology, helping athletes build confidence, focus, and emotional balance in sports and life. At PSY-Q, every story is important. Every struggle is respected and acknowledged. Every person is supported with care and compassion.
+              PsyQ was established with a simple idea that mental health care should be accessible to everyone. We observed minds that are suffering quietly, unable to find the right support. Thus PsyQ has been created as a safe space for counselling,  therapy and guidance . It reminds individuals that they are not alone in their struggles, that their emotions are valid, and that healing is possible. PsyQ also works in the field of sports psychology, helping athletes develop confidence, focus, and emotional balance in both sports and life. PsyQ also  help psychology enthusiasts explore psychological concepts through thoughtfully designed learning programs. At PSY Q, every story is heard , every struggle is acknowledged and every emotion is validated
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
@@ -460,7 +458,7 @@ const About = () => {
             mb: 2,
             fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }
           }}>
-            Ready to Start Your Journey?
+            Choose PSYQ So the <Box component="span" sx={{ color: '#ca0056' }}>future feels lighter</Box>, and your <Box component="span" sx={{ color: '#ca0056' }}>smile feels real again</Box>.
           </Typography>
           <Typography sx={{ 
             fontSize: { xs: '0.95rem', sm: '1rem', md: '1.1rem' },
@@ -470,7 +468,7 @@ const About = () => {
             mx: 'auto',
             px: { xs: 1, sm: 0 }
           }}>
-            Join thousands of students who have achieved their goals with Psy-Q's comprehensive support system.
+            Join thousands of individuals who have achieved their goals with Psy-Q's comprehensive support system.
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap', px: { xs: 2, sm: 0 } }}>
             <Link to="/contact" style={{ textDecoration: 'none' }}>

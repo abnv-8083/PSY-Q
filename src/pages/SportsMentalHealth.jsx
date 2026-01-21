@@ -35,13 +35,6 @@ const SportsMentalHealth = () => {
       color: "#8fae8d",
       bgColor: "linear-gradient(135deg, #e6b0f6 0%, #ca95d9ff 100%)"
     },
-    {
-      name: "Advanced",
-      description: "Best for global, complex use cases",
-      price: "₹8400",
-      color: "#8fae8d",
-      bgColor: "linear-gradient(135deg, #B3CED6 0%, #93bcc8 100%)"
-    }
   ];
 
   const features = [
