@@ -559,8 +559,8 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
                   }
                   label={
                     <Typography variant="body2">
-                      I agree to the <a href="#" style={{ color: '#ca0056' }}>Terms and Conditions</a> and{' '}
-                      <a href="#" style={{ color: '#ca0056' }}>Consent to Therapy</a>{' '}
+                      I agree to the <a href="/policies" style={{ color: '#ca0056' }}>Terms and Conditions</a> and{' '}
+                      <a href="/policies" style={{ color: '#ca0056' }}>Consent to Therapy</a>{' '}
                       <span style={{ color: '#dc2626' }}>*</span>
                     </Typography>
                   }

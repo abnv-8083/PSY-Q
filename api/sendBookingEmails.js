@@ -140,6 +140,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    if (!process.env.RESEND_API_KEY || !supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing required environment variables for email or database');
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration error: missing credentials'
+      });
+    }
+
     const bookingData = req.body;
 
     // Validate required fields
@@ -206,7 +214,7 @@ export default async function handler(req, res) {
       bookingId: data[0]?.id
     });
   } catch (error) {
-    console.error('Booking error:', error);
+    console.error('Booking error:', error?.message || error, error?.stack);
     return res.status(500).json({
       success: false,
       message: error.message || 'Failed to process booking'
