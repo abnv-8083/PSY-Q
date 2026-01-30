@@ -921,6 +921,7 @@ const MockTestDashboard = () => {
                     testId={pendingTestData?.testId}
                     bundleId={pendingBundleData?.id}
                     isBundle={!!pendingBundleData}
+                    testCount={pendingBundleData?.testIds?.length}
                     subjectId={pendingTestData?.subjectId}
                     user={user}
                     onUnlock={handleUnlockTest}

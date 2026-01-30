@@ -20,7 +20,7 @@ import { X, Sparkles, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { initiateRazorpayPayment } from '../utils/razorpay';
 
-const PaymentDialog = ({ open, onClose, testName, testPrice, onUnlock, user, testId, bundleId, isBundle, subjectId }) => {
+const PaymentDialog = ({ open, onClose, testName, testPrice, onUnlock, user, testId, bundleId, isBundle, subjectId, testCount }) => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
     const [isProcessing, setIsProcessing] = useState(false);
@@ -59,7 +59,7 @@ const PaymentDialog = ({ open, onClose, testName, testPrice, onUnlock, user, tes
             open={open}
             onClose={onClose}
             fullScreen={fullScreen}
-            maxWidth="md"
+            maxWidth="sm"
             fullWidth
             PaperProps={{
                 sx: {
@@ -73,108 +73,104 @@ const PaymentDialog = ({ open, onClose, testName, testPrice, onUnlock, user, tes
             <Box sx={{
                 bgcolor: isBundle ? '#1e293b' : '#db2777',
                 color: '#fff',
-                p: 3,
+                p: 2.5,
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 0.5
             }}>
-                <Typography variant="h5" sx={{ fontWeight: 800 }}>{isBundle ? 'Upgrade to Prime' : 'Unlock More Retakes'}</Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>{isBundle ? 'Get access to all tests in this bundle' : 'Select a package that works best for your preparation'}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 800 }}>{isBundle ? 'Upgrade to Prime' : 'Unlock More Retakes'}</Typography>
+                <Typography variant="body2" sx={{ opacity: 0.85 }}>{isBundle ? 'Instant access to premium content' : 'Select a package for your preparation'}</Typography>
                 <IconButton
                     onClick={onClose}
+                    size="small"
                     sx={{
                         position: 'absolute',
-                        right: 16,
-                        top: 16,
+                        right: 12,
+                        top: 12,
                         color: '#fff',
                         '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
                     }}
                 >
-                    <X size={24} />
+                    <X size={20} />
                 </IconButton>
             </Box>
 
-            <DialogContent sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f8fafc' }}>
-                <Typography variant="h6" align="center" sx={{ fontWeight: 700, mb: 4, color: '#1e293b' }}>
-                    {isBundle ? 'Prime Access Details' : 'Select the package that works best for your mock test journey'}
-                </Typography>
-
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+            <DialogContent sx={{ p: { xs: 2.5, md: 4 }, bgcolor: '#f8fafc' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
                     >
                         <Paper
-                            elevation={8}
+                            elevation={4}
                             sx={{
                                 position: 'relative',
-                                p: 4,
+                                p: 3,
                                 borderRadius: 5,
-                                maxWidth: 400,
+                                maxWidth: 340,
                                 width: '100%',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 textAlign: 'center',
-                                border: `2px solid ${isBundle ? '#1e293b' : '#db2777'}`,
+                                border: `1.5px solid ${isBundle ? '#1e293b20' : '#db277720'}`,
                                 bgcolor: '#fff',
-                                boxShadow: isBundle ? '0 20px 40px rgba(30, 41, 59, 0.15)' : '0 20px 40px rgba(219, 39, 119, 0.15)'
                             }}
                         >
                             <Box sx={{
-                                mb: 2,
+                                mb: 1.5,
                                 bgcolor: isBundle ? '#1e293b10' : '#db277710',
-                                p: 1.5,
+                                p: 1.2,
                                 borderRadius: '50%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center'
                             }}>
-                                <Sparkles size={32} color={isBundle ? '#1e293b' : '#db2777'} />
+                                <Sparkles size={24} color={isBundle ? '#1e293b' : '#db2777'} />
                             </Box>
 
-                            <Typography variant="h6" sx={{ fontWeight: 800, color: '#1a2035', mb: 1 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1a2035', mb: 0.5 }}>
                                 {testName || 'Mock Test Package'}
                             </Typography>
 
-                            <Typography variant="body2" sx={{ color: '#64748b', mb: 3 }}>
-                                {isBundle ? 'Full access to curated series of tests with detailed analytics.' : 'Get an additional attempt with full analytics and feedback.'}
-                            </Typography>
-
-                            <Typography variant="h2" sx={{ fontWeight: 900, color: isBundle ? '#1e293b' : '#db2777', mb: 1 }}>
+                            <Typography variant="h3" sx={{ fontWeight: 900, color: isBundle ? '#1e293b' : '#db2777', mb: 1.5 }}>
                                 ₹{testPrice || '0'}
                             </Typography>
 
                             <Chip
-                                label={isBundle ? "Best Value" : "Limited Time Offer"}
+                                label={isBundle ? "Full 1 Year Access" : "Limited Time Offer"}
                                 size="small"
                                 sx={{
-                                    bgcolor: isBundle ? '#1e293b15' : '#db277715',
-                                    color: isBundle ? '#1e293b' : '#db2777',
+                                    bgcolor: isBundle ? '#1e293b' : '#db277715',
+                                    color: isBundle ? '#fff' : '#db2777',
                                     fontWeight: 800,
-                                    mb: 3
+                                    mb: 2.5,
+                                    fontSize: '0.7rem',
+                                    px: 1
                                 }}
                             />
 
                             <Box sx={{ width: '100%' }}>
-                                <Divider sx={{ mb: 3 }} />
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, alignItems: 'center' }}>
+                                <Divider sx={{ mb: 2.5 }} />
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, alignItems: 'flex-start', px: 1 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                        <CheckCircle2 size={18} color={isBundle ? '#1e293b' : '#db2777'} />
-                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>Unlimited Retakes</Typography>
+                                        <CheckCircle2 size={16} color={isBundle ? '#1e293b' : '#db2777'} />
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>
+                                            {isBundle ? `Total ${testCount || 'All'} Premium Tests` : '1 Additional Reattempt'}
+                                        </Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                        <CheckCircle2 size={18} color={isBundle ? '#1e293b' : '#db2777'} />
-                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>Detailed Analytics</Typography>
+                                        <CheckCircle2 size={16} color={isBundle ? '#1e293b' : '#db2777'} />
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>Detailed Result Analytics</Typography>
                                     </Box>
-                                    {isBundle && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                            <CheckCircle2 size={18} color={isBundle ? '#1e293b' : '#db2777'} />
-                                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>All Included Tests</Typography>
-                                        </Box>
-                                    )}
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <CheckCircle2 size={16} color={isBundle ? '#1e293b' : '#db2777'} />
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>
+                                            {isBundle ? '365 Days Validity' : 'Instant Activation'}
+                                        </Typography>
+                                    </Box>
                                 </Box>
                             </Box>
                         </Paper>
@@ -182,10 +178,18 @@ const PaymentDialog = ({ open, onClose, testName, testPrice, onUnlock, user, tes
                 </Box>
             </DialogContent>
 
-            <DialogActions sx={{ p: 3, bgcolor: '#f8fafc', justifyContent: 'flex-end', gap: 2 }}>
+            <DialogActions sx={{ p: 2.5, bgcolor: '#f8fafc', borderTop: '1px solid #e2e8f0', justifyContent: 'center', gap: 2 }}>
                 <Button
                     onClick={onClose}
-                    sx={{ color: '#64748b', fontWeight: 700, textTransform: 'none' }}
+                    variant="outlined"
+                    sx={{
+                        color: '#64748b',
+                        borderColor: '#e2e8f0',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        px: 3,
+                        borderRadius: 2.5
+                    }}
                 >
                     Cancel
                 </Button>
@@ -199,20 +203,13 @@ const PaymentDialog = ({ open, onClose, testName, testPrice, onUnlock, user, tes
                         fontWeight: 700,
                         textTransform: 'none',
                         px: 4,
-                        py: 1.2,
-                        borderRadius: 3,
+                        py: 1,
+                        borderRadius: 2.5,
+                        boxShadow: `0 4px 14px 0 ${isBundle ? 'rgba(30, 41, 59, 0.3)' : 'rgba(219, 39, 119, 0.3)'}`,
                         '&:hover': { bgcolor: isBundle ? '#0f172a' : '#be185d' },
-                        '&:disabled': { bgcolor: '#CBD5E1', color: '#94a3b8' }
                     }}
                 >
-                    {isProcessing ? (
-                        <>
-                            <CircularProgress size={20} sx={{ color: '#fff', mr: 1 }} />
-                            Processing...
-                        </>
-                    ) : (
-                        'Continue to Pay'
-                    )}
+                    {isProcessing ? 'Processing...' : 'Pay with Razorpay'}
                 </Button>
             </DialogActions>
         </Dialog>
