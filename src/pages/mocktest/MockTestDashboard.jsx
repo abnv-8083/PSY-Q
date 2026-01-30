@@ -12,6 +12,11 @@ import PaymentDialog from '../../components/PaymentDialog';
 const MockTestDashboard = () => {
 
     const [subjects, setSubjects] = useState([]);
+
+    useEffect(() => {
+        console.log("MockTestDashboard loaded - Version Fix 2.0");
+    }, []);
+
     const [attempts, setAttempts] = useState({});
     const [loading, setLoading] = useState(true);
     const [selectedSubject, setSelectedSubject] = useState(null);
