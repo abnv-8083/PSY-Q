@@ -1,10 +1,31 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Button, Grid, Paper, IconButton, Chip, CircularProgress, Divider } from '@mui/material';
+import {
+    Box,
+    Typography,
+    Button,
+    Grid,
+    Paper,
+    IconButton,
+    Chip,
+    CircularProgress,
+    Divider,
+    Avatar,
+    Select,
+    MenuItem
+} from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Flag, Clock, Send, LayoutGrid, X } from 'lucide-react';
-import { db, auth } from '../../lib/firebase';
+import {
+    ChevronLeft,
+    ChevronRight,
+    Clock,
+    Home,
+    ChevronDown,
+    ChevronUp,
+    User,
+    Menu
+} from 'lucide-react';
+import { auth } from '../../lib/firebase';
 import { supabase } from '../../lib/supabaseClient';
-import { collection, getDocs, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 
 const MockTestInterface = () => {
     const { subjectId, testId } = useParams();
@@ -15,24 +36,15 @@ const MockTestInterface = () => {
     const [testName, setTestName] = useState('');
     const [answers, setAnswers] = useState({});
     const [flags, setFlags] = useState({});
-    const [timeLeft, setTimeLeft] = useState(3600); // 60 mins in seconds
+    const [visited, setVisited] = useState({ 0: true });
+    const [timeLeft, setTimeLeft] = useState(7200); // Default 120 mins
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    // Status mapping: Red: Skipped, Orange: Flagged, Green: Attempted, White: Unvisited
-    const getStatus = (idx) => {
-        if (flags[idx]) return '#FF9800'; // Orange
-        if (answers[idx] !== undefined) return '#4CAF50'; // Green
-        // Simple logic for "skipped" vs "unvisited" - if we've been to a page but didn't answer
-        // For simplicity, we'll mark any visited non-answered as "Red" later if we want
-        return '#E0E0E0'; // White/Gray
-    };
+    const [language, setLanguage] = useState('English');
 
     useEffect(() => {
-        console.log("📝 MockTestInterface: Fetching data from Supabase for", { testId });
         const fetchTestData = async () => {
             try {
-                // Fetch Test Details directly from Supabase
                 const { data: testData, error: testErr } = await supabase
                     .from('tests')
                     .select('*')
@@ -40,16 +52,11 @@ const MockTestInterface = () => {
                     .single();
 
                 if (testErr) throw testErr;
-
                 if (testData) {
-                    console.log("📝 MockTestInterface: Test details found:", testData);
                     setTestName(testData.name);
-                    if (testData.duration) {
-                        setTimeLeft(testData.duration * 60);
-                    }
+                    if (testData.duration) setTimeLeft(testData.duration * 60);
                 }
 
-                // Fetch Questions for this test
                 const { data: qData, error: qErr } = await supabase
                     .from('questions')
                     .select('*')
@@ -57,20 +64,9 @@ const MockTestInterface = () => {
                     .order('created_at', { ascending: true });
 
                 if (qErr) throw qErr;
-
-                if (qData.length === 0) {
-                    console.log("📝 MockTestInterface: No questions found in Supabase");
-                    setError("No questions found for this test.");
-                } else {
-                    // Map correct_key to correctKey for compatibility
-                    const formattedQuestions = qData.map(q => ({
-                        ...q,
-                        correctKey: q.correct_key
-                    }));
-                    setQuestions(formattedQuestions);
-                }
+                setQuestions(qData.map(q => ({ ...q, correctKey: q.correct_key })));
             } catch (err) {
-                console.error("📝 MockTestInterface: Error fetching Supabase data:", err);
+                console.error("Error fetching exam data:", err);
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -79,246 +75,292 @@ const MockTestInterface = () => {
         fetchTestData();
     }, [testId]);
 
-    const handleSubmit = useCallback(async () => {
-        // Submit results to Supabase
-        try {
+    useEffect(() => {
+        if (timeLeft <= 0) return;
+        const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+        return () => clearInterval(timer);
+    }, [timeLeft]);
+
+    const formatTime = (seconds) => {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
+    const handleAnswerSelect = (optionIdx) => {
+        setAnswers(prev => ({ ...prev, [currentIdx]: optionIdx }));
+    };
+
+    const handleSaveNext = () => {
+        const nextIdx = currentIdx + 1;
+        if (nextIdx < questions.length) {
+            setCurrentIdx(nextIdx);
+            setVisited(prev => ({ ...prev, [nextIdx]: true }));
+        }
+    };
+
+    const handleClear = () => {
+        setAnswers(prev => {
+            const next = { ...prev };
+            delete next[currentIdx];
+            return next;
+        });
+        setFlags(prev => {
+            const next = { ...prev };
+            delete next[currentIdx];
+            return next;
+        });
+    };
+
+    const handleMarkReview = () => {
+        setFlags(prev => ({ ...prev, [currentIdx]: true }));
+        handleSaveNext();
+    };
+
+    const handleSubmit = async () => {
+        // Validation/Confirm
+        if (window.confirm("Are you sure you want to submit the test?")) {
             const score = questions.reduce((acc, q, idx) => {
                 return answers[idx] === q.correctKey ? acc + 1 : acc;
             }, 0);
 
-            // Save Attempt to Supabase
-            const { error: attemptError } = await supabase
-                .from('attempts')
-                .insert({
+            try {
+                await supabase.from('attempts').insert({
                     user_id: auth.currentUser?.uid,
                     test_id: testId,
                     subject_id: subjectId,
-                    score: score,
+                    score,
                     total: questions.length,
-                    answers: answers
+                    answers
                 });
-
-            if (attemptError) throw attemptError;
-
-            navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
-                state: { score, total: questions.length, answers, questions }
-            });
-        } catch (err) {
-            console.error("Supabase Submission error:", err);
+                navigate(`/academic/mocktest/${subjectId}/${testId}/results`);
+            } catch (err) {
+                console.error("Submission failed:", err);
+            }
         }
-    }, [answers, questions, subjectId, testId, navigate]);
-
-    useEffect(() => {
-        if (timeLeft <= 0) {
-            handleSubmit();
-            return;
-        }
-        const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-        return () => clearInterval(timer);
-    }, [timeLeft, handleSubmit]);
-
-    const formatTime = (seconds) => {
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
-        return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
-    if (loading) return (
-        <Box sx={{ p: 5, textAlign: 'center' }}>
-            <CircularProgress sx={{ color: '#E91E63', mb: 2 }} />
-            <Typography>Loading Exam...</Typography>
-        </Box>
-    );
+    const getStatusColor = (idx) => {
+        const isAnswered = answers[idx] !== undefined;
+        const isFlagged = flags[idx];
 
-    if (error) return (
-        <Box sx={{ p: 5, textAlign: 'center' }}>
-            <Typography variant="h6" color="error" sx={{ mb: 2 }}>Error Loading Exam</Typography>
-            <Typography sx={{ mb: 3 }}>{error}</Typography>
-            <Button variant="contained" onClick={() => navigate(-1)} sx={{ bgcolor: '#E91E63' }}>
-                Go Back
-            </Button>
-        </Box>
-    );
+        if (isAnswered && isFlagged) return 'answered-marked';
+        if (isFlagged) return 'marked';
+        if (isAnswered) return 'answered';
+        if (visited[idx]) return 'not-answered';
+        return 'not-visited';
+    };
 
-    console.log("📝 MockTestInterface: Rendering main block", { questions: questions.length, currentIdx });
+    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress /></Box>;
+    if (error) return <Box sx={{ p: 4, textAlign: 'center' }}><Typography color="error">{error}</Typography></Box>;
+
+    const currentQuestion = questions[currentIdx];
+
+    const StatusShape = ({ status, label }) => {
+        if (status === 'not-visited') return <Box sx={{ width: 30, height: 26, bgcolor: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600 }}>{label}</Box>;
+        if (status === 'not-answered') return <Box sx={{ width: 32, height: 26, bgcolor: '#ff4d4d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#fff', clipPath: 'polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%)' }}>{label}</Box>;
+        if (status === 'answered') return <Box sx={{ width: 32, height: 26, bgcolor: '#2ecc71', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#fff', clipPath: 'polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%)' }}>{label}</Box>;
+        if (status === 'marked') return <Box sx={{ width: 28, height: 28, bgcolor: '#9b59b6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#fff' }}>{label}</Box>;
+        if (status === 'answered-marked') return (
+            <Box sx={{ width: 28, height: 28, bgcolor: '#9b59b6', borderRadius: '50%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#fff' }}>
+                {label}
+                <Box sx={{ position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, bgcolor: '#2ecc71', borderRadius: '50%', border: '1.5px solid #fff' }} />
+            </Box>
+        );
+        return null;
+    };
+
     return (
-        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#f0f2f5' }}>
-            {/* Header */}
-            <Box sx={{ p: 2, bgcolor: '#fff', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a202c' }}>{testName || subjectId}</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: '#FFF0F3', px: { xs: 1.5, sm: 2 }, py: 1, borderRadius: 2 }}>
-                        <Clock size={20} color="#E91E63" />
-                        <Typography sx={{ fontWeight: 700, color: '#E91E63', fontSize: { xs: '0.9rem', sm: '1rem' } }}>{formatTime(timeLeft)}</Typography>
+        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
+            {/* Top Bar */}
+            <Box sx={{ bgcolor: '#003366', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2 }}>
+                <IconButton size="small" sx={{ color: '#fff' }} onClick={() => navigate('/academic/mocktest')}>
+                    <Home size={16} />
+                    <Typography variant="caption" sx={{ ml: 0.5 }}>Home</Typography>
+                </IconButton>
+            </Box>
+
+            {/* Logo Bar */}
+            <Box sx={{ py: 1.5, px: { xs: 2, md: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
+                <Box component="img" src="/logos/psyq-logo-header.png" sx={{ height: 45 }} />
+                <Box sx={{ textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#003366' }}>PSYCHOLOGY QUESTION BANK</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Box component="img" src="/logos/ignou.png" sx={{ height: 35, opacity: 0.7 }} />
+                </Box>
+            </Box>
+
+            {/* Candidate Header */}
+            <Box sx={{ bgcolor: '#f8f9fa', py: 1.5, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ddd' }}>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Avatar sx={{ bgcolor: '#e0e0e0', color: '#666', width: 50, height: 50 }}><User size={30} /></Avatar>
+                    <Box>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Candidate Name :</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#db2777' }}>{auth.currentUser?.displayName || 'Student'}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Exam Name :</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#003366' }}>{testName}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Remaining Time :</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 900, bgcolor: '#00d2ff', px: 1, borderRadius: 1 }}>{formatTime(timeLeft)}</Typography>
+                        </Box>
                     </Box>
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        startIcon={<X size={18} />}
-                        onClick={() => { if (window.confirm("Are you sure you want to quit the test? Your progress will not be saved.")) navigate(-1); }}
-                        sx={{ borderRadius: 2, fontWeight: 600 }}
-                    >
-                        Quit
-                    </Button>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Select value={language} onChange={(e) => setLanguage(e.target.value)} size="small" sx={{ minWidth: 120, height: 35, bgcolor: '#fff' }}>
+                        <MenuItem value="English">English</MenuItem>
+                        <MenuItem value="Hindi">Hindi</MenuItem>
+                    </Select>
                 </Box>
             </Box>
 
             {/* Main Content Area */}
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, overflow: 'hidden' }}>
-                {/* Left Side: Question Panel */}
-                <Box sx={{
-                    flex: 1,
-                    p: { xs: 2, sm: 3, md: 4 },
-                    overflowY: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    bgcolor: '#f0f2f5'
-                }}>
-                    <Paper sx={{ p: 4, borderRadius: 4, mb: 3 }}>
-                        {questions.length > 0 ? (
-                            <>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                    <Chip label={`Question ${currentIdx + 1} of ${questions.length}`} variant="outlined" />
-                                    <IconButton onClick={() => setFlags(prev => ({ ...prev, [currentIdx]: !prev[currentIdx] }))}>
-                                        <Flag size={20} color={flags[currentIdx] ? "#FF9800" : "#bdbdbd"} fill={flags[currentIdx] ? "#FF9800" : "none"} />
-                                    </IconButton>
-                                </Box>
-                                <Typography variant="h6" sx={{ mb: 4, fontWeight: 500 }}>
-                                    {questions[currentIdx]?.text}
-                                </Typography>
-                                <Grid container spacing={2}>
-                                    {questions[currentIdx]?.options?.map((opt, i) => (
-                                        <Grid item xs={12} key={i}>
-                                            <Button
-                                                fullWidth
-                                                variant={answers[currentIdx] === i ? "contained" : "outlined"}
-                                                onClick={() => setAnswers(prev => ({ ...prev, [currentIdx]: i }))}
-                                                sx={{
-                                                    justifyContent: 'flex-start',
-                                                    py: 2,
-                                                    px: 3,
-                                                    borderRadius: 3,
-                                                    textAlign: 'left',
-                                                    textTransform: 'none',
-                                                    fontSize: '1rem',
-                                                    borderColor: '#ddd',
-                                                    bgcolor: answers[currentIdx] === i ? '#E91E63' : 'transparent',
-                                                    '&:hover': { bgcolor: answers[currentIdx] === i ? '#C2185B' : '#f8f9fa' }
-                                                }}
-                                            >
-                                                <Box sx={{
-                                                    width: 28, height: 28, borderRadius: '50%', border: '1px solid',
-                                                    borderColor: answers[currentIdx] === i ? '#fff' : '#ddd',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 2,
-                                                    bgcolor: answers[currentIdx] === i ? 'rgba(255,255,255,0.2)' : 'transparent'
-                                                }}>
-                                                    {String.fromCharCode(65 + i)}
-                                                </Box>
-                                                {opt}
-                                            </Button>
-                                        </Grid>
-                                    ))}
-                                </Grid>
-                            </>
-                        ) : (
-                            <Box sx={{ py: 10, textAlign: 'center' }}>
-                                <Typography variant="h6" color="textSecondary">No questions available for this test.</Typography>
-                                <Button onClick={() => navigate(-1)} sx={{ mt: 2 }}>Go Back</Button>
-                            </Box>
-                        )}
-                    </Paper>
-
-                    {/* Navigation */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Button
-                            disabled={currentIdx === 0}
-                            startIcon={<ChevronLeft />}
-                            onClick={() => setCurrentIdx(prev => prev - 1)}
-                        >
-                            Previous
-                        </Button>
-                        {currentIdx === questions.length - 1 ? (
-                            <Button
-                                endIcon={<Send />}
-                                variant="contained"
-                                onClick={handleSubmit}
-                                sx={{ bgcolor: '#4CAF50', '&:hover': { bgcolor: '#388E3C' }, fontWeight: 700, px: 4 }}
-                            >
-                                Submit Test
-                            </Button>
-                        ) : (
-                            <Button
-                                endIcon={<ChevronRight />}
-                                variant="contained"
-                                onClick={() => setCurrentIdx(prev => prev + 1)}
-                                sx={{ bgcolor: '#424242', '&:hover': { bgcolor: '#212121' } }}
-                            >
-                                Next Question
-                            </Button>
-                        )}
+            <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                {/* Left: Question Area */}
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', p: 3, position: 'relative' }}>
+                    <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', pb: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800 }}>Question {currentIdx + 1}:</Typography>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <IconButton size="small" sx={{ bgcolor: '#007bff', color: '#fff', '&:hover': { bgcolor: '#0056b3' } }}><ChevronUp size={16} /></IconButton>
+                            <IconButton size="small" sx={{ bgcolor: '#007bff', color: '#fff', '&:hover': { bgcolor: '#0056b3' } }}><ChevronDown size={16} /></IconButton>
+                        </Box>
                     </Box>
-                </Box>
 
-                {/* Right Side: Sidebar Status Tracker */}
-                <Box sx={{
-                    width: { xs: '100%', md: '300px', lg: '350px' },
-                    bgcolor: '#fff',
-                    borderLeft: { md: '1px solid #ddd' },
-                    borderTop: { xs: '1px solid #ddd', md: 'none' },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    p: 3,
-                    overflowY: 'auto'
-                }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LayoutGrid size={18} /> Question Status
+                    <Typography variant="body1" sx={{ mt: 2, mb: 4, fontWeight: 500, lineHeight: 1.6, fontSize: '1.05rem', color: '#1a2035' }}>
+                        {currentQuestion?.question_text || "Loading question..."}
                     </Typography>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))', gap: 1.5 }}>
-                        {questions.map((_, i) => (
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {currentQuestion?.options && Object.entries(currentQuestion.options).map(([key, value]) => (
                             <Box
-                                key={i}
-                                onClick={() => setCurrentIdx(i)}
+                                key={key}
+                                onClick={() => handleAnswerSelect(parseInt(key))}
                                 sx={{
-                                    aspectRatio: '1/1',
+                                    p: 2,
+                                    borderRadius: 2,
+                                    border: '1.5px solid',
+                                    borderColor: answers[currentIdx] === parseInt(key) ? '#db2777' : '#e2e8f0',
+                                    bgcolor: answers[currentIdx] === parseInt(key) ? '#db277705' : 'transparent',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    justifyContent: 'center',
-                                    borderRadius: 1.5,
-                                    bgcolor: getStatus(i),
-                                    cursor: 'pointer',
-                                    border: currentIdx === i ? '2px solid #E91E63' : 'none',
-                                    transition: 'all 0.2s',
-                                    '&:hover': { transform: 'scale(1.1)', zIndex: 1 }
+                                    gap: 2,
+                                    '&:hover': { borderColor: '#db277780', bgcolor: '#db277703' }
                                 }}
                             >
-                                <Typography
-                                    sx={{
-                                        fontSize: '0.85rem', fontWeight: 700, color: getStatus(i) === '#E0E0E0' ? '#757575' : '#fff'
-                                    }}
-                                >
-                                    {i + 1}
-                                </Typography>
+                                <Box sx={{
+                                    width: 28, height: 28,
+                                    borderRadius: '50%',
+                                    border: '2px solid',
+                                    borderColor: answers[currentIdx] === parseInt(key) ? '#db2777' : '#cbd5e1',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: '0.85rem', fontWeight: 800,
+                                    color: answers[currentIdx] === parseInt(key) ? '#db2777' : '#64748b'
+                                }}>
+                                    {parseInt(key) + 1}
+                                </Box>
+                                <Typography variant="body1" sx={{ fontWeight: 500 }}>{value}</Typography>
                             </Box>
                         ))}
                     </Box>
 
-                    <Divider sx={{ my: 3 }} />
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <StatusLegend color="#4CAF50" label="Attempted" />
-                        <StatusLegend color="#FF9800" label="Flagged" />
-                        <StatusLegend color="#E0E0E0" label="Unvisited" />
+                    {/* Button Bar Sticky Bottom of Left side */}
+                    <Box sx={{ mt: 'auto', pt: 4, borderTop: '1px solid #eee', display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button variant="contained" onClick={handleSaveNext} sx={{ bgcolor: '#5cb85c', '&:hover': { bgcolor: '#4cae4c' }, fontWeight: 700, textTransform: 'none' }}>SAVE & NEXT</Button>
+                            <Button variant="outlined" onClick={handleClear} sx={{ color: '#666', borderColor: '#ccc', fontWeight: 700, textTransform: 'none' }}>CLEAR</Button>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button variant="contained" onClick={handleMarkReview} sx={{ bgcolor: '#f0ad4e', '&:hover': { bgcolor: '#ec971f' }, fontWeight: 700, textTransform: 'none' }}>SAVE & MARK FOR REVIEW</Button>
+                            <Button variant="contained" onClick={handleMarkReview} sx={{ bgcolor: '#337ab7', '&:hover': { bgcolor: '#286090' }, fontWeight: 700, textTransform: 'none' }}>MARK FOR REVIEW & NEXT</Button>
+                        </Box>
                     </Box>
                 </Box>
+
+                {/* Right: Sidebar */}
+                <Box sx={{ width: 340, borderLeft: '1px solid #ddd', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
+                    {/* Status Board */}
+                    <Box sx={{ p: 2, borderBottom: '1.5px dashed #ccc' }}>
+                        <Grid container spacing={1.5}>
+                            <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <StatusShape status="not-visited" label={questions.length - Object.keys(visited).length} />
+                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Not Visited</Typography>
+                            </Grid>
+                            <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <StatusShape status="not-answered" label={Object.keys(visited).filter(idx => answers[idx] === undefined && !flags[idx]).length} />
+                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Not Answered</Typography>
+                            </Grid>
+                            <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <StatusShape status="answered" label={Object.keys(answers).filter(idx => !flags[idx]).length} />
+                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Answered</Typography>
+                            </Grid>
+                            <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <StatusShape status="marked" label={Object.keys(flags).filter(idx => answers[idx] === undefined).length} />
+                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Marked for Review</Typography>
+                            </Grid>
+                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <StatusShape status="answered-marked" label={Object.keys(flags).filter(idx => answers[idx] !== undefined).length} />
+                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Answered & Marked for Review (considered for evaluation)</Typography>
+                            </Grid>
+                        </Grid>
+                    </Box>
+
+                    {/* Question Grid Title */}
+                    <Box sx={{ bgcolor: '#007bff', color: '#fff', py: 0.8, px: 2, mt: 2 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 800 }}>Section: Mock Test</Typography>
+                    </Box>
+
+                    {/* Question Grid */}
+                    <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
+                        <Typography variant="caption" display="block" sx={{ mb: 1.5, fontWeight: 700, color: '#666' }}>SELECT A QUESTION:</Typography>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, p: 1 }}>
+                            {questions.map((_, idx) => (
+                                <Box
+                                    key={idx}
+                                    onClick={() => {
+                                        setCurrentIdx(idx);
+                                        setVisited(prev => ({ ...prev, [idx]: true }));
+                                    }}
+                                    sx={{ cursor: 'pointer', display: 'flex', justifyContent: 'center' }}
+                                >
+                                    <StatusShape
+                                        status={getStatusColor(idx)}
+                                        label={idx + 1}
+                                    />
+                                </Box>
+                            ))}
+                        </Box>
+                    </Box>
+
+                    {/* Sidebar Footer Buttons */}
+                    <Box sx={{ p: 2, borderTop: '1px solid #ddd', bgcolor: '#f8f9fa' }}>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            onClick={handleSubmit}
+                            sx={{ bgcolor: '#5cb85c', '&:hover': { bgcolor: '#4cae4c' }, fontWeight: 800, py: 1.2 }}
+                        >
+                            SUBMIT TEST
+                        </Button>
+                    </Box>
+                </Box>
+            </Box>
+
+            {/* Footer Bar */}
+            <Box sx={{ bgcolor: '#00264d', color: '#fff', py: 1, textAlign: 'center', borderTop: '3px solid #db2777' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                    © All Rights Reserved - Psychology Question Bank (Psy-Q)
+                </Typography>
             </Box>
         </Box>
     );
 };
-
-const StatusLegend = ({ color, label }) => (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <Box sx={{ width: 16, height: 16, borderRadius: 0.5, bgcolor: color }} />
-        <Typography variant="caption" sx={{ color: '#666', fontWeight: 500 }}>{label}</Typography>
-    </Box>
-);
 
 export default MockTestInterface;
