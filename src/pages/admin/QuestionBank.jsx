@@ -117,7 +117,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
                             <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
                                 <IconButton size="small" onClick={() => handleDeleteQuestion(q.id)}><Trash2 size={18} color="#F44336" /></IconButton>
                             </Box>
-                            <Typography sx={{ fontWeight: 700, mb: 2, pr: 4, whiteSpace: 'pre-line' }}>Q{idx + 1}. {q.text}</Typography>
+                            <Typography sx={{ fontWeight: 700, mb: 2, pr: 4, whiteSpace: 'pre-wrap' }}>Q{idx + 1}. {q.text}</Typography>
                             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2, mb: 2 }}>
                                 {q.options.map((opt, i) => (
                                     <Box key={i} sx={{ p: 1.5, borderRadius: 2, bgcolor: i === q.correctKey ? '#E8F5E9' : '#f8f9fa', border: '1px solid', borderColor: i === q.correctKey ? '#4CAF50' : '#eee' }}>

@@ -298,7 +298,7 @@ const ResultAnalytics = () => {
                                 </Box>
                             </AccordionSummary>
                             <AccordionDetails>
-                                <Typography sx={{ mb: 3, fontWeight: 500, whiteSpace: 'pre-line' }}>{q.text}</Typography>
+                                <Typography sx={{ mb: 3, fontWeight: 500, whiteSpace: 'pre-wrap' }}>{q.text}</Typography>
                                 <Grid container spacing={2} sx={{ mb: 3 }}>
                                     {q.options.map((opt, i) => {
                                         let border = '1px solid #eee';
