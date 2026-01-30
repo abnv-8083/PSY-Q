@@ -141,7 +141,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
                 <DialogTitle>Add New Question</DialogTitle>
                 <DialogContent>
                     <TextField
-                        fullWidth label="Question Text" margin="normal" multiline rows={2}
+                        fullWidth label="Question Text" margin="normal" multiline rows={6}
                         value={newQ.text} onChange={(e) => setNewQ({ ...newQ, text: e.target.value })}
                     />
                     <Divider sx={{ my: 2 }} />
