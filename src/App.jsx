@@ -18,7 +18,7 @@ import ChildRehabilitation from './pages/ChildRehabilitation';
 import SportsMentalHealth from './pages/SportsMentalHealth';
 import Academic from './pages/academic';
 import MockTestDashboard from './pages/mocktest/MockTestDashboard';
-import MockTestRules from './pages/mocktest/MockTestRules';
+import GeneralInstructions from './pages/mocktest/GeneralInstructions';
 import MockTestInterface from './pages/mocktest/MockTestInterface';
 import ResultAnalytics from './pages/mocktest/ResultAnalytics';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -59,7 +59,7 @@ function App() {
           <Route path="/sports-mental-health" element={<Layout><SportsMentalHealth /></Layout>} />
           <Route path="/academic-support" element={<Layout><Academic /></Layout>} />
           <Route path="/academic/mocktest" element={<MockTestDashboard />} />
-          <Route path="/academic/mocktest/:subjectId/:testId/rules" element={<MockTestRules />} />
+          <Route path="/academic/mocktest/:subjectId/:testId/rules" element={<GeneralInstructions />} />
           <Route path="/academic/mocktest/:subjectId/:testId/exam" element={<MockTestInterface />} />
           <Route path="/academic/mocktest/:subjectId/:testId/results" element={<ResultAnalytics />} />
           <Route path="/academic/mocktest/checkout" element={<GuestCheckout />} />
