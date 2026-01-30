@@ -260,7 +260,7 @@ const MockTestInterface = () => {
                         </Box>
                     </Box>
 
-                    <Typography variant="body1" sx={{ mt: 2, mb: 4, fontWeight: 500, lineHeight: 1.6, fontSize: '1.05rem', color: '#1a2035' }}>
+                    <Typography variant="body1" sx={{ mt: 2, mb: 4, fontWeight: 500, lineHeight: 1.6, fontSize: '1.05rem', color: '#1a2035', whiteSpace: 'pre-line' }}>
                         {(currentQuestion?.text || currentQuestion?.question_text) || (loading ? "Loading question..." : "Question text not available")}
                     </Typography>
 
