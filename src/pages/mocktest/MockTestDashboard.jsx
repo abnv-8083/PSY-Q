@@ -926,7 +926,7 @@ const MockTestDashboard = () => {
                                     {renderAdvantagesBanner()}
                                     <Box>
                                         <Typography variant="h5" sx={{ fontWeight: 700, mb: 3, color: '#1e293b' }}>
-                                            {selectedBundle ? 'Tests in Selected Bundle' : 'All Mock Tests'}
+                                            {selectedBundleIds.length > 0 ? 'Tests in Selected Bundle' : 'All Mock Tests'}
                                         </Typography>
                                         <Grid container spacing={2}>
                                             {displayedTests.map((test) => (
