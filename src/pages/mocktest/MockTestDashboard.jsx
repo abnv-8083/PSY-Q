@@ -27,7 +27,7 @@ const MockTestDashboard = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [selectedBundleId, setSelectedBundleId] = useState(null);
+    const [selectedBundleIds, setSelectedBundleIds] = useState([]);
     const [activeTab, setActiveTab] = useState('all');
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -36,7 +36,7 @@ const MockTestDashboard = () => {
 
     const allTests = subjects.flatMap(s => s.tests || []);
     const activeSubject = subjects.find(s => s.id === selectedSubject);
-    const selectedBundle = bundles.find(b => b.id === selectedBundleId);
+    const selectedBundles = bundles.filter(b => selectedBundleIds.includes(b.id));
 
     // Updated displayedTests logic for Supabase junction table
     // Filtering logic:
@@ -45,9 +45,9 @@ const MockTestDashboard = () => {
         t.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // 2. Further filter by selected bundle if any
-    const displayedTests = selectedBundle
-        ? filteredBySearch.filter(t => selectedBundle.testIds?.includes(t.id))
+    // 2. Further filter by selected bundles if any
+    const displayedTests = selectedBundleIds.length > 0
+        ? filteredBySearch.filter(t => selectedBundles.some(b => b.testIds?.includes(t.id)))
         : (activeSubject ? activeSubject.tests.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase())) : []);
 
     useEffect(() => {
@@ -213,6 +213,26 @@ const MockTestDashboard = () => {
     };
 
     const handleBuyBundle = (bundle) => {
+        // If more than 1 bundle is selected, go to checkout page even if logged in
+        if (selectedBundleIds.length > 1 && selectedBundleIds.includes(bundle.id)) {
+            const bundlesToBuy = bundles.filter(b => selectedBundleIds.includes(b.id));
+            navigate('/academic/mocktest/checkout', {
+                state: {
+                    type: 'multi',
+                    items: bundlesToBuy.map(b => ({
+                        type: 'bundle',
+                        bundleId: b.id,
+                        price: b.price,
+                        name: b.name,
+                        subjectId: b.subject_id
+                    })),
+                    price: bundlesToBuy.reduce((sum, b) => sum + b.price, 0),
+                    name: `${bundlesToBuy.length} Bundles Selection`
+                }
+            });
+            return;
+        }
+
         if (!user) {
             navigate('/academic/mocktest/checkout', {
                 state: {
@@ -311,7 +331,7 @@ const MockTestDashboard = () => {
     };
 
     const renderBundleCard = (bundle, isList = false) => {
-        const isSelected = selectedBundleId === bundle.id;
+        const isSelected = selectedBundleIds.includes(bundle.id);
 
         return (
             <motion.div
@@ -322,7 +342,11 @@ const MockTestDashboard = () => {
             >
                 <Card
                     key={bundle.id}
-                    onClick={() => setSelectedBundleId(isSelected ? null : bundle.id)}
+                    onClick={() => setSelectedBundleIds(prev =>
+                        prev.includes(bundle.id)
+                            ? prev.filter(id => id !== bundle.id)
+                            : [...prev, bundle.id]
+                    )}
                     sx={{
                         width: '100%',
                         cursor: 'pointer',

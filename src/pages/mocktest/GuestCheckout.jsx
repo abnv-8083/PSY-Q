@@ -127,9 +127,26 @@ const GuestCheckout = () => {
                 },
                 onSuccess: async (paymentData) => {
                     // Save guest order to Supabase
-                    const { error: dbError } = await supabase
-                        .from('guest_orders')
-                        .insert({
+                    const orderEntries = orderData.type === 'multi'
+                        ? orderData.items.map(item => ({
+                            full_name: formData.fullName,
+                            email: formData.email,
+                            phone: formData.phone,
+                            address: formData.address,
+                            city: formData.city,
+                            state: formData.state,
+                            postal_code: formData.postalCode,
+                            country: formData.country,
+                            item_type: item.type,
+                            item_id: item.type === 'bundle' ? item.bundleId : item.testId,
+                            item_name: item.name,
+                            amount: item.price,
+                            tax_amount: calculateTax(item.price),
+                            total_amount: item.price + calculateTax(item.price),
+                            status: 'success',
+                            payment_id: paymentData.paymentId
+                        }))
+                        : [{
                             full_name: formData.fullName,
                             email: formData.email,
                             phone: formData.phone,
@@ -146,7 +163,11 @@ const GuestCheckout = () => {
                             total_amount: total,
                             status: 'success',
                             payment_id: paymentData.paymentId
-                        });
+                        }];
+
+                    const { error: dbError } = await supabase
+                        .from('guest_orders')
+                        .insert(orderEntries);
 
                     if (dbError) {
                         console.error('Error saving guest order:', dbError);
@@ -277,10 +298,19 @@ const GuestCheckout = () => {
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>Order Summary</Typography>
             <Paper elevation={0} sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: '1px solid #e2e8f0' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Typography color="textSecondary">{orderData.type === 'bundle' ? 'Bundle' : 'Mock Test'}</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{orderData.name}</Typography>
-                </Box>
+                {orderData.type === 'multi' ? (
+                    orderData.items.map((item, idx) => (
+                        <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                            <Typography color="textSecondary" sx={{ fontSize: '0.9rem' }}>{item.name}</Typography>
+                            <Typography sx={{ fontWeight: 600 }}>₹{item.price}</Typography>
+                        </Box>
+                    ))
+                ) : (
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                        <Typography color="textSecondary">{orderData.type === 'bundle' ? 'Bundle' : 'Mock Test'}</Typography>
+                        <Typography sx={{ fontWeight: 600 }}>{orderData.name}</Typography>
+                    </Box>
+                )}
                 <Divider sx={{ my: 2 }} />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
                     <Typography color="textSecondary">Price</Typography>
@@ -442,8 +472,14 @@ const GuestCheckout = () => {
                                     </Box>
 
                                     <Box sx={{ mb: 3 }}>
-                                        <Typography variant="caption" sx={{ color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Item</Typography>
-                                        <Typography variant="body1" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.3 }}>{orderData.name}</Typography>
+                                        <Typography variant="caption" sx={{ color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>Item(s)</Typography>
+                                        {orderData.type === 'multi' ? (
+                                            orderData.items.map((item, idx) => (
+                                                <Typography key={idx} variant="body2" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.3, mt: 0.5 }}>• {item.name}</Typography>
+                                            ))
+                                        ) : (
+                                            <Typography variant="body1" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.3 }}>{orderData.name}</Typography>
+                                        )}
                                     </Box>
 
                                     <Box sx={{ mb: 3 }}>
