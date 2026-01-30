@@ -7,7 +7,7 @@ const FeatureCards = () => {
       title: "Mock Test",
       description: "Practice with premium UGC NET Psychology mock tests and get instant results.",
       link: "/academic/mocktest",
-      image: "/images/academic.webp"
+      image: "/images/mocktest_card.png"
     },
     {
       title: "Counselling",
