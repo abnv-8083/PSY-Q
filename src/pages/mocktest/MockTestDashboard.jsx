@@ -419,9 +419,14 @@ const MockTestDashboard = () => {
     };
 
     const renderTestItem = (test) => {
-        const isUnlocked = test.free || userBundles.includes(test.id) || attempts[test.id] > 0;
-        const iconColor = test.free ? '#16a34a' : (isUnlocked ? '#2563eb' : '#e11d48');
-        const iconBg = test.free ? '#f0fdf4' : (isUnlocked ? '#eff6ff' : '#fff1f2');
+        const ownedByBundle = hasBundleAccess(test.id);
+        const testAttempts = attempts[test.id] || 0;
+        const isFreeTry = !test.free && !ownedByBundle && testAttempts === 0;
+        const isFullyUnlocked = test.free || ownedByBundle;
+        const needsPayment = !isFullyUnlocked && !isFreeTry;
+
+        const iconColor = (isFullyUnlocked || isFreeTry) ? '#16a34a' : '#e11d48';
+        const iconBg = (isFullyUnlocked || isFreeTry) ? '#f0fdf4' : '#fff1f2';
 
         return (
             <motion.div
@@ -460,7 +465,7 @@ const MockTestDashboard = () => {
                             boxShadow: `0 4px 10px ${iconColor}15`
                         }}
                     >
-                        {test.free ? <Sparkles size={20} /> : (isUnlocked ? <CheckCircle size={20} /> : <Lock size={20} />)}
+                        {isFullyUnlocked ? <CheckCircle size={20} /> : (isFreeTry ? <Sparkles size={20} /> : <Lock size={20} />)}
                     </Avatar>
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                         <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e293b', lineHeight: 1.2, mb: 0.5 }}>
@@ -477,27 +482,33 @@ const MockTestDashboard = () => {
                                     <Typography variant="caption" sx={{ fontWeight: 700 }}>Free</Typography>
                                 </Box>
                             )}
+                            {isFreeTry && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#db2777' }}>
+                                    <Sparkles size={12} />
+                                    <Typography variant="caption" sx={{ fontWeight: 700 }}>1st Try Free</Typography>
+                                </Box>
+                            )}
                         </Box>
                     </Box>
                     <Button
-                        variant={isUnlocked ? "contained" : "outlined"}
+                        variant={(isFullyUnlocked || isFreeTry) ? "contained" : "outlined"}
                         size="small"
-                        onClick={() => isUnlocked ? handleStartTest(test.subjectId || selectedSubject, test.id, test.price, test.name) : handleUnlockTest(test)}
+                        onClick={() => handleStartTest(test.subjectId || selectedSubject, test.id, test.price, test.name)}
                         sx={{
                             borderRadius: 2,
                             fontWeight: 800,
                             textTransform: 'none',
                             px: 2.5,
-                            bgcolor: isUnlocked ? '#db2777' : 'transparent',
+                            bgcolor: (isFullyUnlocked || isFreeTry) ? '#db2777' : 'transparent',
                             borderColor: '#db2777',
-                            color: isUnlocked ? '#fff' : '#db2777',
+                            color: (isFullyUnlocked || isFreeTry) ? '#fff' : '#db2777',
                             '&:hover': {
-                                bgcolor: isUnlocked ? '#be185d' : 'rgba(219, 39, 119, 0.05)',
+                                bgcolor: (isFullyUnlocked || isFreeTry) ? '#be185d' : 'rgba(219, 39, 119, 0.05)',
                                 borderColor: '#db2777'
                             }
                         }}
                     >
-                        {isUnlocked ? 'Start' : 'Unlock'}
+                        {isFullyUnlocked ? 'Start' : (isFreeTry ? 'Free Try' : `₹${test.price}`)}
                     </Button>
                 </Paper>
             </motion.div>
