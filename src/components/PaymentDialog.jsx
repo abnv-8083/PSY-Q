@@ -104,70 +104,97 @@ const PaymentDialog = ({ open, onClose, testName, testPrice, onUnlock, user, tes
                         transition={{ duration: 0.3 }}
                     >
                         <Paper
-                            elevation={4}
+                            elevation={12}
                             sx={{
                                 position: 'relative',
                                 p: 3,
-                                borderRadius: 5,
+                                borderRadius: 6,
                                 maxWidth: 340,
                                 width: '100%',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 textAlign: 'center',
-                                border: `1.5px solid ${isBundle ? '#1e293b20' : '#db277720'}`,
-                                bgcolor: '#fff',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                                backgroundImage: isBundle
+                                    ? 'linear-gradient(135deg, #1e293b 0%, #334155 100%)'
+                                    : 'linear-gradient(135deg, #db2777 0%, #9d174d 100%)',
+                                color: '#fff',
+                                overflow: 'hidden'
                             }}
                         >
+                            {/* Decorative Background Blob */}
+                            <Box sx={{
+                                position: 'absolute',
+                                top: '-20%',
+                                right: '-20%',
+                                width: '60%',
+                                height: '60%',
+                                background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+                                borderRadius: '50%',
+                                filter: 'blur(30px)',
+                            }} />
+
                             <Box sx={{
                                 mb: 1.5,
-                                bgcolor: isBundle ? '#1e293b10' : '#db277710',
-                                p: 1.2,
+                                bgcolor: 'rgba(255, 255, 255, 0.15)',
+                                p: 1.5,
                                 borderRadius: '50%',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center'
+                                justifyContent: 'center',
+                                backdropFilter: 'blur(4px)',
+                                border: '1px solid rgba(255,255,255,0.2)'
                             }}>
-                                <Sparkles size={24} color={isBundle ? '#1e293b' : '#db2777'} />
+                                <Sparkles size={28} color="#fff" />
                             </Box>
 
-                            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1a2035', mb: 0.5 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#fff', mb: 0.5, opacity: 0.9 }}>
                                 {testName || 'Mock Test Package'}
                             </Typography>
 
-                            <Typography variant="h3" sx={{ fontWeight: 900, color: isBundle ? '#1e293b' : '#db2777', mb: 1.5 }}>
+                            <Typography variant="h2" sx={{ fontWeight: 950, color: '#fff', mb: 1.5, textShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                                 ₹{testPrice || '0'}
                             </Typography>
 
                             <Chip
-                                label={isBundle ? "Full 1 Year Access" : "Limited Time Offer"}
+                                label={isBundle ? "FULL 1 YEAR ACCESS" : "LIMITED TIME OFFER"}
                                 size="small"
                                 sx={{
-                                    bgcolor: isBundle ? '#1e293b' : '#db277715',
-                                    color: isBundle ? '#fff' : '#db2777',
-                                    fontWeight: 800,
-                                    mb: 2.5,
-                                    fontSize: '0.7rem',
-                                    px: 1
+                                    bgcolor: '#fff',
+                                    color: isBundle ? '#1e293b' : '#db2777',
+                                    fontWeight: 900,
+                                    mb: 3,
+                                    fontSize: '0.75rem',
+                                    letterSpacing: '0.05em',
+                                    px: 1.5,
+                                    height: 28,
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                                 }}
                             />
 
-                            <Box sx={{ width: '100%' }}>
-                                <Divider sx={{ mb: 2.5 }} />
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.2, alignItems: 'flex-start', px: 1 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                        <CheckCircle2 size={16} color={isBundle ? '#1e293b' : '#db2777'} />
-                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>
+                            <Box sx={{ width: '100%', position: 'relative', zIndex: 1 }}>
+                                <Divider sx={{ mb: 3, borderColor: 'rgba(255,255,255,0.15)' }} />
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8, alignItems: 'flex-start', px: 1 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', p: 0.6, borderRadius: '50%', display: 'flex' }}>
+                                            <CheckCircle2 size={16} color="#fff" />
+                                        </Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#fff', fontSize: '0.9rem' }}>
                                             {isBundle ? `Total ${testCount || 'All'} Premium Tests` : '1 Additional Reattempt'}
                                         </Typography>
                                     </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                        <CheckCircle2 size={16} color={isBundle ? '#1e293b' : '#db2777'} />
-                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>Detailed Result Analytics</Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', p: 0.6, borderRadius: '50%', display: 'flex' }}>
+                                            <CheckCircle2 size={16} color="#fff" />
+                                        </Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#fff', fontSize: '0.9rem' }}>Expert Solution Analysis</Typography>
                                     </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                        <CheckCircle2 size={16} color={isBundle ? '#1e293b' : '#db2777'} />
-                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569', fontSize: '0.85rem' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', p: 0.6, borderRadius: '50%', display: 'flex' }}>
+                                            <CheckCircle2 size={16} color="#fff" />
+                                        </Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#fff', fontSize: '0.9rem' }}>
                                             {isBundle ? '365 Days Validity' : 'Instant Activation'}
                                         </Typography>
                                     </Box>
