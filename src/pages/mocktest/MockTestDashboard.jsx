@@ -174,9 +174,22 @@ const MockTestDashboard = () => {
     };
 
     const handleStartTest = (subjectId, testId, price, testName) => {
-        // If not logged in, send student to login page first
+        // If not logged in, decide whether to go to login or guest checkout
         if (!user) {
-            navigate('/student/signin', { state: { from: location } });
+            const testAttempts = attempts[testId] || 0;
+            if (price > 0 && testAttempts > 0) {
+                navigate('/academic/mocktest/checkout', {
+                    state: {
+                        type: 'test',
+                        subjectId,
+                        testId,
+                        price,
+                        name: testName
+                    }
+                });
+            } else {
+                navigate('/student/signin', { state: { from: location } });
+            }
             return;
         }
 
@@ -201,7 +214,15 @@ const MockTestDashboard = () => {
 
     const handleBuyBundle = (bundle) => {
         if (!user) {
-            navigate('/student/signin', { state: { from: location } });
+            navigate('/academic/mocktest/checkout', {
+                state: {
+                    type: 'bundle',
+                    bundleId: bundle.id,
+                    price: bundle.price,
+                    name: bundle.name,
+                    subjectId: bundle.subject_id
+                }
+            });
             return;
         }
         setPendingBundleData(bundle);

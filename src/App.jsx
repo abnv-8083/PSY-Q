@@ -22,6 +22,7 @@ import MockTestRules from './pages/mocktest/MockTestRules';
 import MockTestInterface from './pages/mocktest/MockTestInterface';
 import ResultAnalytics from './pages/mocktest/ResultAnalytics';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import GuestCheckout from './pages/mocktest/GuestCheckout';
 import StudentProfile from './pages/student/StudentProfile';
 import StudentPayment from './pages/student/StudentPayment';
 import Policies from './pages/Policies';
@@ -61,6 +62,7 @@ function App() {
           <Route path="/academic/mocktest/:subjectId/:testId/rules" element={<MockTestRules />} />
           <Route path="/academic/mocktest/:subjectId/:testId/exam" element={<MockTestInterface />} />
           <Route path="/academic/mocktest/:subjectId/:testId/results" element={<ResultAnalytics />} />
+          <Route path="/academic/mocktest/checkout" element={<GuestCheckout />} />
           <Route path="/student/profile" element={<StudentProfile />} />
           <Route path="/student/payment" element={<StudentPayment />} />
           {/* Admin Section */}
