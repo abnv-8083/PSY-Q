@@ -20,7 +20,6 @@ const GeneralInstructions = () => {
     const navigate = useNavigate();
     const [testDetails, setTestDetails] = useState(null);
     const [agreed, setAgreed] = useState(false);
-    const [agreed, setAgreed] = useState(false);
 
     useEffect(() => {
         const fetchTestDetails = async () => {
