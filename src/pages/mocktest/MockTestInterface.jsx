@@ -152,7 +152,9 @@ const MockTestInterface = () => {
                     total: questions.length,
                     answers
                 });
-                navigate(`/academic/mocktest/${subjectId}/${testId}/results`);
+                navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
+                    state: { score, total: questions.length, answers, questions }
+                });
             } catch (err) {
                 console.error("Submission failed:", err);
             }

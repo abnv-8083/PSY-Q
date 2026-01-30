@@ -35,13 +35,74 @@ const ConfettiParticle = ({ side }) => {
     );
 };
 
+import { supabase } from '../../lib/supabaseClient';
+import { auth } from '../../lib/firebase';
+
 const ResultAnalytics = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
-    const { subjectId } = useParams();
-    const { score, total, answers, questions } = state || { score: 0, total: 0, answers: {}, questions: [] };
+    const { subjectId, testId } = useParams();
 
-    const percentage = Math.round((score / total) * 100) || 0;
+    const [score, setScore] = React.useState(state?.score || 0);
+    const [total, setTotal] = React.useState(state?.total || 0);
+    const [answers, setAnswers] = React.useState(state?.answers || {});
+    const [questions, setQuestions] = React.useState(state?.questions || []);
+    const [loading, setLoading] = React.useState(!state);
+
+    React.useEffect(() => {
+        if (!state && testId) {
+            const fetchData = async () => {
+                try {
+                    // Fetch questions first
+                    const { data: qData } = await supabase
+                        .from('questions')
+                        .select('*')
+                        .eq('test_id', testId)
+                        .order('created_at', { ascending: true });
+
+                    if (qData) {
+                        const mappedQuestions = qData.map(q => ({
+                            ...q,
+                            text: q.text || q.question_text,
+                            correctKey: q.correct_key !== undefined ? q.correct_key : q.correct_answer
+                        }));
+                        setQuestions(mappedQuestions);
+                        setTotal(mappedQuestions.length);
+
+                        // Fetch latest attempt for this user and test
+                        const { data: attempt } = await supabase
+                            .from('attempts')
+                            .select('*')
+                            .eq('test_id', testId)
+                            .eq('user_id', auth.currentUser?.uid)
+                            .order('created_at', { ascending: false })
+                            .limit(1)
+                            .single();
+
+                        if (attempt) {
+                            setScore(attempt.score);
+                            setAnswers(attempt.answers || {});
+                        }
+                    }
+                } catch (err) {
+                    console.error("Error fetching result analytics:", err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchData();
+        }
+    }, [state, testId]);
+
+
+    if (loading) return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: 2 }}>
+            <CircularProgress size={60} thickness={4} sx={{ color: '#db2777' }} />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: '#666' }}>Analyzing Your Results...</Typography>
+        </Box>
+    );
+
+    const percentage = Math.round((score / (total || 1)) * 100) || 0;
 
     const getQuote = (pct) => {
         if (pct >= 90) return "Outstanding! You've mastered this subject.";
