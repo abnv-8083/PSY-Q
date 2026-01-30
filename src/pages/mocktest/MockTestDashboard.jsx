@@ -843,14 +843,11 @@ const MockTestDashboard = () => {
                                     <Box sx={{
                                         display: 'flex',
                                         flexDirection: { xs: 'column', md: 'row' },
-                                        gap: 3,
-                                        height: { md: 'calc(100vh - 200px)' },
-                                        overflow: { md: 'hidden' }
+                                        gap: 3
                                     }}>
                                         {/* Left Column - Bundles */}
                                         <Box sx={{
                                             width: { xs: '100%', md: '60%' },
-                                            overflowY: { md: 'auto' },
                                             pr: { md: 2 },
                                             pb: 2,
                                             display: 'flex',
@@ -870,7 +867,6 @@ const MockTestDashboard = () => {
                                         {/* Right Column - Tests */}
                                         <Box sx={{
                                             width: { xs: '100%', md: '40%' },
-                                            overflowY: { md: 'auto' },
                                             borderLeft: { md: '1px solid #e2e8f0' },
                                             pl: { md: 2 },
                                             pb: 2
