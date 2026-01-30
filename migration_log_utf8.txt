@@ -1,0 +1,53 @@
+﻿[dotenv@17.2.3] injecting env (13) from .env -- tip: ÔÜÖ´©Å  enable debug logging with { debug: true }
+­ƒÜÇ Starting Firebase to Supabase Migration...
+Found 3 subjects to migrate.
+node : Error 
+inserting subject 
+ghcf: {
+At line:1 char:1
++ node scripts/migrate
+-to-supabase.js > 
+migration_log.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Error inse   
+ rting subject ghc    
+f: {:String) [],     
+RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+  code: '42501',
+  details: null,
+  hint: null,
+  message: 'new row 
+violates row-level 
+security policy for 
+table "subjects"'
+}
+Error inserting 
+subject Psychology: {
+  code: '42501',
+  details: null,
+  hint: null,
+  message: 'new row 
+violates row-level 
+security policy for 
+table "subjects"'
+}
+Error inserting 
+subject asdf: {
+  code: '42501',
+  details: null,
+  hint: null,
+  message: 'new row 
+violates row-level 
+security policy for 
+table "subjects"'
+}
+
+­ƒÄë Migration Complete!

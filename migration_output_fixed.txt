@@ -1,0 +1,65 @@
+﻿[dotenv@17.2.3] injecting env (11) from .env -- tip: ÔÜÖ´©Å  suppress all logs with { quiet: true }
+node : file:///D:/psy-
+q-main/node_modules/@s
+upabase/supabase-js/di
+st/index.mjs:150
+At line:1 char:1
++ node scripts/migrate
+-to-supabase.js > 
+migration_output.txt 
+2>&1
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (file:///D:   
+ /psy-...t/index.m    
+js:150:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+	if (!trimmedUrl) 
+throw new 
+Error("supabaseUrl is 
+required.");
+	                     
+  ^
+
+Error: supabaseUrl is 
+required.
+    at 
+validateSupabaseUrl (f
+ile:///D:/psy-q-main/n
+ode_modules/@supabase/
+supabase-js/dist/index
+.mjs:150:25)
+    at new 
+SupabaseClient (file:/
+//D:/psy-q-main/node_m
+odules/@supabase/supab
+ase-js/dist/index.mjs:
+199:19)
+    at createClient (f
+ile:///D:/psy-q-main/n
+ode_modules/@supabase/
+supabase-js/dist/index
+.mjs:390:9)
+    at file:///D:/psy-
+q-main/scripts/migrate
+-to-supabase.js:29:18
+    at ModuleJob.run (
+node:internal/modules/
+esm/module_job:413:25)
+    at async onImport.
+tracePromise.__proto__
+ (node:internal/module
+s/esm/loader:660:26)
+    at async asyncRunE
+ntryPointWithESMLoader
+ (node:internal/module
+s/run_main:101:5)
+
+Node.js v24.13.0

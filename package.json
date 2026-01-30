@@ -1,0 +1,53 @@
+{
+  "name": "PSY-Q",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:vercel": "vercel dev",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "create-admin": "node scripts/createSuperAdmin.js",
+    "optimize:images": "node compress-images.js",
+    "convert:webp": "node convert-to-webp.js",
+    "optimize:all": "npm run optimize:images && npm run convert:webp"
+  },
+  "dependencies": {
+    "@emailjs/browser": "^4.4.1",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@mui/system": "^7.3.3",
+    "@supabase/supabase-js": "^2.90.1",
+    "dotenv": "^17.2.3",
+    "firebase": "^12.8.0",
+    "framer-motion": "^12.29.2",
+    "lucide-react": "^0.562.0",
+    "razorpay": "^2.9.6",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.4",
+    "resend": "^6.7.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@tailwindcss/postcss": "^4.1.14",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "autoprefixer": "^10.4.21",
+    "baseline-browser-mapping": "^2.9.11",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "postcss": "^8.5.6",
+    "sharp": "^0.34.5",
+    "tailwindcss": "^4.1.14",
+    "terser": "^5.44.1",
+    "vite": "^7.1.7"
+  }
+}
