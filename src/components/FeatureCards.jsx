@@ -4,6 +4,12 @@ import FeatureCard from './FeatureCard';
 const FeatureCards = () => {
   const features = [
     {
+      title: "Mock Test",
+      description: "Practice with premium UGC NET Psychology mock tests and get instant results.",
+      link: "/academic/mocktest",
+      image: "/images/academic.webp"
+    },
+    {
       title: "Counselling",
       description: "Professional Counselling service to support your mental and emotional health",
       link: "/therapists",
@@ -34,8 +40,8 @@ const FeatureCards = () => {
             Discover the essential aspects of Psy-Q that help you succeed.
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {features.map((feature, index) => (
             <Link key={index} to={feature.link} className="block" style={{ textDecoration: 'none', color: 'inherit' }}>
               <FeatureCard
