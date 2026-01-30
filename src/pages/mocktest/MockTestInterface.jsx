@@ -64,7 +64,11 @@ const MockTestInterface = () => {
                     .order('created_at', { ascending: true });
 
                 if (qErr) throw qErr;
-                setQuestions(qData.map(q => ({ ...q, correctKey: q.correct_key })));
+                setQuestions(qData.map(q => ({
+                    ...q,
+                    text: q.text || q.question_text,
+                    correctKey: q.correct_key !== undefined ? q.correct_key : q.correct_answer
+                })));
 
                 // Fetch Student Profile for exact name
                 if (auth.currentUser) {
@@ -244,7 +248,7 @@ const MockTestInterface = () => {
                     </Box>
 
                     <Typography variant="body1" sx={{ mt: 2, mb: 4, fontWeight: 500, lineHeight: 1.6, fontSize: '1.05rem', color: '#1a2035' }}>
-                        {currentQuestion?.question_text || (loading ? "Loading question..." : "Question text not available")}
+                        {(currentQuestion?.text || currentQuestion?.question_text) || (loading ? "Loading question..." : "Question text not available")}
                     </Typography>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
