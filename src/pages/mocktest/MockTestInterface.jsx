@@ -22,7 +22,8 @@ import {
     ChevronDown,
     ChevronUp,
     User,
-    Menu
+    Menu,
+    LogOut
 } from 'lucide-react';
 import { auth } from '../../lib/firebase';
 import { supabase } from '../../lib/supabaseClient';
@@ -136,6 +137,12 @@ const MockTestInterface = () => {
         handleSaveNext();
     };
 
+    const handleQuit = () => {
+        if (window.confirm("Are you sure you want to quit the test? Your current progress will be lost and no attempt will be recorded.")) {
+            navigate('/academic/mocktest');
+        }
+    };
+
     const handleSubmit = async () => {
         // Validation/Confirm
         if (window.confirm("Are you sure you want to submit the test?")) {
@@ -198,6 +205,10 @@ const MockTestInterface = () => {
                 <IconButton size="small" sx={{ color: '#fff' }} onClick={() => navigate('/academic/mocktest')}>
                     <Home size={16} />
                     <Typography variant="caption" sx={{ ml: 0.5 }}>Home</Typography>
+                </IconButton>
+                <IconButton size="small" sx={{ color: '#ff4d4d', '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.1)' } }} onClick={handleQuit}>
+                    <LogOut size={16} />
+                    <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 700 }}>QUIT</Typography>
                 </IconButton>
             </Box>
 

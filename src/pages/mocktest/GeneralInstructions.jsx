@@ -11,7 +11,7 @@ import {
     Divider,
     IconButton
 } from '@mui/material';
-import { Home, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, ChevronDown, ChevronUp, LogOut } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 
@@ -48,10 +48,14 @@ const GeneralInstructions = () => {
     return (
         <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
             {/* Top Blue Bar */}
-            <Box sx={{ bgcolor: '#003366', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box sx={{ bgcolor: '#003366', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                 <IconButton size="small" sx={{ color: '#fff', borderRadius: 1 }} onClick={() => navigate('/academic/mocktest')}>
                     <Home size={18} />
                     <Typography variant="caption" sx={{ ml: 0.5 }}>Home</Typography>
+                </IconButton>
+                <IconButton size="small" sx={{ color: '#ff4d4d', borderRadius: 1, '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.1)' } }} onClick={() => navigate('/academic/mocktest')}>
+                    <LogOut size={16} />
+                    <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 700 }}>QUIT</Typography>
                 </IconButton>
             </Box>
 
