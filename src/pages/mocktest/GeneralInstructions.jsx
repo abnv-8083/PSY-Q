@@ -20,7 +20,7 @@ const GeneralInstructions = () => {
     const navigate = useNavigate();
     const [testDetails, setTestDetails] = useState(null);
     const [agreed, setAgreed] = useState(false);
-    const [language, setLanguage] = useState('English');
+    const [agreed, setAgreed] = useState(false);
 
     useEffect(() => {
         const fetchTestDetails = async () => {
@@ -90,20 +90,6 @@ const GeneralInstructions = () => {
             {/* Main Content */}
             <Box sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Paper elevation={0} sx={{ maxWidth: 1000, width: '100%', mb: 4 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="body2">Choose Your Default Language</Typography>
-                            <Select
-                                size="small"
-                                value={language}
-                                onChange={(e) => setLanguage(e.target.value)}
-                                sx={{ minWidth: 120 }}
-                            >
-                                <MenuItem value="English">English</MenuItem>
-                                <MenuItem value="Hindi">Hindi</MenuItem>
-                            </Select>
-                        </Box>
-                    </Box>
 
                     <Typography variant="h6" align="center" sx={{ fontWeight: 800, mb: 4 }}>
                         Please read the instructions carefully
@@ -173,7 +159,7 @@ const GeneralInstructions = () => {
                                     You can click on the "&gt;" arrow which appears to the left of question palette to collapse the question palette thereby maximizing the question window. To view the question palette again, you can click on "&lt;" which appears on the right side of question window.
                                 </li>
                                 <li style={{ marginBottom: '10px' }}>
-                                    You can click on your "Profile" image on top right corner of your screen to change the language during the exam for entire question paper. On clicking of Profile image you will get a drop-down to change the question content to the desired language.
+                                    You can click on your "Profile" image on top right corner of your screen to see your details.
                                 </li>
                                 <li style={{ marginBottom: '20px' }}>
                                     You can click on <Box component="span" sx={{ display: 'inline-flex', bgcolor: '#007bff', borderRadius: '50%', p: 0.2, color: '#fff' }}><ChevronDown size={14} /></Box> to navigate to the bottom and <Box component="span" sx={{ display: 'inline-flex', bgcolor: '#007bff', borderRadius: '50%', p: 0.2, color: '#fff' }}><ChevronUp size={14} /></Box> to navigate to top of the question area, without scrolling.
@@ -227,7 +213,7 @@ const GeneralInstructions = () => {
                         <Divider sx={{ my: 4 }} />
 
                         <Box sx={{ color: '#d32f2f', textAlign: 'center', mb: 4, fontWeight: 700 }}>
-                            Please note all questions will appear in your default language. This language can be changed for a particular question later on.
+                            Please note all questions will appear in English.
                         </Box>
 
                         <Box sx={{ borderTop: '1px solid #ddd', pt: 4, mb: 4 }}>

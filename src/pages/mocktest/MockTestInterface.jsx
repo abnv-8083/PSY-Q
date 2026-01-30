@@ -40,7 +40,7 @@ const MockTestInterface = () => {
     const [timeLeft, setTimeLeft] = useState(7200); // Default 120 mins
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [language, setLanguage] = useState('English');
+    const [studentName, setStudentName] = useState('Student');
 
     useEffect(() => {
         const fetchTestData = async () => {
@@ -65,6 +65,20 @@ const MockTestInterface = () => {
 
                 if (qErr) throw qErr;
                 setQuestions(qData.map(q => ({ ...q, correctKey: q.correct_key })));
+
+                // Fetch Student Profile for exact name
+                if (auth.currentUser) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('full_name')
+                        .eq('id', auth.currentUser.uid)
+                        .single();
+                    if (profile?.full_name) {
+                        setStudentName(profile.full_name);
+                    } else if (auth.currentUser.displayName) {
+                        setStudentName(auth.currentUser.displayName);
+                    }
+                }
             } catch (err) {
                 console.error("Error fetching exam data:", err);
                 setError(err.message);
@@ -199,7 +213,7 @@ const MockTestInterface = () => {
                     <Box>
                         <Box sx={{ display: 'flex', gap: 1 }}>
                             <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Candidate Name :</Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#db2777' }}>{auth.currentUser?.displayName || 'Student'}</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#db2777' }}>{studentName}</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 1 }}>
                             <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Exam Name :</Typography>
@@ -213,10 +227,7 @@ const MockTestInterface = () => {
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Select value={language} onChange={(e) => setLanguage(e.target.value)} size="small" sx={{ minWidth: 120, height: 35, bgcolor: '#fff' }}>
-                        <MenuItem value="English">English</MenuItem>
-                        <MenuItem value="Hindi">Hindi</MenuItem>
-                    </Select>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Exam Center: <strong>Online</strong></Typography>
                 </Box>
             </Box>
 
@@ -233,7 +244,7 @@ const MockTestInterface = () => {
                     </Box>
 
                     <Typography variant="body1" sx={{ mt: 2, mb: 4, fontWeight: 500, lineHeight: 1.6, fontSize: '1.05rem', color: '#1a2035' }}>
-                        {currentQuestion?.question_text || "Loading question..."}
+                        {currentQuestion?.question_text || (loading ? "Loading question..." : "Question text not available")}
                     </Typography>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
