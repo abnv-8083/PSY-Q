@@ -201,50 +201,55 @@ const MockTestInterface = () => {
     return (
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
             {/* Top Bar */}
-            <Box sx={{ bgcolor: '#003366', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2 }}>
-                <IconButton size="small" sx={{ color: '#fff' }} onClick={() => navigate('/academic/mocktest')}>
-                    <Home size={16} />
-                    <Typography variant="caption" sx={{ ml: 0.5 }}>Home</Typography>
+            {/* Top Bar */}
+            <Box sx={{ bgcolor: '#003366', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, height: 32 }}>
+                <IconButton size="small" sx={{ color: '#fff', p: 0.5 }} onClick={() => navigate('/academic/mocktest')}>
+                    <Home size={14} />
+                    <Typography variant="caption" sx={{ ml: 0.5, fontSize: '0.7rem' }}>Home</Typography>
                 </IconButton>
-                <IconButton size="small" sx={{ color: '#ff4d4d', '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.1)' } }} onClick={handleQuit}>
-                    <LogOut size={16} />
-                    <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 700 }}>QUIT</Typography>
+                <IconButton size="small" sx={{ color: '#ff4d4d', p: 0.5, '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.1)' } }} onClick={handleQuit}>
+                    <LogOut size={14} />
+                    <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>QUIT</Typography>
                 </IconButton>
             </Box>
 
             {/* Logo Bar */}
-            <Box sx={{ py: 1.5, px: { xs: 2, md: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee' }}>
-                <Box component="img" src="/logos/psyq-logo-header.png" sx={{ height: 45 }} />
+            {/* Logo Bar */}
+            <Box sx={{ py: 0.5, px: { xs: 2, md: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', height: 45 }}>
+                <Box component="img" src="/logos/psyq-logo-header.png" sx={{ height: 30 }} />
                 <Box sx={{ textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#003366' }}>PSYCHOLOGY QUESTION BANK</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#003366' }}>PSYCHOLOGY QUESTION BANK</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Box component="img" src="/logos/ignou.png" sx={{ height: 35, opacity: 0.7 }} />
+                    <Box component="img" src="/logos/ignou.png" sx={{ height: 25, opacity: 0.7 }} />
                 </Box>
             </Box>
 
             {/* Candidate Header */}
-            <Box sx={{ bgcolor: '#f8f9fa', py: 1.5, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ddd' }}>
+            {/* Candidate Header */}
+            <Box sx={{ bgcolor: '#f8f9fa', py: 0.5, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ddd', height: 40 }}>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <Avatar sx={{ bgcolor: '#e0e0e0', color: '#666', width: 50, height: 50 }}><User size={30} /></Avatar>
+                    <Avatar sx={{ bgcolor: '#e0e0e0', color: '#666', width: 32, height: 32 }}><User size={18} /></Avatar>
                     <Box>
                         <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Candidate Name :</Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#db2777' }}>{studentName}</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Candidate Name :</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#db2777' }}>{studentName}</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Exam Name :</Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#003366' }}>{testName}</Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Remaining Time :</Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 900, bgcolor: '#00d2ff', px: 1, borderRadius: 1 }}>{formatTime(timeLeft)}</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Exam Name :</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#003366' }}>{testName}</Typography>
                         </Box>
                     </Box>
                 </Box>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#666' }}>Exam Center: <strong>Online</strong></Typography>
+                <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Remaining Time :</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 900, bgcolor: '#00d2ff', px: 1, py: 0.2, borderRadius: 1 }}>{formatTime(timeLeft)}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Exam Center: <strong>Online</strong></Typography>
+                    </Box>
                 </Box>
             </Box>
 
@@ -260,7 +265,7 @@ const MockTestInterface = () => {
                         </Box>
                     </Box>
 
-                    <Typography variant="body1" sx={{ mt: 2, mb: 4, fontWeight: 500, lineHeight: 1.6, fontSize: '1.05rem', color: '#1a2035', whiteSpace: 'pre-line' }}>
+                    <Typography variant="body1" sx={{ mt: 2, mb: 4, fontWeight: 500, lineHeight: 1.6, fontSize: '1.05rem', color: '#1a2035', whiteSpace: 'pre-wrap' }}>
                         {(currentQuestion?.text || currentQuestion?.question_text) || (loading ? "Loading question..." : "Question text not available")}
                     </Typography>
 
