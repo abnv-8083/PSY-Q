@@ -151,19 +151,22 @@ const MockTestInterface = () => {
             }, 0);
 
             try {
-                await supabase.from('attempts').insert({
+                const { error: insertError } = await supabase.from('attempts').insert({
                     user_id: auth.currentUser?.uid,
                     test_id: testId,
-                    subject_id: subjectId,
                     score,
                     total: questions.length,
                     answers
                 });
+
+                if (insertError) throw insertError;
+
                 navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
                     state: { score, total: questions.length, answers, questions }
                 });
             } catch (err) {
                 console.error("Submission failed:", err);
+                alert("Failed to save your result. Please try clicking Submit again.");
             }
         }
     };
