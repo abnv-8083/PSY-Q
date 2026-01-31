@@ -155,7 +155,7 @@ const MockTestInterface = () => {
                     user_id: auth.currentUser?.uid,
                     test_id: testId,
                     score,
-                    total: questions.length,
+                    total_questions: questions.length, // Corrected column name
                     answers
                 });
 
@@ -166,7 +166,7 @@ const MockTestInterface = () => {
                 });
             } catch (err) {
                 console.error("Submission failed:", err);
-                alert("Failed to save your result. Please try clicking Submit again.");
+                alert(`Failed to save your result.\n\nReason: ${err.message || 'Unknown error'}\n\nPlease try clicking Submit again.`);
             }
         }
     };
