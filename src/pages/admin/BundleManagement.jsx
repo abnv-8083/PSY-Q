@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, Grid, TextField, Button, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, FormControlLabel, Chip, List, ListItem, ListItemText, ListItemSecondaryAction, ListItemIcon } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
-import { Trash2, Plus, Package, BookOpen, CheckCircle } from 'lucide-react';
+import { Trash2, Plus, Package, BookOpen, CheckCircle, Edit, Save } from 'lucide-react';
 
 const BundleManagement = ({ subject }) => {
     const [bundles, setBundles] = useState([]);
@@ -9,6 +9,7 @@ const BundleManagement = ({ subject }) => {
     const [loading, setLoading] = useState(true);
     const [openDialog, setOpenDialog] = useState(false);
     const [newBundle, setNewBundle] = useState({
+        id: null,
         name: '',
         description: '',
         price: '',
@@ -56,30 +57,57 @@ const BundleManagement = ({ subject }) => {
         }
     };
 
-    const handleCreateBundle = async () => {
+    const handleSaveBundle = async () => {
         if (!newBundle.name || !newBundle.price || newBundle.testIds.length === 0) {
             alert("Please fill name, price and select at least one test.");
             return;
         }
 
         try {
-            // 1. Create Bundle record
-            const { data: bundle, error: bundleError } = await supabase
-                .from('bundles')
-                .insert({
-                    subject_id: subject.id,
-                    name: newBundle.name,
-                    description: newBundle.description,
-                    price: Number(newBundle.price)
-                })
-                .select()
-                .single();
+            let bundleId = newBundle.id;
 
-            if (bundleError) throw bundleError;
+            if (bundleId) {
+                // Update existing bundle
+                const { error: updateError } = await supabase
+                    .from('bundles')
+                    .update({
+                        name: newBundle.name,
+                        description: newBundle.description,
+                        price: Number(newBundle.price)
+                    })
+                    .eq('id', bundleId);
 
-            // 2. Create junction records for tests
+                if (updateError) throw updateError;
+            } else {
+                // Create new bundle
+                const { data: bundle, error: insertError } = await supabase
+                    .from('bundles')
+                    .insert({
+                        subject_id: subject.id,
+                        name: newBundle.name,
+                        description: newBundle.description,
+                        price: Number(newBundle.price)
+                    })
+                    .select()
+                    .single();
+
+                if (insertError) throw insertError;
+                bundleId = bundle.id;
+            }
+
+            // Sync tests (Delete all existing relationships first, then add new ones)
+            // Note: A smarter way would be to diff, but deletion is safer/simpler for now.
+            if (newBundle.id) {
+                const { error: deleteError } = await supabase
+                    .from('bundle_tests')
+                    .delete()
+                    .eq('bundle_id', bundleId);
+                if (deleteError) throw deleteError;
+            }
+
+            // Insert new relationships
             const bundleTests = newBundle.testIds.map(testId => ({
-                bundle_id: bundle.id,
+                bundle_id: bundleId,
                 test_id: testId
             }));
 
@@ -90,12 +118,24 @@ const BundleManagement = ({ subject }) => {
             if (junctionError) throw junctionError;
 
             setOpenDialog(false);
-            setNewBundle({ name: '', description: '', price: '', testIds: [], features: ['Unlimited Re-attempts', 'Detailed Solutions', 'All-India Ranking'] });
+            setNewBundle({ id: null, name: '', description: '', price: '', testIds: [], features: ['Unlimited Re-attempts', 'Detailed Solutions', 'All-India Ranking'] });
             fetchData();
         } catch (error) {
-            console.error("Error creating bundle in Supabase:", error);
-            alert("Failed to create bundle. Please try again.");
+            console.error("Error saving bundle in Supabase:", error);
+            alert("Failed to save bundle. Please try again.");
         }
+    };
+
+    const handleEditBundle = (bundle) => {
+        setNewBundle({
+            id: bundle.id,
+            name: bundle.name,
+            description: bundle.description || '',
+            price: bundle.price,
+            testIds: bundle.testIds || [],
+            features: ['Unlimited Re-attempts', 'Detailed Solutions', 'All-India Ranking'] // Keep default features for now as we don't store them individually yet
+        });
+        setOpenDialog(true);
     };
 
     const handleDeleteBundle = async (id) => {
@@ -147,13 +187,22 @@ const BundleManagement = ({ subject }) => {
                     bundles.map((bundle) => (
                         <Grid item xs={12} md={6} key={bundle.id}>
                             <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid #eee', position: 'relative' }}>
-                                <IconButton
-                                    size="small"
-                                    onClick={() => handleDeleteBundle(bundle.id)}
-                                    sx={{ position: 'absolute', top: 16, right: 16, color: '#ef4444' }}
-                                >
-                                    <Trash2 size={18} />
-                                </IconButton>
+                                <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 1 }}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => handleEditBundle(bundle)}
+                                        sx={{ color: '#64748b' }}
+                                    >
+                                        <Edit size={18} />
+                                    </IconButton>
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => handleDeleteBundle(bundle.id)}
+                                        sx={{ color: '#ef4444' }}
+                                    >
+                                        <Trash2 size={18} />
+                                    </IconButton>
+                                </Box>
                                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>{bundle.name}</Typography>
                                 <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>{bundle.description}</Typography>
 
@@ -175,9 +224,12 @@ const BundleManagement = ({ subject }) => {
                 )}
             </Grid>
 
-            {/* Create Bundle Dialog */}
-            <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
-                <DialogTitle sx={{ fontWeight: 800 }}>Create New Test Bundle</DialogTitle>
+            {/* Create/Edit Bundle Dialog */}
+            <Dialog open={openDialog} onClose={() => {
+                setOpenDialog(false);
+                setNewBundle({ name: '', description: '', price: '', testIds: [], features: ['Unlimited Re-attempts', 'Detailed Solutions', 'All-India Ranking'] });
+            }} fullWidth maxWidth="sm">
+                <DialogTitle sx={{ fontWeight: 800 }}>{newBundle.id ? 'Edit Test Bundle' : 'Create New Test Bundle'}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
                         <TextField
@@ -262,9 +314,12 @@ const BundleManagement = ({ subject }) => {
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 3 }}>
-                    <Button onClick={() => setOpenDialog(false)} sx={{ color: '#64748b' }}>Cancel</Button>
-                    <Button variant="contained" onClick={handleCreateBundle} sx={{ bgcolor: '#db2777', '&:hover': { bgcolor: '#be185d' }, px: 4 }}>
-                        Create Bundle
+                    <Button onClick={() => {
+                        setOpenDialog(false);
+                        setNewBundle({ name: '', description: '', price: '', testIds: [], features: ['Unlimited Re-attempts', 'Detailed Solutions', 'All-India Ranking'] });
+                    }} sx={{ color: '#64748b' }}>Cancel</Button>
+                    <Button variant="contained" onClick={handleSaveBundle} sx={{ bgcolor: '#db2777', '&:hover': { bgcolor: '#be185d' }, px: 4 }}>
+                        {newBundle.id ? 'Update Bundle' : 'Create Bundle'}
                     </Button>
                 </DialogActions>
             </Dialog>
