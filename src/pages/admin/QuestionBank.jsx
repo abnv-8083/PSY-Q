@@ -76,7 +76,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
                 fetchQuestions();
             } catch (error) {
                 console.error("Error deleting question in Supabase:", error);
-                alert("Failed to delete question. Please try again.");
+                alert("Failed to delete question: " + (error.message || "Unknown error"));
             }
         }
     };

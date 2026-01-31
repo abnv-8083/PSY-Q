@@ -64,7 +64,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                 fetchTests();
             } catch (error) {
                 console.error("Error deleting test in Supabase:", error);
-                alert("Failed to delete test. Please try again.");
+                alert("Failed to delete test: " + (error.message || "Unknown error"));
             }
         }
     };
