@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Avatar, Menu, MenuItem } from '@mui/material';
+import { Box, Typography, Grid, Paper, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Avatar, Menu, MenuItem, Fade } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
 import { db, auth, firebaseConfig } from '../../lib/firebase';
 import { supabase } from '../../lib/supabaseClient';
 import { collection, getDocs, query, orderBy, limit, deleteDoc, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -293,435 +294,351 @@ const AdminDashboard = () => {
     };
 
     return (
-        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f4f6f8' }}>
+        <Box className="mesh-bg" sx={{ display: 'flex', minHeight: '100vh', color: '#1e293b' }}>
             {/* Sidebar */}
-            <Box sx={{ width: 280, bgcolor: '#1a2035', color: '#fff', p: 3, display: { xs: 'none', md: 'block' }, overflowY: 'auto' }}>
-                <Typography variant="h5" sx={{ mb: 6, fontWeight: 800, color: '#E91E63' }}>PSY-Q ADMIN</Typography>
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <SidebarItem icon={<Settings size={20} />} label="Overview" active={tab === 0} onClick={() => setTab(0)} />
-                    <SidebarItem icon={<BookOpen size={20} />} label="Content Management" active={tab === 1} onClick={() => setTab(1)} />
-                    <SidebarItem icon={<Package size={20} />} label="Test Bundles" active={tab === 2} onClick={() => setTab(2)} />
-                    <SidebarItem icon={<Users size={20} />} label="Admins" active={tab === 3} onClick={() => setTab(3)} />
+            <Box sx={{
+                width: 280,
+                bgcolor: '#0f172a',
+                color: '#fff',
+                display: 'flex',
+                flexDirection: 'column',
+                p: 3,
+                borderRight: '1px solid rgba(255,255,255,0.05)',
+                position: 'sticky',
+                top: 0,
+                height: '100vh',
+                zIndex: 1000,
+                backdropFilter: 'blur(20px)',
+                background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
+                display: { xs: 'none', md: 'flex' }
+            }}>
+                <Box sx={{ mb: 6, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{
+                        width: 45, height: 45, borderRadius: 3,
+                        bgcolor: '#E91E63', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 0 20px rgba(233, 30, 99, 0.4)'
+                    }}>
+                        <Settings color="#fff" size={24} />
+                    </Box>
+                    <Box>
+                        <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: -1, lineHeight: 1 }}>Psy-Q</Typography>
+                        <Typography variant="caption" sx={{ color: '#E91E63', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5 }}>Admin Portal</Typography>
+                    </Box>
                 </Box>
 
-                <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.1)' }} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, overflowY: 'auto', pr: 1 }}>
+                    <SidebarItem icon={<Database size={20} />} label="Dashboard" active={tab === 0} onClick={() => setTab(0)} />
+                    <SidebarItem icon={<BookOpen size={20} />} label="Content Management" active={tab === 1} onClick={() => setTab(1)} />
+                    <SidebarItem icon={<Package size={20} />} label="Bundle Management" active={tab === 2} onClick={() => setTab(2)} />
+                    <SidebarItem icon={<Users size={20} />} label="Admin Users" active={tab === 3} onClick={() => setTab(3)} />
 
-                <Box>
-                    <Typography variant="caption" sx={{ color: '#a0acb9', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 700, mb: 2, display: 'block' }}>
+                    <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.1)' }} />
+
+                    <Typography variant="caption" sx={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.5, fontWeight: 800, mb: 2, px: 1 }}>
                         Subjects ({subjects.length})
                     </Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: '300px', overflowY: 'auto' }}>
-                        {subjects.length === 0 ? (
-                            <Typography variant="body2" sx={{ color: '#a0acb9', fontSize: '0.75rem', fontStyle: 'italic', px: 1.5 }}>
-                                No subjects created yet
-                            </Typography>
-                        ) : (
-                            subjects.map((subject) => (
-                                <Box
-                                    key={subject.id}
-                                    onClick={() => handleSubjectClick(subject)}
-                                    sx={{
-                                        p: 1.5,
-                                        borderRadius: 2,
-                                        bgcolor: 'rgba(255,255,255,0.03)',
-                                        border: '1px solid rgba(255,255,255,0.05)',
-                                        transition: 'all 0.2s',
-                                        cursor: 'pointer',
-                                        position: 'relative',
-                                        '&:hover': {
-                                            bgcolor: 'rgba(255,255,255,0.08)',
-                                            borderColor: '#E91E63',
-                                            transform: 'translateX(4px)',
-                                            '& .delete-subject-btn': { opacity: 1 }
-                                        }
-                                    }}
-                                >
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#fff', fontSize: '0.85rem', mb: 0.5 }}>
-                                            {subject.name}
-                                        </Typography>
-                                        <IconButton
-                                            className="delete-subject-btn"
-                                            size="small"
-                                            onClick={(e) => handleDeleteSubject(e, subject.id, subject.name)}
-                                            sx={{
-                                                p: 0.5,
-                                                color: 'rgba(255,255,255,0.3)',
-                                                opacity: 0,
-                                                transition: 'all 0.2s',
-                                                '&:hover': { color: '#F44336' }
-                                            }}
-                                        >
-                                            <Trash2 size={14} />
-                                        </IconButton>
-                                    </Box>
-                                    {subject.description && (
-                                        <Typography variant="caption" sx={{ color: '#a0acb9', fontSize: '0.7rem', display: 'block', lineHeight: 1.3 }}>
-                                            {subject.description.length > 50 ? subject.description.substring(0, 50) + '...' : subject.description}
-                                        </Typography>
-                                    )}
+
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        {subjects.map((subject) => (
+                            <Box
+                                key={subject.id}
+                                onClick={() => handleSubjectClick(subject)}
+                                sx={{
+                                    p: 1.5, borderRadius: 3, cursor: 'pointer',
+                                    bgcolor: 'rgba(255,255,255,0.03)',
+                                    border: '1px solid rgba(255,255,255,0.05)',
+                                    transition: 'all 0.2s',
+                                    '&:hover': {
+                                        bgcolor: 'rgba(255,255,255,0.08)',
+                                        borderColor: 'rgba(233, 30, 99, 0.4)',
+                                        '& .delete-btn': { opacity: 1 }
+                                    }
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#f8fafc' }}>{subject.name}</Typography>
+                                    <IconButton
+                                        className="delete-btn"
+                                        size="small"
+                                        onClick={(e) => handleDeleteSubject(e, subject.id, subject.name)}
+                                        sx={{ opacity: 0, p: 0.5, color: 'rgba(255,255,255,0.3)', '&:hover': { color: '#ef4444' } }}
+                                    >
+                                        <Trash2 size={14} />
+                                    </IconButton>
                                 </Box>
-                            ))
-                        )}
+                            </Box>
+                        ))}
                     </Box>
+                </Box>
+
+                <Box sx={{
+                    mt: 3, p: 2.5, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.05)', display: 'flex',
+                    alignItems: 'center', gap: 2
+                }}>
+                    <Avatar sx={{ bgcolor: '#E91E63', fontWeight: 700, width: 40, height: 40, fontSize: '0.875rem' }}>
+                        {currentUserProfile?.fullName?.charAt(0) || 'A'}
+                    </Avatar>
+                    <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {currentUserProfile?.fullName || 'Admin User'}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Administrator</Typography>
+                    </Box>
+                    <IconButton size="small" onClick={() => navigate('/')} sx={{ color: '#64748b' }}>
+                        <LogOut size={16} />
+                    </IconButton>
                 </Box>
             </Box>
 
             {/* Main Content */}
-            <Box sx={{ flex: 1, p: { xs: 2, md: 5 }, overflowY: 'auto' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                    <Typography variant="h4" sx={{ fontWeight: 800 }}>
-                        {tab === 0 ? "Dashboard Overview" : tab === 1 ? "Content Management" : tab === 2 ? "Test Bundles" : "Admins"}
-                    </Typography>
-
-                    {/* Admin Profile Section */}
-                    <Box
-                        onClick={(e) => setAnchorEl(e.currentTarget)}
-                        sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 2,
-                            cursor: 'pointer',
-                            p: 1,
-                            px: 2,
-                            borderRadius: 3,
-                            transition: 'all 0.2s',
-                            '&:hover': {
-                                bgcolor: 'rgba(0,0,0,0.05)'
-                            }
-                        }}
+            <Box sx={{ flex: 1, p: { xs: 3, md: 6 }, overflow: 'auto' }}>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={tab}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3 }}
                     >
-                        <Box sx={{ textAlign: 'right', display: { xs: 'none', sm: 'block' } }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1a2035', lineHeight: 1.2 }}>
-                                {currentUserProfile?.name || 'Administrator'}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: '#64748b', textTransform: 'capitalize' }}>
-                                {currentUserProfile?.role || 'Full Admin'}
-                            </Typography>
-                        </Box>
-                        <Avatar
-                            sx={{
-                                bgcolor: '#E91E63',
-                                width: 40,
-                                height: 40,
-                                fontWeight: 700,
-                                fontSize: '1rem',
-                                boxShadow: '0 4px 10px rgba(233, 30, 99, 0.2)'
-                            }}
-                        >
-                            {(currentUserProfile?.name || 'A')[0]}
-                        </Avatar>
-                        <ChevronDown size={16} color="#64748b" />
-                    </Box>
+                        {tab === 0 && (
+                            <>
+                                <Box sx={{ mb: 5 }}>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>Dashboard Overview</Typography>
+                                    <Typography variant="body1" sx={{ color: '#64748b' }}>Welcome back to the management console.</Typography>
+                                </Box>
 
-                    {/* Profile Menu */}
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={() => setAnchorEl(null)}
-                        PaperProps={{
-                            sx: {
-                                mt: 1.5,
-                                borderRadius: 3,
-                                minWidth: 180,
-                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                border: '1px solid #edf2f7'
-                            }
-                        }}
-                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                    >
-                        <MenuItem onClick={() => { setAnchorEl(null); setTab(0); }} sx={{ gap: 1.5, py: 1.5 }}>
-                            <Settings size={18} /> Profile Settings
-                        </MenuItem>
-                        <Divider />
-                        <MenuItem onClick={handleLogout} sx={{ gap: 1.5, py: 1.5, color: '#f44336' }}>
-                            <LogOut size={18} /> Logout
-                        </MenuItem>
-                    </Menu>
-                </Box>
-
-                {tab === 0 && (
-                    <Box>
-                        {/* Summary Stats */}
-                        <Grid container spacing={3} sx={{ mb: 4 }}>
-                            <StatCard icon={<BookOpen color="#E91E63" />} label="Total Subjects" value={stats.subjects} />
-                            <StatCard icon={<Database color="#2196F3" />} label="Mock Tests" value={stats.tests} />
-                            <StatCard icon={<Users color="#4CAF50" />} label="Total Attempts" value={stats.attempts} />
-                        </Grid>
-
-                        {/* Subjects Overview */}
-                        <Box sx={{ mb: 4 }}>
-                            <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>Subjects Overview</Typography>
-                            {subjectsWithTests.length === 0 ? (
-                                <Paper sx={{ p: 5, textAlign: 'center', border: '1px dashed #ccc' }}>
-                                    <BookOpen size={48} color="#ccc" style={{ marginBottom: 16 }} />
-                                    <Typography color="textSecondary">No subjects created yet. Go to Content Management to add subjects.</Typography>
-                                </Paper>
-                            ) : (
-                                <Grid container spacing={3}>
-                                    {subjectsWithTests.map((subject) => (
-                                        <Grid item xs={12} sm={6} md={4} key={subject.id}>
-                                            <Paper
-                                                onClick={() => handleSubjectClick(subject)}
-                                                sx={{
-                                                    p: 3,
-                                                    borderRadius: 3,
-                                                    border: '1px solid #eee',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.3s',
-                                                    '&:hover': {
-                                                        transform: 'translateY(-4px)',
-                                                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                                                        borderColor: '#E91E63'
-                                                    }
-                                                }}
-                                            >
-                                                <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-                                                    <Box sx={{ flex: 1 }}>
-                                                        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: '#1a1a1a' }}>
-                                                            {subject.name}
-                                                        </Typography>
-                                                        {subject.description && (
-                                                            <Typography variant="body2" color="textSecondary" sx={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
-                                                                {subject.description}
-                                                            </Typography>
-                                                        )}
-                                                    </Box>
-                                                </Box>
-                                                <Divider sx={{ my: 2 }} />
-                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <Database size={20} color="#2196F3" />
-                                                        <Typography variant="body2" color="textSecondary">Tests</Typography>
-                                                    </Box>
-                                                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#2196F3' }}>
-                                                        {subject.testCount}
-                                                    </Typography>
-                                                </Box>
-                                            </Paper>
-                                        </Grid>
-                                    ))}
+                                <Grid container spacing={3} sx={{ mb: 6 }}>
+                                    <StatCard icon={<Database size={24} color="#E91E63" />} label="Total Subjects" value={stats.subjects} />
+                                    <StatCard icon={<BookOpen size={24} color="#E91E63" />} label="Total Mock Tests" value={stats.tests} />
+                                    <StatCard icon={<Users size={24} color="#E91E63" />} label="Student Attempts" value={stats.attempts} />
                                 </Grid>
-                            )}
-                        </Box>
 
-                        {/* Recent Activity */}
-                        <Paper sx={{ p: 4, borderRadius: 4 }}>
-                            <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>Recent Activity</Typography>
-                            <TableContainer>
-                                <Table>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell sx={{ fontWeight: 700 }}>Student Name</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Mock Test</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Score</TableCell>
-                                            <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {recentAttempts.length === 0 ? (
-                                            <TableRow><TableCell colSpan={4} align="center">No recent attempts found.</TableCell></TableRow>
-                                        ) : (
-                                            recentAttempts.map((attempt) => (
-                                                <TableRow key={attempt.id}>
-                                                    <TableCell sx={{ fontSize: '0.85rem', fontWeight: 600 }}>{attempt.userName}</TableCell>
-                                                    <TableCell sx={{ fontSize: '0.85rem' }}>{attempt.testName}</TableCell>
-                                                    <TableCell sx={{ fontWeight: 700, color: '#2E7D32' }}>{attempt.score}/{attempt.total}</TableCell>
-                                                    <TableCell sx={{ fontSize: '0.8rem' }}>{attempt.timestamp?.toDate().toLocaleDateString()}</TableCell>
+                                <Typography variant="h5" sx={{ fontWeight: 800, mb: 3, color: '#0f172a' }}>Recent Activity</Typography>
+                                <Paper className="glass-card" sx={{ borderRadius: 5, overflow: 'hidden', mb: 4 }}>
+                                    <TableContainer>
+                                        <Table>
+                                            <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
+                                                <TableRow>
+                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>STUDENT</TableCell>
+                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>MOCK TEST</TableCell>
+                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>SCORE</TableCell>
+                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>DATE</TableCell>
                                                 </TableRow>
-                                            ))
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Paper>
-                    </Box>
-                )}
+                                            </TableHead>
+                                            <TableBody>
+                                                {recentAttempts.length === 0 ? (
+                                                    <TableRow><TableCell colSpan={4} align="center" sx={{ py: 4, color: '#64748b' }}>No recent attempts found.</TableCell></TableRow>
+                                                ) : (
+                                                    recentAttempts.map((attempt) => (
+                                                        <TableRow key={attempt.id} sx={{ '&:hover': { bgcolor: 'rgba(233, 30, 99, 0.02)' } }}>
+                                                            <TableCell sx={{ fontWeight: 700 }}>{attempt.userName}</TableCell>
+                                                            <TableCell>{attempt.testName}</TableCell>
+                                                            <TableCell>
+                                                                <Typography sx={{ fontWeight: 800, color: '#059669' }}>{attempt.score}/{attempt.total}</Typography>
+                                                            </TableCell>
+                                                            <TableCell sx={{ color: '#64748b', fontSize: '0.875rem' }}>{attempt.timestamp?.toDate().toLocaleDateString()}</TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                </Paper>
+                            </>
+                        )}
 
-                {tab === 1 && <ContentManagement initialSubject={activeSubject} onSubjectChange={() => setActiveSubject(null)} />}
+                        {tab === 1 && <ContentManagement initialSubject={activeSubject} onSubjectChange={() => setActiveSubject(null)} />}
+                        {tab === 2 && <BundleManagement subject={activeSubject} />}
 
-                {tab === 2 && <BundleManagement subject={activeSubject} />}
+                        {tab === 3 && (
+                            <>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                                    <Box>
+                                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>Admin Accounts</Typography>
+                                        <Typography variant="body1" sx={{ color: '#64748b' }}>Manage your team and permissions.</Typography>
+                                    </Box>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<UserPlus size={18} />}
+                                        onClick={() => setOpenAddDialog(true)}
+                                        sx={{
+                                            bgcolor: '#E91E63', borderRadius: 3, px: 3, py: 1.5,
+                                            fontWeight: 800, textTransform: 'none',
+                                            boxShadow: '0 8px 20px rgba(233, 30, 99, 0.3)',
+                                            '&:hover': { bgcolor: '#D81B60', boxShadow: '0 10px 25px rgba(233, 30, 99, 0.4)' }
+                                        }}
+                                    >
+                                        Add Admin
+                                    </Button>
+                                </Box>
 
-                {tab === 3 && (
-                    <Paper sx={{ p: 4, borderRadius: 4 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 700 }}>Admin Accounts</Typography>
-                            <Button
-                                variant="contained"
-                                startIcon={<UserPlus size={18} />}
-                                onClick={() => setOpenAddDialog(true)}
-                                sx={{ bgcolor: '#E91E63', borderRadius: 2, fontWeight: 700 }}
-                            >
-                                Add Admin
-                            </Button>
-                        </Box>
-                        <TableContainer>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell sx={{ fontWeight: 700 }}>Name</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {subAdmins.map((admin) => (
-                                        <TableRow key={admin.id}>
-                                            <TableCell>{admin.name || 'Admin User'}</TableCell>
-                                            <TableCell>{admin.email}</TableCell>
-                                            <TableCell>
-                                                <Typography variant="caption" sx={{ px: 1, py: 0.5, bgcolor: '#f0f0f0', borderRadius: 1 }}>
-                                                    {admin.role}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    variant="caption"
-                                                    sx={{
-                                                        px: 1.5,
-                                                        py: 0.5,
-                                                        bgcolor: admin.isBlocked ? '#ffebee' : '#e8f5e9',
-                                                        color: admin.isBlocked ? '#c62828' : '#2e7d32',
-                                                        borderRadius: 1,
-                                                        fontWeight: 600
-                                                    }}
-                                                >
-                                                    {admin.isBlocked ? 'Blocked' : 'Active'}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleEditAdmin(admin)}
-                                                        sx={{ color: '#2196F3' }}
-                                                    >
-                                                        <Edit size={18} />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleToggleBlock(admin)}
-                                                        sx={{ color: admin.isBlocked ? '#4CAF50' : '#FF9800' }}
-                                                    >
-                                                        {admin.isBlocked ? <CheckCircle size={18} /> : <Ban size={18} />}
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        color="error"
-                                                        onClick={() => handleDeleteSubAdmin(admin.id)}
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </IconButton>
-                                                </Box>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {subAdmins.length === 0 && (
-                                        <TableRow><TableCell colSpan={5} align="center">No admins found.</TableCell></TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Paper>
-                )}
-
-                {/* Edit Admin Dialog */}
-                <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} fullWidth maxWidth="sm">
-                    <DialogTitle>Edit Admin Account</DialogTitle>
-                    <DialogContent>
-                        <TextField
-                            fullWidth
-                            label="Name"
-                            margin="normal"
-                            value={editAdmin?.name || ''}
-                            onChange={(e) => setEditAdmin({ ...editAdmin, name: e.target.value })}
-                        />
-                        <TextField
-                            fullWidth
-                            label="Email"
-                            margin="normal"
-                            type="email"
-                            value={editAdmin?.email || ''}
-                            onChange={(e) => setEditAdmin({ ...editAdmin, email: e.target.value })}
-                        />
-                        <TextField
-                            fullWidth
-                            select
-                            label="Role"
-                            margin="normal"
-                            value={editAdmin?.role || 'admin'}
-                            onChange={(e) => setEditAdmin({ ...editAdmin, role: e.target.value })}
-                            SelectProps={{ native: true }}
-                        >
-                            <option value="admin">Admin</option>
-                            <option value="sub-admin">Sub-admin</option>
-                        </TextField>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setOpenEditDialog(false)}>Cancel</Button>
-                        <Button variant="contained" onClick={handleUpdateAdmin} sx={{ bgcolor: '#E91E63' }}>Update</Button>
-                    </DialogActions>
-                </Dialog>
-
-                {/* Add Admin Dialog */}
-                <Dialog open={openAddDialog} onClose={() => !creatingAdmin && setOpenAddDialog(false)} fullWidth maxWidth="sm">
-                    <DialogTitle sx={{ fontWeight: 800 }}>Create New Admin Account</DialogTitle>
-                    <DialogContent>
-                        <Box sx={{ py: 1 }}>
-                            <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                                A new admin account will be created. Their login credentials will be automatically sent to the email address provided below.
-                            </Typography>
-                            <TextField
-                                fullWidth
-                                label="Admin Full Name"
-                                margin="normal"
-                                value={newAdmin.name}
-                                onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
-                                placeholder="e.g. Rahul Sharma"
-                                disabled={creatingAdmin}
-                            />
-                            <TextField
-                                fullWidth
-                                label="Email Address"
-                                margin="normal"
-                                type="email"
-                                value={newAdmin.email}
-                                onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
-                                placeholder="admin@psyq.com"
-                                disabled={creatingAdmin}
-                            />
-                            <TextField
-                                fullWidth
-                                select
-                                label="Assign Role"
-                                margin="normal"
-                                value={newAdmin.role}
-                                onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
-                                SelectProps={{ native: true }}
-                                disabled={creatingAdmin}
-                            >
-                                <option value="sub-admin">Sub-admin (Content Management)</option>
-                                <option value="admin">Full Admin</option>
-                            </TextField>
-                        </Box>
-                    </DialogContent>
-                    <DialogActions sx={{ px: 3, pb: 2 }}>
-                        <Button onClick={() => setOpenAddDialog(false)} disabled={creatingAdmin}>Cancel</Button>
-                        <Button
-                            variant="contained"
-                            onClick={handleAddAdmin}
-                            disabled={creatingAdmin}
-                            sx={{ bgcolor: '#E91E63', minWidth: 120, position: 'relative' }}
-                        >
-                            {creatingAdmin ? 'Creating...' : 'Create Account'}
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                                <Paper className="glass-card" sx={{ borderRadius: 5, overflow: 'hidden' }}>
+                                    <TableContainer>
+                                        <Table>
+                                            <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
+                                                <TableRow>
+                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>ADMIN</TableCell>
+                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>EMAIL</TableCell>
+                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>ROLE</TableCell>
+                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>STATUS</TableCell>
+                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }} align="right">ACTIONS</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {subAdmins.map((admin) => (
+                                                    <TableRow key={admin.id} sx={{ '&:hover': { bgcolor: 'rgba(233, 30, 99, 0.02)' } }}>
+                                                        <TableCell>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                                <Avatar sx={{ bgcolor: admin.isBlocked ? '#94a3b8' : '#6366f1', width: 32, height: 32, fontSize: '0.75rem' }}>
+                                                                    {(admin.name || 'A')[0]}
+                                                                </Avatar>
+                                                                <Typography sx={{ fontWeight: 700 }}>{admin.name || 'Admin User'}</Typography>
+                                                            </Box>
+                                                        </TableCell>
+                                                        <TableCell>{admin.email}</TableCell>
+                                                        <TableCell>
+                                                            <Box sx={{ px: 1.5, py: 0.5, bgcolor: '#f1f5f9', borderRadius: 2, display: 'inline-block' }}>
+                                                                <Typography variant="caption" sx={{ color: '#475569', fontWeight: 800, textTransform: 'uppercase' }}>{admin.role}</Typography>
+                                                            </Box>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Box sx={{
+                                                                px: 1.5, py: 0.5, borderRadius: 2, display: 'inline-block',
+                                                                bgcolor: admin.isBlocked ? '#fee2e2' : '#dcfce7',
+                                                                color: admin.isBlocked ? '#ef4444' : '#059669'
+                                                            }}>
+                                                                <Typography variant="caption" sx={{ fontWeight: 800 }}>{admin.isBlocked ? 'BLOCKED' : 'ACTIVE'}</Typography>
+                                                            </Box>
+                                                        </TableCell>
+                                                        <TableCell align="right">
+                                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                                                <IconButton size="small" onClick={() => handleEditAdmin(admin)} sx={{ color: '#6366f1' }}>
+                                                                    <Edit size={18} />
+                                                                </IconButton>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleToggleBlock(admin)}
+                                                                    sx={{ color: admin.isBlocked ? '#059669' : '#f59e0b' }}
+                                                                >
+                                                                    {admin.isBlocked ? <CheckCircle size={18} /> : <Ban size={18} />}
+                                                                </IconButton>
+                                                                <IconButton size="small" color="error" onClick={() => handleDeleteSubAdmin(admin.id)}>
+                                                                    <Trash2 size={18} />
+                                                                </IconButton>
+                                                            </Box>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                                {subAdmins.length === 0 && (
+                                                    <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: '#64748b' }}>No admins found.</TableCell></TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                </Paper>
+                            </>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </Box>
+
+            {/* Edit Admin Dialog */}
+            <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: 5 } }}>
+                <DialogTitle sx={{ fontWeight: 800 }}>Edit Admin Account</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        fullWidth label="Name" margin="normal"
+                        value={editAdmin?.name || ''}
+                        onChange={(e) => setEditAdmin({ ...editAdmin, name: e.target.value })}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                    />
+                    <TextField
+                        fullWidth label="Email" margin="normal" type="email"
+                        value={editAdmin?.email || ''}
+                        onChange={(e) => setEditAdmin({ ...editAdmin, email: e.target.value })}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                    />
+                    <TextField
+                        fullWidth select label="Role" margin="normal"
+                        value={editAdmin?.role || 'admin'}
+                        onChange={(e) => setEditAdmin({ ...editAdmin, role: e.target.value })}
+                        SelectProps={{ native: true }}
+                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                    >
+                        <option value="admin">Admin</option>
+                        <option value="sub-admin">Sub-admin</option>
+                    </TextField>
+                </DialogContent>
+                <DialogActions sx={{ p: 3 }}>
+                    <Button onClick={() => setOpenEditDialog(false)} sx={{ fontWeight: 700 }}>Cancel</Button>
+                    <Button
+                        variant="contained" onClick={handleUpdateAdmin}
+                        sx={{ bgcolor: '#E91E63', borderRadius: 3, fontWeight: 800, px: 3 }}
+                    >
+                        Update
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Add Admin Dialog */}
+            <Dialog
+                open={openAddDialog}
+                onClose={() => !creatingAdmin && setOpenAddDialog(false)}
+                fullWidth maxWidth="sm"
+                PaperProps={{ sx: { borderRadius: 5 } }}
+            >
+                <DialogTitle sx={{ fontWeight: 900, pb: 0 }}>Create Admin Account</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ py: 2 }}>
+                        <Typography variant="body2" sx={{ color: '#64748b', mb: 3 }}>
+                            A new admin account will be created. Login credentials will be sent to the email address provided.
+                        </Typography>
+                        <TextField
+                            fullWidth label="Admin Full Name" margin="normal"
+                            value={newAdmin.name}
+                            onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
+                            placeholder="e.g. Rahul Sharma"
+                            disabled={creatingAdmin}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                        />
+                        <TextField
+                            fullWidth label="Email Address" margin="normal" type="email"
+                            value={newAdmin.email}
+                            onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
+                            placeholder="admin@psyq.com"
+                            disabled={creatingAdmin}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                        />
+                        <TextField
+                            fullWidth select label="Assign Role" margin="normal"
+                            value={newAdmin.role}
+                            onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
+                            SelectProps={{ native: true }}
+                            disabled={creatingAdmin}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                        >
+                            <option value="sub-admin">Sub-admin (Content Management)</option>
+                            <option value="admin">Full Admin</option>
+                        </TextField>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 3 }}>
+                    <Button onClick={() => setOpenAddDialog(false)} disabled={creatingAdmin} sx={{ fontWeight: 700 }}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleAddAdmin}
+                        disabled={creatingAdmin}
+                        sx={{
+                            bgcolor: '#E91E63', borderRadius: 3, fontWeight: 800, px: 4, py: 1,
+                            boxShadow: '0 8px 20px rgba(233, 30, 99, 0.3)'
+                        }}
+                    >
+                        {creatingAdmin ? 'Creating...' : 'Create Admin'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
@@ -730,24 +647,52 @@ const SidebarItem = ({ icon, label, active, onClick }) => (
     <Box
         onClick={onClick}
         sx={{
-            display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 2, cursor: 'pointer',
-            bgcolor: active ? 'rgba(233, 30, 99, 0.1)' : 'transparent',
-            color: active ? '#E91E63' : '#a0acb9',
-            '&:hover': { bgcolor: 'rgba(255,255,255,0.05)', color: '#fff' }
+            display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 3, cursor: 'pointer',
+            bgcolor: active ? 'rgba(233, 30, 99, 0.15)' : 'transparent',
+            color: active ? '#fff' : '#94a3b8',
+            transition: 'all 0.2s',
+            position: 'relative',
+            overflow: 'hidden',
+            '&:hover': {
+                bgcolor: active ? 'rgba(233, 30, 99, 0.2)' : 'rgba(255,255,255,0.03)',
+                color: '#fff',
+                transform: 'translateX(4px)'
+            },
+            ...(active && {
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    left: 0, top: '20%', bottom: '20%',
+                    width: 3,
+                    bgcolor: '#E91E63',
+                    borderRadius: '0 4px 4px 0',
+                    boxShadow: '0 0 10px #E91E63'
+                }
+            })
         }}
     >
         {icon}
-        <Typography sx={{ fontWeight: 600 }}>{label}</Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: '0.925rem' }}>{label}</Typography>
     </Box>
 );
 
 const StatCard = ({ icon, label, value }) => (
-    <Grid item xs={12} sm={4}>
-        <Paper sx={{ p: 3, borderRadius: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
-            <Box sx={{ p: 2, borderRadius: '50%', bgcolor: 'rgba(0,0,0,0.02)' }}>{icon}</Box>
+    <Grid size={{ xs: 12, sm: 4 }}>
+        <Paper className="glass-card" sx={{
+            p: 4, borderRadius: 5, display: 'flex', alignItems: 'center', gap: 3,
+            transition: 'all 0.3s',
+            '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 12px 40px rgba(0,0,0,0.08)' }
+        }}>
+            <Box sx={{
+                p: 2, borderRadius: 4,
+                bgcolor: 'rgba(233, 30, 99, 0.08)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+                {icon}
+            </Box>
             <Box>
-                <Typography variant="h4" sx={{ fontWeight: 800 }}>{value}</Typography>
-                <Typography variant="body2" color="textSecondary">{label}</Typography>
+                <Typography variant="h3" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1, mb: 0.5 }}>{value}</Typography>
+                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}>{label}</Typography>
             </Box>
         </Paper>
     </Grid>

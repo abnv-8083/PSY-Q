@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
-import { Plus, Trash2, Clock, DollarSign, ChevronLeft } from 'lucide-react';
+import { Plus, Trash2, Clock, DollarSign, ChevronLeft, Target } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [tests, setTests] = useState([]);
@@ -71,72 +72,154 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
 
     return (
         <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-                {onBack && <IconButton onClick={onBack}><ChevronLeft /></IconButton>}
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>Tests for {subject.name}</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {onBack && (
+                        <IconButton
+                            onClick={onBack}
+                            sx={{ bgcolor: 'rgba(0,0,0,0.03)', '&:hover': { bgcolor: 'rgba(0,0,0,0.06)' } }}
+                        >
+                            <ChevronLeft />
+                        </IconButton>
+                    )}
+                    <Box>
+                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>Mock Tests</Typography>
+                        <Typography variant="body1" sx={{ color: '#64748b' }}>Manage test list for {subject.name}.</Typography>
+                    </Box>
+                </Box>
                 <Button
                     variant="contained"
                     startIcon={<Plus size={18} />}
                     onClick={() => setOpenTestDialog(true)}
-                    sx={{ ml: 'auto', bgcolor: '#E91E63' }}
+                    sx={{
+                        bgcolor: '#E91E63', borderRadius: 3, px: 3, py: 1.5,
+                        fontWeight: 800, textTransform: 'none',
+                        boxShadow: '0 8px 20px rgba(233, 30, 99, 0.3)',
+                        '&:hover': { bgcolor: '#D81B60', boxShadow: '0 10px 25px rgba(233, 30, 99, 0.4)' }
+                    }}
                 >
-                    Add Test
+                    Add New Test
                 </Button>
             </Box>
 
             <Grid container spacing={3}>
-                {tests.map((test) => (
-                    <Grid item xs={12} md={6} key={test.id}>
-                        <Paper sx={{ p: 3, borderRadius: 3, border: '1px solid #eee' }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 700 }}>{test.name}</Typography>
-                                <IconButton size="small" onClick={() => handleDeleteTest(test.id)}><Trash2 size={18} color="#F44336" /></IconButton>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-                                <Chip icon={<Clock size={16} />} label={`${test.duration} mins`} variant="outlined" size="small" />
-                                <Chip icon={<DollarSign size={16} />} label={test.price === 0 ? 'Free Try' : `₹${test.price}`} variant="outlined" size="small" color={test.price === 0 ? 'success' : 'default'} />
-                            </Box>
-
-                            <Button
-                                fullWidth
-                                variant="outlined"
-                                onClick={() => onManageQuestions(test)}
-                                sx={{ borderRadius: 2 }}
+                <AnimatePresence>
+                    {tests.map((test, index) => (
+                        <Grid size={{ xs: 12, md: 6 }} key={test.id}>
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: index * 0.05 }}
                             >
-                                Manage Question Bank
-                            </Button>
-                        </Paper>
-                    </Grid>
-                ))}
+                                <Paper className="glass-card" sx={{
+                                    p: 3, borderRadius: 5, position: 'relative',
+                                    transition: 'all 0.3s',
+                                    '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }
+                                }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                            <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: 'rgba(233, 30, 99, 0.08)', color: '#E91E63' }}>
+                                                <Target size={24} />
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2 }}>{test.name}</Typography>
+                                                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Created: {new Date(test.created_at).toLocaleDateString()}</Typography>
+                                            </Box>
+                                        </Box>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleDeleteTest(test.id)}
+                                            sx={{ color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.05)', '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' } }}
+                                        >
+                                            <Trash2 size={18} />
+                                        </IconButton>
+                                    </Box>
+
+                                    <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
+                                        <Box sx={{ px: 2, py: 0.75, borderRadius: 2, bgcolor: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Clock size={14} color="#64748b" />
+                                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#475569' }}>{test.duration}m</Typography>
+                                        </Box>
+                                        <Box sx={{
+                                            px: 2, py: 0.75, borderRadius: 2,
+                                            bgcolor: test.price === 0 ? 'rgba(34, 197, 94, 0.08)' : 'rgba(99, 102, 241, 0.08)',
+                                            display: 'flex', alignItems: 'center', gap: 1
+                                        }}>
+                                            <Typography variant="body2" sx={{
+                                                fontWeight: 900,
+                                                color: test.price === 0 ? '#16a34a' : '#6366f1'
+                                            }}>
+                                                {test.price === 0 ? 'FREE' : `₹${test.price}`}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+
+                                    <Button
+                                        fullWidth
+                                        variant="contained"
+                                        onClick={() => onManageQuestions(test)}
+                                        sx={{
+                                            borderRadius: 3, py: 1.5,
+                                            bgcolor: '#0f172a', color: '#fff',
+                                            fontWeight: 800, textTransform: 'none',
+                                            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.1)',
+                                            '&:hover': { bgcolor: '#1e293b', transform: 'translateY(-2px)' }
+                                        }}
+                                    >
+                                        Manage Question Bank
+                                    </Button>
+                                </Paper>
+                            </motion.div>
+                        </Grid>
+                    ))}
+                </AnimatePresence>
             </Grid>
 
-            {/* Add Test Dialog */}
-            <Dialog open={openTestDialog} onClose={() => setOpenTestDialog(false)} fullWidth maxWidth="xs">
-                <DialogTitle>Add New Mock Test</DialogTitle>
+            <Dialog
+                open={openTestDialog}
+                onClose={() => setOpenTestDialog(false)}
+                fullWidth maxWidth="xs"
+                PaperProps={{ sx: { borderRadius: 5 } }}
+            >
+                <DialogTitle sx={{ fontWeight: 900 }}>Add New Mock Test</DialogTitle>
                 <DialogContent>
-                    <TextField
-                        fullWidth label="Test Name" margin="dense"
-                        value={newTest.name} onChange={(e) => setNewTest({ ...newTest, name: e.target.value })}
-                    />
-                    <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                            <TextField
-                                fullWidth label="Duration (mins)" margin="dense" type="number"
-                                value={newTest.duration} onChange={(e) => setNewTest({ ...newTest, duration: e.target.value })}
-                            />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
+                        <TextField
+                            fullWidth label="Test Name"
+                            value={newTest.name} onChange={(e) => setNewTest({ ...newTest, name: e.target.value })}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                        />
+                        <Grid container spacing={2}>
+                            <Grid size={6}>
+                                <TextField
+                                    fullWidth label="Duration (mins)" type="number"
+                                    value={newTest.duration} onChange={(e) => setNewTest({ ...newTest, duration: e.target.value })}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                />
+                            </Grid>
+                            <Grid size={6}>
+                                <TextField
+                                    fullWidth label="Price (0 for Free)" type="number"
+                                    value={newTest.price} onChange={(e) => setNewTest({ ...newTest, price: e.target.value })}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                />
+                            </Grid>
                         </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                fullWidth label="Price (0 for Free)" margin="dense" type="number"
-                                value={newTest.price} onChange={(e) => setNewTest({ ...newTest, price: e.target.value })}
-                            />
-                        </Grid>
-                    </Grid>
+                    </Box>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenTestDialog(false)}>Cancel</Button>
-                    <Button variant="contained" onClick={handleAddTest} sx={{ bgcolor: '#E91E63' }}>Create</Button>
+                <DialogActions sx={{ p: 4, pt: 1 }}>
+                    <Button onClick={() => setOpenTestDialog(false)} sx={{ fontWeight: 700 }}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        onClick={handleAddTest}
+                        sx={{
+                            bgcolor: '#E91E63', borderRadius: 3, fontWeight: 800, px: 4, py: 1.2,
+                            boxShadow: '0 8px 20px rgba(233, 30, 99, 0.3)',
+                            '&:hover': { bgcolor: '#D81B60' }
+                        }}
+                    >
+                        Create Test
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Box>
