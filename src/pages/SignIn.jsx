@@ -5,6 +5,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -37,16 +38,33 @@ const SignIn = () => {
 
     setIsSubmitting(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
+      // 1. Try Supabase Login First
+      const { data: sbData, error: sbError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password
+      });
 
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      const userData = userDoc.exists() ? userDoc.data() : { role: 'student' };
+      let userData = null;
+      let finalUid = null;
 
-      // If we came here from a protected page (like MockTest),
-      // go back there after login. Otherwise:
-      // - admins go to admin mocktest dashboard
-      // - students go to student mocktest dashboard
+      if (!sbError && sbData.user) {
+        finalUid = sbData.user.id;
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', finalUid)
+          .single();
+        userData = profile || { role: 'student' };
+      } else {
+        // 2. Fallback to Firebase for legacy accounts
+        const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+        const user = userCredential.user;
+        finalUid = user.uid;
+
+        const userDoc = await getDoc(doc(db, 'users', finalUid));
+        userData = userDoc.exists() ? userDoc.data() : { role: 'student' };
+      }
+
       const from =
         location.state?.from?.pathname ||
         (userData.role === 'admin' || userData.role === 'sub-admin'

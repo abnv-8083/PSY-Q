@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
+import ModernDialog from '../../components/ModernDialog';
 import { Plus, Trash2, Clock, DollarSign, ChevronLeft, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,6 +9,15 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [tests, setTests] = useState([]);
     const [openTestDialog, setOpenTestDialog] = useState(false);
     const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 60 });
+
+    // Modern Dialog State
+    const [dialog, setDialog] = useState({
+        open: false,
+        title: '',
+        message: '',
+        type: 'info',
+        onConfirm: null
+    });
 
     useEffect(() => {
         fetchTests();
@@ -25,7 +35,12 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
             setTests(data);
         } catch (error) {
             console.error("Error fetching tests from Supabase:", error);
-            alert("Failed to fetch tests. Please try again.");
+            setDialog({
+                open: true,
+                title: 'Fetch Failed',
+                message: "We couldn't load the tests. Please check your connection and try again.",
+                type: 'error'
+            });
         }
     };
 
@@ -49,25 +64,42 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
             fetchTests();
         } catch (error) {
             console.error("Error adding test in Supabase:", error);
-            alert("Failed to add test. Please try again.");
+            setDialog({
+                open: true,
+                title: 'Add Failed',
+                message: "Failed to create the test. Please check all fields and try again.",
+                type: 'error'
+            });
         }
     };
 
     const handleDeleteTest = async (id) => {
-        if (window.confirm("Are you sure? This will delete all questions in this test.")) {
-            try {
-                const { error } = await supabase
-                    .from('tests')
-                    .delete()
-                    .eq('id', id);
+        setDialog({
+            open: true,
+            title: 'Delete Test?',
+            message: 'Are you sure? This will delete all questions in this test and cannot be undone.',
+            type: 'confirm',
+            onConfirm: async () => {
+                setDialog(prev => ({ ...prev, open: false }));
+                try {
+                    const { error } = await supabase
+                        .from('tests')
+                        .delete()
+                        .eq('id', id);
 
-                if (error) throw error;
-                fetchTests();
-            } catch (error) {
-                console.error("Error deleting test in Supabase:", error);
-                alert("Failed to delete test: " + (error.message || "Unknown error"));
+                    if (error) throw error;
+                    fetchTests();
+                } catch (error) {
+                    console.error("Error deleting test in Supabase:", error);
+                    setDialog({
+                        open: true,
+                        title: 'Delete Failed',
+                        message: "Failed to delete test: " + (error.message || "Unknown error"),
+                        type: 'error'
+                    });
+                }
             }
-        }
+        });
     };
 
     return (
@@ -222,6 +254,15 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <ModernDialog
+                open={dialog.open}
+                onClose={() => setDialog(prev => ({ ...prev, open: false }))}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+            />
         </Box>
     );
 };

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../lib/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
+import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
 const SessionContext = createContext();
@@ -32,7 +33,8 @@ export const SessionProvider = ({ children }) => {
     // Handle automatic logout
     const handleAutoLogout = async () => {
         try {
-            await signOut(auth);
+            await firebaseSignOut(auth);
+            await supabase.auth.signOut();
             setShowWarning(false);
             // Redirect will be handled by auth state change
         } catch (error) {
@@ -48,23 +50,50 @@ export const SessionProvider = ({ children }) => {
     // Manual logout
     const logout = async () => {
         try {
-            await signOut(auth);
+            await firebaseSignOut(auth);
+            await supabase.auth.signOut();
         } catch (error) {
             console.error('Logout error:', error);
         }
     };
 
-    // Listen to Firebase auth state changes
+    // Listen to Auth state changes
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            setLoading(false);
+        // 1. Firebase Listener
+        const unsubscribeFirebase = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
+                setUser(currentUser);
                 updateActivity();
+                setLoading(false);
+            } else {
+                // Check if Supabase has a user before setting null
+                const { data: { user: sbUser } } = await supabase.auth.getUser();
+                if (!sbUser) {
+                    setUser(null);
+                    setLoading(false);
+                }
             }
         });
 
-        return () => unsubscribe();
+        // 2. Supabase Listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session?.user) {
+                setUser(session.user);
+                updateActivity();
+                setLoading(false);
+            } else if (event === 'SIGNED_OUT') {
+                // Check if Firebase has a user before setting null
+                if (!auth.currentUser) {
+                    setUser(null);
+                    setLoading(false);
+                }
+            }
+        });
+
+        return () => {
+            unsubscribeFirebase();
+            subscription.unsubscribe();
+        };
     }, []);
 
     // Activity listeners

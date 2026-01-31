@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, Grid, TextField, Button, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, FormControlLabel, Chip, List, ListItem, ListItemText, ListItemSecondaryAction, ListItemIcon } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
+import ModernDialog from '../../components/ModernDialog';
 import { Trash2, Plus, Package, BookOpen, CheckCircle, Edit, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,6 +17,15 @@ const BundleManagement = ({ subject }) => {
         price: '',
         testIds: [],
         features: ['Unlimited Re-attempts', 'Detailed Solutions', 'All-India Ranking']
+    });
+
+    // Modern Dialog State
+    const [dialog, setDialog] = useState({
+        open: false,
+        title: '',
+        message: '',
+        type: 'info',
+        onConfirm: null
     });
 
     useEffect(() => {
@@ -60,7 +70,12 @@ const BundleManagement = ({ subject }) => {
 
     const handleSaveBundle = async () => {
         if (!newBundle.name || !newBundle.price || newBundle.testIds.length === 0) {
-            alert("Please fill name, price and select at least one test.");
+            setDialog({
+                open: true,
+                title: 'Missing Information',
+                message: "Please fill in the name, price, and select at least one test to create/update a bundle.",
+                type: 'warning'
+            });
             return;
         }
 
@@ -137,13 +152,23 @@ const BundleManagement = ({ subject }) => {
                 if (insertError) throw insertError;
             }
 
+            setDialog({
+                open: true,
+                title: 'Bundle Saved',
+                message: "Bundle saved successfully!",
+                type: 'success'
+            });
             setOpenDialog(false);
             setNewBundle({ id: null, name: '', description: '', price: '', testIds: [], features: ['Unlimited Re-attempts', 'Detailed Solutions', 'All-India Ranking'] });
             fetchData();
-            alert("Bundle saved successfully!");
         } catch (error) {
             console.error("Critical Saving Error:", error);
-            alert(`FAILED TO SAVE BUNDLE!\n\nReason: ${error.message || "Unknown error"}\n\nCode: ${error.code || 'N/A'}\n\nHint: ${error.hint || 'No hint available'}`);
+            setDialog({
+                open: true,
+                title: 'Save Failed',
+                message: `Failed to save the bundle.\n\nReason: ${error.message || "Unknown error"}`,
+                type: 'error'
+            });
         }
     };
 
@@ -160,49 +185,70 @@ const BundleManagement = ({ subject }) => {
     };
 
     const handleDeleteBundle = async (id) => {
-        if (window.confirm("Are you sure you want to delete this bundle?")) {
-            try {
-                // 1. Delete related entries in bundle_tests first (to handle FK constraints)
-                const { error: err1 } = await supabase.from('bundle_tests').delete().eq('bundle_id', id);
-                if (err1) console.warn("Note: Error cleaning bundle_tests:", err1.message);
+        setDialog({
+            open: true,
+            title: 'Delete Bundle?',
+            message: 'Are you sure you want to delete this bundle? This will also remove it from payments and user records. This action cannot be undone.',
+            type: 'confirm',
+            onConfirm: async () => {
+                setDialog(prev => ({ ...prev, open: false }));
+                try {
+                    // 1. Delete related entries in bundle_tests first (to handle FK constraints)
+                    const { error: err1 } = await supabase.from('bundle_tests').delete().eq('bundle_id', id);
+                    if (err1) console.warn("Note: Error cleaning bundle_tests:", err1.message);
 
-                // 2. Delete entries in user_bundles (to handle FK constraints)
-                const { error: err2 } = await supabase.from('user_bundles').delete().eq('bundle_id', id);
-                if (err2) console.warn("Note: Error cleaning user_bundles:", err2.message);
+                    // 2. Delete entries in user_bundles (to handle FK constraints)
+                    const { error: err2 } = await supabase.from('user_bundles').delete().eq('bundle_id', id);
+                    if (err2) console.warn("Note: Error cleaning user_bundles:", err2.message);
 
-                // 3. Optional: Delete from payments if item_id is a foreign key
-                // Note: We use .eq('item_id', id).eq('type', 'bundle') to be precise
-                const { error: err3 } = await supabase.from('payments').delete().eq('item_id', id).eq('type', 'bundle');
-                if (err3) console.warn("Note: Error cleaning payments:", err3.message);
+                    // 3. Optional: Delete from payments if item_id is a foreign key
+                    const { error: err3 } = await supabase.from('payments').delete().eq('item_id', id).eq('type', 'bundle');
+                    if (err3) console.warn("Note: Error cleaning payments:", err3.message);
 
-                // 4. Delete from guest_orders (Guest checkout system)
-                const { error: err4 } = await supabase.from('guest_orders').delete().eq('item_id', id).eq('item_type', 'bundle');
-                if (err4) console.warn("Note: Error cleaning guest_orders:", err4.message);
+                    // 4. Delete from guest_orders (Guest checkout system)
+                    const { error: err4 } = await supabase.from('guest_orders').delete().eq('item_id', id).eq('item_type', 'bundle');
+                    if (err4) console.warn("Note: Error cleaning guest_orders:", err4.message);
 
-                // 5. Delete the bundle itself
-                console.log("DEBUG: Attempting to delete bundle with ID:", id);
-                const { data: deletedData, error } = await supabase
-                    .from('bundles')
-                    .delete()
-                    .eq('id', id)
-                    .select();
+                    // 5. Delete the bundle itself
+                    console.log("DEBUG: Attempting to delete bundle with ID:", id);
+                    const { data: deletedData, error } = await supabase
+                        .from('bundles')
+                        .delete()
+                        .eq('id', id)
+                        .select();
 
-                if (error) throw error;
+                    if (error) throw error;
 
-                if (!deletedData || deletedData.length === 0) {
-                    console.error("CRITICAL: Deletion returned success but NO rows were deleted. This usually implies an RLS Policy issue.");
-                    alert("WARNING: The server said it worked, but the bundle record was NOT removed from the database.\n\nThis is likely an RLS (Row Level Security) Permission issue on the 'bundles' table.");
-                } else {
-                    console.log("DEBUG: Rows deleted from database:", deletedData);
-                    alert("Bundle deleted successfully from database!");
+                    if (!deletedData || deletedData.length === 0) {
+                        console.error("CRITICAL: Deletion returned success but NO rows were deleted. This usually implies an RLS Policy issue.");
+                        setDialog({
+                            open: true,
+                            title: 'Deletion Failed',
+                            message: "WARNING: The server said it worked, but the bundle record was NOT removed.\n\nThis is likely an RLS (Row Level Security) Permission issue on the 'bundles' table.",
+                            type: 'error'
+                        });
+                    } else {
+                        console.log("DEBUG: Rows deleted from database:", deletedData);
+                        setDialog({
+                            open: true,
+                            title: 'Bundle Deleted',
+                            message: "The bundle has been successfully removed from the database.",
+                            type: 'success'
+                        });
+                    }
+
+                    await fetchData();
+                } catch (error) {
+                    console.error("Critical Deletion Error:", error);
+                    setDialog({
+                        open: true,
+                        title: 'Delete Failed',
+                        message: `FAILED TO DELETE BUNDLE!\n\nReason: ${error.message || "Unknown error"}`,
+                        type: 'error'
+                    });
                 }
-
-                await fetchData();
-            } catch (error) {
-                console.error("Critical Deletion Error:", error);
-                alert(`FAILED TO DELETE BUNDLE!\n\nReason: ${error.message || "Unknown error"}\n\nCode: ${error.code || 'N/A'}\n\nHint: ${error.hint || 'No hint available'}`);
             }
-        }
+        });
     };
 
     const toggleTestSelection = (testId) => {
@@ -437,6 +483,15 @@ const BundleManagement = ({ subject }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <ModernDialog
+                open={dialog.open}
+                onClose={() => setDialog(prev => ({ ...prev, open: false }))}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+            />
         </Box>
     );
 };

@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Paper, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Avatar, Menu, MenuItem, Fade } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { db, auth, firebaseConfig } from '../../lib/firebase';
+import { db, auth } from '../../lib/firebase';
 import { supabase } from '../../lib/supabaseClient';
-import { collection, getDocs, query, orderBy, limit, deleteDoc, doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit, doc, getDoc } from 'firebase/firestore';
 import { Settings, Users, BookOpen, Database, Trash2, ExternalLink, Edit, Ban, CheckCircle, LogOut, UserPlus, User, ChevronDown, Package } from 'lucide-react';
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import emailjs from '@emailjs/browser';
 import { useNavigate } from 'react-router-dom';
+import ModernDialog from '../../components/ModernDialog';
 import ContentManagement from './ContentManagement';
 import BundleManagement from './BundleManagement';
 
@@ -29,6 +28,15 @@ const AdminDashboard = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [currentUserProfile, setCurrentUserProfile] = useState(null);
 
+    // Modern Dialog State
+    const [dialog, setDialog] = useState({
+        open: false,
+        title: '',
+        message: '',
+        type: 'info',
+        onConfirm: null
+    });
+
     const allowedSubjects = ['Psychology'];
 
     const isSubjectAllowed = (s) => {
@@ -42,11 +50,21 @@ const AdminDashboard = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                // 1. Fetch Admin Profile (Still in Firebase for now)
+                // 1. Fetch Admin Profile
                 if (auth.currentUser) {
                     const adminDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
                     if (adminDoc.exists()) {
                         setCurrentUserProfile(adminDoc.data());
+                    }
+                } else {
+                    const { data: { user: sbUser } } = await supabase.auth.getUser();
+                    if (sbUser) {
+                        const { data: profile } = await supabase
+                            .from('profiles')
+                            .select('*')
+                            .eq('id', sbUser.id)
+                            .single();
+                        if (profile) setCurrentUserProfile(profile);
                     }
                 }
 
@@ -118,12 +136,14 @@ const AdminDashboard = () => {
 
                 setRecentAttempts(augmentedAttempts);
 
-                // 5. Fetch Sub-admins (Still Firebase for now)
-                const userSnap = await getDocs(collection(db, 'users'));
-                setSubAdmins(userSnap.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .filter(u => u.role === 'admin' || u.role === 'sub-admin')
-                );
+                // 5. Fetch Sub-admins from Supabase (Profiles table)
+                const { data: profilesData, error: profilesError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .in('role', ['admin', 'sub-admin', 'superadmin']);
+
+                if (profilesError) throw profilesError;
+                setSubAdmins(profilesData);
             } catch (error) {
                 console.error("Error fetching admin data from Supabase:", error);
             }
@@ -140,32 +160,66 @@ const AdminDashboard = () => {
 
     const handleDeleteSubject = async (e, subjectId, subjectName) => {
         e.stopPropagation();
-        if (window.confirm(`Are you sure you want to delete the subject "${subjectName}" and all its tests?`)) {
-            try {
-                const { error } = await supabase
-                    .from('subjects')
-                    .delete()
-                    .eq('id', subjectId);
+        setDialog({
+            open: true,
+            title: 'Delete Subject?',
+            message: `Are you sure you want to delete the subject "${subjectName}" and all its tests? This action cannot be undone.`,
+            type: 'confirm',
+            onConfirm: async () => {
+                setDialog(prev => ({ ...prev, open: false }));
+                try {
+                    const { error } = await supabase
+                        .from('subjects')
+                        .delete()
+                        .eq('id', subjectId);
 
-                if (error) throw error;
+                    if (error) throw error;
 
-                setSubjects(prev => prev.filter(s => s.id !== subjectId));
-                if (activeSubject?.id === subjectId) {
-                    setActiveSubject(null);
+                    setSubjects(prev => prev.filter(s => s.id !== subjectId));
+                    if (activeSubject?.id === subjectId) {
+                        setActiveSubject(null);
+                    }
+                    setDialog({
+                        open: true,
+                        title: 'Subject Deleted',
+                        message: "The subject and all its tests have been removed.",
+                        type: 'success'
+                    });
+                } catch (error) {
+                    console.error("Error deleting subject from Supabase:", error);
+                    setDialog({
+                        open: true,
+                        title: 'Delete Failed',
+                        message: "Failed to delete subject: " + error.message,
+                        type: 'error'
+                    });
                 }
-                alert("Subject deleted successfully.");
-            } catch (error) {
-                console.error("Error deleting subject from Supabase:", error);
-                alert("Failed to delete subject: " + error.message);
             }
-        }
+        });
     };
 
     const handleDeleteSubAdmin = async (id) => {
-        if (window.confirm("Remove this admin from the list? \n\nNote: This removes their dashboard access, but to completely delete their account and reuse the email, you must also remove them from the Firebase Console -> Authentication tab.")) {
-            await deleteDoc(doc(db, 'users', id));
-            setSubAdmins(prev => prev.filter(u => u.id !== id));
-        }
+        setDialog({
+            open: true,
+            title: 'Remove Admin?',
+            message: "Remove this admin from the list? \n\nNote: This removes their dashboard access. To completely delete their account, you must also remove them from the Supabase Auth Console.",
+            type: 'confirm',
+            onConfirm: async () => {
+                setDialog(prev => ({ ...prev, open: false }));
+                try {
+                    const { error } = await supabase.from('profiles').delete().eq('id', id);
+                    if (error) throw error;
+                    setSubAdmins(prev => prev.filter(u => u.id !== id));
+                } catch (error) {
+                    setDialog({
+                        open: true,
+                        title: 'Removal Failed',
+                        message: "Failed to remove admin: " + error.message,
+                        type: 'error'
+                    });
+                }
+            }
+        });
     };
 
     const handleEditAdmin = (admin) => {
@@ -176,39 +230,64 @@ const AdminDashboard = () => {
     const handleUpdateAdmin = async () => {
         if (!editAdmin) return;
         try {
-            const { updateDoc } = await import('firebase/firestore');
-            await updateDoc(doc(db, 'users', editAdmin.id), {
-                name: editAdmin.name,
-                email: editAdmin.email,
-                role: editAdmin.role
-            });
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    full_name: editAdmin.name || editAdmin.full_name,
+                    email: editAdmin.email,
+                    role: editAdmin.role
+                })
+                .eq('id', editAdmin.id);
+
+            if (error) throw error;
+
             setSubAdmins(prev => prev.map(a => a.id === editAdmin.id ? editAdmin : a));
             setOpenEditDialog(false);
             setEditAdmin(null);
         } catch (error) {
             console.error("Error updating admin:", error);
-            alert("Failed to update admin: " + error.message);
+            setDialog({
+                open: true,
+                title: 'Update Failed',
+                message: "Failed to update admin profile: " + error.message,
+                type: 'error'
+            });
         }
     };
 
     const handleToggleBlock = async (admin) => {
-        const newBlockedStatus = !admin.isBlocked;
+        const newBlockedStatus = !admin.is_blocked;
         const action = newBlockedStatus ? 'block' : 'unblock';
 
-        if (window.confirm(`Are you sure you want to ${action} ${admin.name || admin.email}?`)) {
-            try {
-                const { updateDoc } = await import('firebase/firestore');
-                await updateDoc(doc(db, 'users', admin.id), {
-                    isBlocked: newBlockedStatus
-                });
-                setSubAdmins(prev => prev.map(a =>
-                    a.id === admin.id ? { ...a, isBlocked: newBlockedStatus } : a
-                ));
-            } catch (error) {
-                console.error("Error toggling block status:", error);
-                alert("Failed to update block status: " + error.message);
+        setDialog({
+            open: true,
+            title: `${newBlockedStatus ? 'Block' : 'Unblock'} Admin?`,
+            message: `Are you sure you want to ${action} ${admin.full_name || admin.name || admin.email}?`,
+            type: 'confirm',
+            onConfirm: async () => {
+                setDialog(prev => ({ ...prev, open: false }));
+                try {
+                    const { error } = await supabase
+                        .from('profiles')
+                        .update({ is_blocked: newBlockedStatus })
+                        .eq('id', admin.id);
+
+                    if (error) throw error;
+
+                    setSubAdmins(prev => prev.map(a =>
+                        a.id === admin.id ? { ...a, is_blocked: newBlockedStatus } : a
+                    ));
+                } catch (error) {
+                    console.error("Error toggling block status:", error);
+                    setDialog({
+                        open: true,
+                        title: 'Action Failed',
+                        message: `Failed to ${action} admin: ` + error.message,
+                        type: 'error'
+                    });
+                }
             }
-        }
+        });
     };
 
     const handleLogout = async () => {
@@ -217,13 +296,23 @@ const AdminDashboard = () => {
             navigate('/signin');
         } catch (error) {
             console.error("Error logging out:", error);
-            alert("Failed to log out: " + error.message);
+            setDialog({
+                open: true,
+                title: 'Logout Failed',
+                message: "Failed to log out safely: " + error.message,
+                type: 'error'
+            });
         }
     };
 
     const handleAddAdmin = async () => {
         if (!newAdmin.name || !newAdmin.email) {
-            alert("Please fill in all fields.");
+            setDialog({
+                open: true,
+                title: 'Missing Fields',
+                message: "Please fill in both name and email to create a new admin.",
+                type: 'warning'
+            });
             return;
         }
 
@@ -232,31 +321,39 @@ const AdminDashboard = () => {
             // Generate a temporary password
             const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
 
-            // 1. Create user in Firebase Auth using a secondary instance
-            let secondaryApp;
-            if (getApps().some(app => app.name === 'Secondary')) {
-                secondaryApp = getApp('Secondary');
-            } else {
-                secondaryApp = initializeApp(firebaseConfig, 'Secondary');
-            }
-            const secondaryAuth = getAuth(secondaryApp);
-
-            const userCredential = await createUserWithEmailAndPassword(secondaryAuth, newAdmin.email, tempPassword);
-            const user = userCredential.user;
-
-            // 2. Create user document in Firestore
-            await setDoc(doc(db, 'users', user.uid), {
-                name: newAdmin.name,
+            // 1. Create user in Supabase Auth
+            const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: newAdmin.email,
-                role: newAdmin.role,
-                createdAt: serverTimestamp(),
-                isBlocked: false,
-                permissions: {
-                    manageUsers: true,
-                    manageContent: true,
-                    viewAnalytics: true
+                password: tempPassword,
+                options: {
+                    data: {
+                        full_name: newAdmin.name,
+                        role: newAdmin.role
+                    }
                 }
             });
+
+            if (authError) throw authError;
+
+            const user = authData.user;
+
+            // 2. Create profile in Supabase table
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: user.id,
+                    full_name: newAdmin.name,
+                    email: newAdmin.email,
+                    role: newAdmin.role,
+                    is_blocked: false,
+                    permissions: {
+                        manageUsers: true,
+                        manageContent: true,
+                        viewAnalytics: true
+                    }
+                });
+
+            if (profileError) throw profileError;
 
             // 3. Send credentials via email using EmailJS
             await emailjs.send(
@@ -268,26 +365,36 @@ const AdminDashboard = () => {
                     admin_name: newAdmin.name,
                     temp_password: tempPassword,
                     role: newAdmin.role,
-                    login_link: 'https://psyqlearning.com/signin'
+                    login_link: window.location.origin + '/signin'
                 },
                 import.meta.env.VITE_EMAILJS_PUBLIC_KEY
             );
 
             // Update local state
-            setSubAdmins(prev => [...prev, { id: user.uid, ...newAdmin, isBlocked: false }]);
+            setSubAdmins(prev => [...prev, {
+                id: user.id,
+                full_name: newAdmin.name,
+                email: newAdmin.email,
+                role: newAdmin.role,
+                is_blocked: false
+            }]);
             setOpenAddDialog(false);
             setNewAdmin({ name: '', email: '', role: 'sub-admin' });
-            alert("Admin added successfully and credentials sent to email!");
+            setDialog({
+                open: true,
+                title: 'Admin Created',
+                message: "Admin successfully registered in Supabase. An email with their temporary password has been sent.",
+                type: 'success'
+            });
 
-            // Cleanup secondary auth
-            await secondaryAuth.signOut();
         } catch (error) {
             console.error("Error adding admin:", error);
-            if (error.code === 'auth/email-already-in-use') {
-                alert("This email is already registered in Firebase! \n\nTo re-add this user, you must first delete them from your Firebase Console -> Authentication tab. Deleting them from the dashboard list only removes their profile, not their login account.");
-            } else {
-                alert("Failed to add admin: " + error.message);
-            }
+            setDialog({
+                open: true,
+                title: 'Registration Error',
+                message: "Failed to create account: " + error.message,
+                type: 'error'
+            });
         } finally {
             setCreatingAdmin(false);
         }
@@ -491,10 +598,10 @@ const AdminDashboard = () => {
                                                     <TableRow key={admin.id} sx={{ '&:hover': { bgcolor: 'rgba(233, 30, 99, 0.02)' } }}>
                                                         <TableCell>
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                                <Avatar sx={{ bgcolor: admin.isBlocked ? '#94a3b8' : '#6366f1', width: 32, height: 32, fontSize: '0.75rem' }}>
-                                                                    {(admin.name || 'A')[0]}
+                                                                <Avatar sx={{ bgcolor: admin.is_blocked ? '#94a3b8' : '#6366f1', width: 32, height: 32, fontSize: '0.75rem' }}>
+                                                                    {(admin.full_name || admin.name || 'A')[0]}
                                                                 </Avatar>
-                                                                <Typography sx={{ fontWeight: 700 }}>{admin.name || 'Admin User'}</Typography>
+                                                                <Typography sx={{ fontWeight: 700 }}>{admin.full_name || admin.name || 'Admin User'}</Typography>
                                                             </Box>
                                                         </TableCell>
                                                         <TableCell>{admin.email}</TableCell>
@@ -506,10 +613,10 @@ const AdminDashboard = () => {
                                                         <TableCell>
                                                             <Box sx={{
                                                                 px: 1.5, py: 0.5, borderRadius: 2, display: 'inline-block',
-                                                                bgcolor: admin.isBlocked ? '#fee2e2' : '#dcfce7',
-                                                                color: admin.isBlocked ? '#ef4444' : '#059669'
+                                                                bgcolor: admin.is_blocked ? '#fee2e2' : '#dcfce7',
+                                                                color: admin.is_blocked ? '#ef4444' : '#059669'
                                                             }}>
-                                                                <Typography variant="caption" sx={{ fontWeight: 800 }}>{admin.isBlocked ? 'BLOCKED' : 'ACTIVE'}</Typography>
+                                                                <Typography variant="caption" sx={{ fontWeight: 800 }}>{admin.is_blocked ? 'BLOCKED' : 'ACTIVE'}</Typography>
                                                             </Box>
                                                         </TableCell>
                                                         <TableCell align="right">
@@ -520,9 +627,9 @@ const AdminDashboard = () => {
                                                                 <IconButton
                                                                     size="small"
                                                                     onClick={() => handleToggleBlock(admin)}
-                                                                    sx={{ color: admin.isBlocked ? '#059669' : '#f59e0b' }}
+                                                                    sx={{ color: admin.is_blocked ? '#059669' : '#f59e0b' }}
                                                                 >
-                                                                    {admin.isBlocked ? <CheckCircle size={18} /> : <Ban size={18} />}
+                                                                    {admin.is_blocked ? <CheckCircle size={18} /> : <Ban size={18} />}
                                                                 </IconButton>
                                                                 <IconButton size="small" color="error" onClick={() => handleDeleteSubAdmin(admin.id)}>
                                                                     <Trash2 size={18} />
@@ -549,9 +656,9 @@ const AdminDashboard = () => {
                 <DialogTitle sx={{ fontWeight: 800 }}>Edit Admin Account</DialogTitle>
                 <DialogContent>
                     <TextField
-                        fullWidth label="Name" margin="normal"
-                        value={editAdmin?.name || ''}
-                        onChange={(e) => setEditAdmin({ ...editAdmin, name: e.target.value })}
+                        fullWidth label="Full Name" margin="normal"
+                        value={editAdmin?.full_name || editAdmin?.name || ''}
+                        onChange={(e) => setEditAdmin({ ...editAdmin, full_name: e.target.value })}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                     />
                     <TextField
@@ -639,6 +746,15 @@ const AdminDashboard = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <ModernDialog
+                open={dialog.open}
+                onClose={() => setDialog(prev => ({ ...prev, open: false }))}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+            />
         </Box>
     );
 };

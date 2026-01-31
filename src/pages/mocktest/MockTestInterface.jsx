@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { auth } from '../../lib/firebase';
 import { supabase } from '../../lib/supabaseClient';
+import ModernDialog from '../../components/ModernDialog';
 
 const MockTestInterface = () => {
     const { subjectId, testId } = useParams();
@@ -42,6 +43,15 @@ const MockTestInterface = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [studentName, setStudentName] = useState('Student');
+
+    // Modern Dialog State
+    const [dialog, setDialog] = useState({
+        open: false,
+        title: '',
+        message: '',
+        type: 'info',
+        onConfirm: null
+    });
 
     useEffect(() => {
         const fetchTestData = async () => {
@@ -138,37 +148,55 @@ const MockTestInterface = () => {
     };
 
     const handleQuit = () => {
-        if (window.confirm("Are you sure you want to quit the test? Your current progress will be lost and no attempt will be recorded.")) {
-            navigate('/academic/mocktest');
-        }
+        setDialog({
+            open: true,
+            title: 'Quit Test?',
+            message: 'Are you sure you want to quit the test? Your current progress will be lost and no attempt will be recorded.',
+            type: 'confirm',
+            onConfirm: () => {
+                setDialog(prev => ({ ...prev, open: false }));
+                navigate('/academic/mocktest');
+            }
+        });
     };
 
     const handleSubmit = async () => {
-        // Validation/Confirm
-        if (window.confirm("Are you sure you want to submit the test?")) {
-            const score = questions.reduce((acc, q, idx) => {
-                return answers[idx] === q.correctKey ? acc + 1 : acc;
-            }, 0);
+        setDialog({
+            open: true,
+            title: 'Submit Test?',
+            message: 'Are you sure you want to submit your answers? You won\'t be able to change them later.',
+            type: 'confirm',
+            onConfirm: async () => {
+                setDialog(prev => ({ ...prev, open: false }));
+                const score = questions.reduce((acc, q, idx) => {
+                    return answers[idx] === q.correctKey ? acc + 1 : acc;
+                }, 0);
 
-            try {
-                const { error: insertError } = await supabase.from('attempts').insert({
-                    user_id: auth.currentUser?.uid,
-                    test_id: testId,
-                    score,
-                    total_questions: questions.length, // Corrected column name
-                    answers
-                });
+                try {
+                    const { error: insertError } = await supabase.from('attempts').insert({
+                        user_id: auth.currentUser?.uid,
+                        test_id: testId,
+                        score,
+                        total_questions: questions.length,
+                        answers
+                    });
 
-                if (insertError) throw insertError;
+                    if (insertError) throw insertError;
 
-                navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
-                    state: { score, total: questions.length, answers, questions }
-                });
-            } catch (err) {
-                console.error("Submission failed:", err);
-                alert(`Failed to save your result.\n\nReason: ${err.message || 'Unknown error'}\n\nPlease try clicking Submit again.`);
+                    navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
+                        state: { score, total: questions.length, answers, questions }
+                    });
+                } catch (err) {
+                    console.error("Submission failed:", err);
+                    setDialog({
+                        open: true,
+                        title: 'Submission Failed',
+                        message: `Failed to save your result.\n\nReason: ${err.message || 'Unknown error'}\n\nPlease try clicking Submit again.`,
+                        type: 'error'
+                    });
+                }
             }
-        }
+        });
     };
 
     const getStatusColor = (idx) => {
@@ -397,6 +425,15 @@ const MockTestInterface = () => {
                     © All Rights Reserved - Psychology Question Bank (Psy-Q)
                 </Typography>
             </Box>
+
+            <ModernDialog
+                open={dialog.open}
+                onClose={() => setDialog(prev => ({ ...prev, open: false }))}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+            />
         </Box>
     );
 };

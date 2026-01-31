@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Paper, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, FormLabel, RadioGroup, FormControlLabel, Radio, Divider, Grid } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
+import ModernDialog from '../../components/ModernDialog';
 import { Plus, Trash2, ChevronLeft, HelpCircle, CheckCircle2, MessageSquare, FileUp, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { extractTextFromPDF, parseQuestionsFromText } from '../../utils/pdfParser';
@@ -17,6 +18,15 @@ const QuestionBank = ({ subject, test, onBack }) => {
     const [importDialogOpen, setImportDialogOpen] = useState(false);
     const [importing, setImporting] = useState(false);
     const [parsedQuestions, setParsedQuestions] = useState([]);
+
+    // Modern Dialog State
+    const [dialog, setDialog] = useState({
+        open: false,
+        title: '',
+        message: '',
+        type: 'info',
+        onConfirm: null
+    });
 
     useEffect(() => {
         fetchQuestions();
@@ -65,25 +75,42 @@ const QuestionBank = ({ subject, test, onBack }) => {
             fetchQuestions();
         } catch (error) {
             console.error("Error adding question to Supabase:", error);
-            alert("Failed to add question. Please try again.");
+            setDialog({
+                open: true,
+                title: 'Add Failed',
+                message: "Failed to add question to the database. Please try again.",
+                type: 'error'
+            });
         }
     };
 
     const handleDeleteQuestion = async (id) => {
-        if (window.confirm("Delete this question?")) {
-            try {
-                const { error } = await supabase
-                    .from('questions')
-                    .delete()
-                    .eq('id', id);
+        setDialog({
+            open: true,
+            title: 'Delete Question?',
+            message: 'Are you sure you want to delete this question? This action cannot be undone.',
+            type: 'confirm',
+            onConfirm: async () => {
+                setDialog(prev => ({ ...prev, open: false }));
+                try {
+                    const { error } = await supabase
+                        .from('questions')
+                        .delete()
+                        .eq('id', id);
 
-                if (error) throw error;
-                fetchQuestions();
-            } catch (error) {
-                console.error("Error deleting question in Supabase:", error);
-                alert("Failed to delete question: " + (error.message || "Unknown error"));
+                    if (error) throw error;
+                    fetchQuestions();
+                } catch (error) {
+                    console.error("Error deleting question in Supabase:", error);
+                    setDialog({
+                        open: true,
+                        title: 'Delete Failed',
+                        message: "Failed to delete question: " + (error.message || "Unknown error"),
+                        type: 'error'
+                    });
+                }
             }
-        }
+        });
     };
 
     const handleOptionChange = (index, value) => {
@@ -102,13 +129,23 @@ const QuestionBank = ({ subject, test, onBack }) => {
             const questions = parseQuestionsFromText(text);
 
             if (questions.length === 0) {
-                alert("No questions found in the PDF. Please ensure it follows the required format.");
+                setDialog({
+                    open: true,
+                    title: 'No Questions Found',
+                    message: "No questions found in the PDF. Please ensure it follows the required format (e.g., 1. Question Text... followed by options).",
+                    type: 'warning'
+                });
             } else {
                 setParsedQuestions(questions);
             }
         } catch (error) {
             console.error("Error parsing PDF:", error);
-            alert(`Failed to parse PDF.\n\nError: ${error.message || "Unknown error"}\n\nCheck the browser console (Press F12) for detailed logs.`);
+            setDialog({
+                open: true,
+                title: 'Parsing Error',
+                message: `Failed to parse PDF.\n\nError: ${error.message || "Unknown error"}\n\nPlease check the file format and try again.`,
+                type: 'error'
+            });
         } finally {
             setImporting(false);
         }
@@ -131,13 +168,23 @@ const QuestionBank = ({ subject, test, onBack }) => {
 
             if (error) throw error;
 
-            alert(`Successfully imported ${parsedQuestions.length} questions!`);
+            setDialog({
+                open: true,
+                title: 'Import Successful',
+                message: `Successfully imported ${parsedQuestions.length} questions into the bank!`,
+                type: 'success'
+            });
             setImportDialogOpen(false);
             setParsedQuestions([]);
             fetchQuestions();
         } catch (error) {
             console.error("Error importing questions to Supabase:", error);
-            alert("Failed to import questions. Please try again.");
+            setDialog({
+                open: true,
+                title: 'Import Failed',
+                message: "Failed to import questions. Please try again or check your database connection.",
+                type: 'error'
+            });
         } finally {
             setImporting(false);
         }
@@ -484,6 +531,15 @@ const QuestionBank = ({ subject, test, onBack }) => {
                     )}
                 </DialogActions>
             </Dialog>
+
+            <ModernDialog
+                open={dialog.open}
+                onClose={() => setDialog(prev => ({ ...prev, open: false }))}
+                onConfirm={dialog.onConfirm}
+                title={dialog.title}
+                message={dialog.message}
+                type={dialog.type}
+            />
         </Box>
     );
 };
