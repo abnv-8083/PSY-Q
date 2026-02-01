@@ -300,7 +300,10 @@ const MockTestInterface = () => {
                         {(currentQuestion?.text || currentQuestion?.question_text) || (loading ? "Loading question..." : "Question text not available")}
                     </Typography>
 
-                    <Box sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#003366' }}>Options</Typography>
+                    <Divider sx={{ my: 2 }} />
+
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
                         {currentQuestion?.options && Object.entries(currentQuestion.options).map(([key, value]) => (
                             <Box
                                 key={key}
@@ -316,8 +319,6 @@ const MockTestInterface = () => {
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 2,
-                                    minWidth: { xs: '100%', sm: 'calc(50% - 16px)', md: 'calc(25% - 16px)' },
-                                    flexGrow: 1,
                                     '&:hover': { borderColor: '#db277780', bgcolor: '#db277703' }
                                 }}
                             >
