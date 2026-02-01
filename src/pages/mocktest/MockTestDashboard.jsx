@@ -19,17 +19,16 @@ import ModernDialog from '../../components/ModernDialog';
 
 // --- Design Constants ---
 const COLORS = {
-    primary: '#2C3E50',       // Main headers
-    secondary: '#34495E',     // Sub headers
-    accent: '#3498DB',        // Primary action
-    accentHover: '#2980B9',   // Hover state
-    background: '#F8F9FA',    // Page background
+    primary: '#1e293b',       // Main headers
+    secondary: '#4b5563',     // Sub headers
+    accent: '#ca0056',        // Primary action
+    accentHover: '#b8003f',   // Hover state
+    background: '#fdf2f8',    // Page background
     cardBg: '#FFFFFF',        // Card background
-    textLight: '#7F8C8D',     // Secondary text
-    success: '#27AE60',
-    warning: '#F39C12',
-    error: '#E74C3C',
-    border: '#E0E0E0'
+    textLight: '#64748b',     // Secondary text
+    success: '#10b981',
+    warning: '#f59e0b',
+    border: '#e2e8f0'
 };
 
 const FONTS = {
@@ -184,6 +183,12 @@ const MockTestDashboard = () => {
         return () => unsubscribe();
     }, []);
 
+    const hasBundleAccess = (testId) => {
+        return bundles.some(bundle =>
+            userBundles.includes(bundle.id) && bundle.testIds.includes(testId)
+        );
+    };
+
     // --- Filtering Logic ---
     const allTests = subjects.flatMap(s => s.tests || []);
     const selectedBundles = bundles.filter(b => selectedBundleIds.includes(b.id));
@@ -206,13 +211,18 @@ const MockTestDashboard = () => {
             return selectedBundles.some(b => b.testIds?.includes(test.id));
         }
         return true;
-    });
+    }).sort((a, b) => {
+        const ownedA = hasBundleAccess(a.id);
+        const ownedB = hasBundleAccess(b.id);
+        const attemptsA = attempts[a.id] || 0;
+        const attemptsB = attempts[b.id] || 0;
 
-    const hasBundleAccess = (testId) => {
-        return bundles.some(bundle =>
-            userBundles.includes(bundle.id) && bundle.testIds.includes(testId)
-        );
-    };
+        const isFreeTrialA = a.free || ownedA || (attemptsA === 0);
+        const isFreeTrialB = b.free || ownedB || (attemptsB === 0);
+
+        if (isFreeTrialA === isFreeTrialB) return 0;
+        return isFreeTrialA ? -1 : 1;
+    });
 
     // --- Handlers ---
     const handleStartTest = (subjectId, testId, price, testName) => {
@@ -462,7 +472,7 @@ const MockTestDashboard = () => {
                         </Stack>
 
                         <Chip
-                            label="English / Expert Explanation"
+                            label="Expert Explanation in English"
                             size="small"
                             sx={{
                                 bgcolor: alpha(COLORS.accent, 0.1),
@@ -495,7 +505,9 @@ const MockTestDashboard = () => {
                                 }
                             }}
                         >
-                            {isLocked ? 'Unlock Test' : 'Start Mock Test'}
+                            {ownedByBundle ? 'Start Mock Test' :
+                                (test.free || testAttempts === 0) ? 'Free Trail' :
+                                    `₹${test.price}`}
                         </Button>
                     </Box>
                 </Card>
@@ -528,6 +540,94 @@ const MockTestDashboard = () => {
 
             {/* --- Dashboard Content --- */}
             <Container maxWidth="lg" sx={{ py: 6 }}>
+
+                {/* Guest CTA Banner */}
+                {!user && (
+                    <Paper
+                        sx={{
+                            p: { xs: 3, md: 5 },
+                            borderRadius: 6,
+                            background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)`,
+                            color: 'white',
+                            mb: 6,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            boxShadow: '0 20px 40px rgba(30, 41, 59, 0.2)'
+                        }}
+                    >
+                        <Box sx={{ position: 'relative', zIndex: 1 }}>
+                            <Grid container spacing={4} alignItems="center">
+                                <Grid item xs={12} md={8}>
+                                    <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+                                        Ready to Ace your Exams?
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ opacity: 0.9, mb: 4, maxWidth: 500, fontSize: '1.1rem' }}>
+                                        Create a free account to track your progress, unlock detailed analytics, and get personalized study recommendations.
+                                    </Typography>
+                                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                        <Button
+                                            variant="contained"
+                                            onClick={() => navigate('/student/signup')}
+                                            sx={{
+                                                bgcolor: COLORS.accent,
+                                                color: 'white',
+                                                px: 4,
+                                                py: 1.5,
+                                                borderRadius: '50px',
+                                                fontWeight: 800,
+                                                textTransform: 'none',
+                                                fontSize: '1rem',
+                                                '&:hover': { bgcolor: COLORS.accentHover }
+                                            }}
+                                        >
+                                            Get Started Now
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            onClick={() => navigate('/student/signin')}
+                                            sx={{
+                                                color: 'white',
+                                                borderColor: 'rgba(255,255,255,0.3)',
+                                                px: 4,
+                                                py: 1.5,
+                                                borderRadius: '50px',
+                                                fontWeight: 800,
+                                                textTransform: 'none',
+                                                fontSize: '1rem',
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    bgcolor: 'rgba(255,255,255,0.1)'
+                                                }
+                                            }}
+                                        >
+                                            Login to your account
+                                        </Button>
+                                    </Stack>
+                                </Grid>
+                                {!isMobile && (
+                                    <Grid item md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+                                        <Box sx={{ position: 'relative' }}>
+                                            <Trophy size={160} color="white" style={{ opacity: 0.2 }} />
+                                            <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                                                <Zap size={80} color={COLORS.accent} />
+                                            </Box>
+                                        </Box>
+                                    </Grid>
+                                )}
+                            </Grid>
+                        </Box>
+                        {/* Background Decor */}
+                        <Box sx={{
+                            position: 'absolute',
+                            top: -50,
+                            right: -50,
+                            width: 300,
+                            height: 300,
+                            borderRadius: '50%',
+                            background: `radial-gradient(circle, ${COLORS.accent}20 0%, transparent 70%)`
+                        }} />
+                    </Paper>
+                )}
 
                 {/* Navigation & Search */}
                 <Box sx={{

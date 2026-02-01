@@ -48,7 +48,7 @@ const GeneralInstructions = () => {
     return (
         <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
             {/* Top Blue Bar */}
-            <Box sx={{ bgcolor: '#003366', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <Box sx={{ bgcolor: '#1e293b', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                 <IconButton size="small" sx={{ color: '#fff', borderRadius: 1 }} onClick={() => navigate('/academic/mocktest')}>
                     <Home size={18} />
                     <Typography variant="caption" sx={{ ml: 0.5 }}>Home</Typography>
@@ -70,7 +70,7 @@ const GeneralInstructions = () => {
             }}>
                 <Box component="img" src="/logos/psyq-logo-header.png" sx={{ height: { xs: 40, md: 60 } }} />
                 <Box sx={{ textAlign: 'center', flex: 1, display: { xs: 'none', md: 'block' } }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#003366', fontSize: '1.2rem' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b', fontSize: '1.2rem' }}>
                         PSYCHOLOGY QUESTION BANK
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#666', fontWeight: 600 }}>
@@ -85,7 +85,7 @@ const GeneralInstructions = () => {
 
             {/* Title Bar */}
             <Box sx={{ bgcolor: '#f5f5f5', py: 1.5, px: { xs: 2, md: 8 }, borderBottom: '1px solid #ddd' }}>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#003366', fontSize: '1.1rem' }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#1e293b', fontSize: '1.1rem' }}>
                     GENERAL INSTRUCTIONS
                 </Typography>
             </Box>
@@ -137,7 +137,7 @@ const GeneralInstructions = () => {
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                             <Box sx={{
                                                 width: 30, height: 30,
-                                                bgcolor: '#673ab7',
+                                                bgcolor: '#ca0056',
                                                 borderRadius: '50%'
                                             }} />
                                             <Typography variant="body2">You have NOT answered the question, but have marked the question for review.</Typography>
@@ -145,7 +145,7 @@ const GeneralInstructions = () => {
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                             <Box sx={{
                                                 width: 30, height: 30,
-                                                bgcolor: '#673ab7',
+                                                bgcolor: '#ca0056',
                                                 borderRadius: '50%',
                                                 position: 'relative',
                                                 display: 'flex',
@@ -165,7 +165,7 @@ const GeneralInstructions = () => {
                                     You can click on your "Profile" image on top right corner of your screen to see your details.
                                 </li>
                                 <li style={{ marginBottom: '20px' }}>
-                                    You can click on <Box component="span" sx={{ display: 'inline-flex', bgcolor: '#007bff', borderRadius: '50%', p: 0.2, color: '#fff' }}><ChevronDown size={14} /></Box> to navigate to the bottom and <Box component="span" sx={{ display: 'inline-flex', bgcolor: '#007bff', borderRadius: '50%', p: 0.2, color: '#fff' }}><ChevronUp size={14} /></Box> to navigate to top of the question area, without scrolling.
+                                    You can click on <Box component="span" sx={{ display: 'inline-flex', bgcolor: '#ca0056', borderRadius: '50%', p: 0.2, color: '#fff' }}><ChevronDown size={14} /></Box> to navigate to the bottom and <Box component="span" sx={{ display: 'inline-flex', bgcolor: '#ca0056', borderRadius: '50%', p: 0.2, color: '#fff' }}><ChevronUp size={14} /></Box> to navigate to top of the question area, without scrolling.
                                 </li>
                             </ol>
 
@@ -226,8 +226,8 @@ const GeneralInstructions = () => {
                                         checked={agreed}
                                         onChange={(e) => setAgreed(e.target.checked)}
                                         sx={{
-                                            color: '#db2777',
-                                            '&.Mui-checked': { color: '#db2777' }
+                                            color: '#ca0056',
+                                            '&.Mui-checked': { color: '#ca0056' }
                                         }}
                                     />
                                 }
@@ -250,8 +250,8 @@ const GeneralInstructions = () => {
                     onClick={handleProceed}
                     disabled={!agreed}
                     sx={{
-                        bgcolor: agreed ? '#5cb85c' : '#ddd',
-                        '&:hover': { bgcolor: '#4cae4c' },
+                        bgcolor: agreed ? '#10b981' : '#ddd',
+                        '&:hover': { bgcolor: '#059669' },
                         color: agreed ? '#fff' : '#888',
                         px: 12,
                         py: 1.2,
@@ -266,7 +266,7 @@ const GeneralInstructions = () => {
             </Box>
 
             {/* Footer */}
-            <Box sx={{ bgcolor: '#00264d', color: '#fff', py: 1.5, textAlign: 'center' }}>
+            <Box sx={{ bgcolor: '#1e293b', color: '#fff', py: 1.5, textAlign: 'center' }}>
                 <Typography variant="caption" sx={{ fontWeight: 600 }}>
                     © All Rights Reserved - Psychology Question Bank (Psy-Q)
                 </Typography>

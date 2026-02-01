@@ -56,7 +56,7 @@ const MockTestRules = () => {
                         right: '10%',
                         width: '30%',
                         height: '30%',
-                        background: 'radial-gradient(circle, rgba(219, 39, 119, 0.05) 0%, transparent 70%)',
+                        background: 'radial-gradient(circle, rgba(202, 0, 86, 0.05) 0%, transparent 70%)',
                         borderRadius: '50%',
                         filter: 'blur(50px)',
                     }}
@@ -70,7 +70,7 @@ const MockTestRules = () => {
 
                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 3, mb: 4 }}>
                         <Box sx={{ p: 2, bgcolor: '#FFF0F3', borderRadius: 3, textAlign: 'center' }}>
-                            <Clock size={24} color="#E91E63" style={{ marginBottom: 8 }} />
+                            <Clock size={24} color="#ca0056" style={{ marginBottom: 8 }} />
                             <Typography variant="h6" sx={{ fontWeight: 700 }}>{testDetails?.duration} mins</Typography>
                             <Typography variant="caption">Total Duration</Typography>
                         </Box>
@@ -118,7 +118,7 @@ const MockTestRules = () => {
                         <Button
                             variant="contained"
                             onClick={handleStart}
-                            sx={{ flex: 2, py: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 600, bgcolor: '#E91E63', '&:hover': { bgcolor: '#C2185B' } }}
+                            sx={{ flex: 2, py: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 600, bgcolor: '#ca0056', '&:hover': { bgcolor: '#b8003f' } }}
                         >
                             I Understand, Start Test
                         </Button>

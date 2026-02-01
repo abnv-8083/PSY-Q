@@ -233,7 +233,7 @@ const MockTestInterface = () => {
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
             {/* Top Bar */}
             {/* Top Bar */}
-            <Box sx={{ bgcolor: '#003366', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, height: 32 }}>
+            <Box sx={{ bgcolor: '#1e293b', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, height: 32 }}>
                 <IconButton size="small" sx={{ color: '#fff', p: 0.5 }} onClick={() => navigate('/academic/mocktest')}>
                     <Home size={14} />
                     <Typography variant="caption" sx={{ ml: 0.5, fontSize: '0.7rem' }}>Home</Typography>
@@ -249,7 +249,7 @@ const MockTestInterface = () => {
             <Box sx={{ py: 0.5, px: { xs: 2, md: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', height: 45 }}>
                 <Box component="img" src="/logos/psyq-logo-header.png" sx={{ height: 30 }} />
                 <Box sx={{ textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#003366' }}>PSYCHOLOGY QUESTION BANK</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b' }}>PSYCHOLOGY QUESTION BANK</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <Box component="img" src="/logos/ignou.png" sx={{ height: 25, opacity: 0.7 }} />
@@ -264,11 +264,11 @@ const MockTestInterface = () => {
                     <Box>
                         <Box sx={{ display: 'flex', gap: 1 }}>
                             <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Candidate Name :</Typography>
-                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#db2777' }}>{studentName}</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#ca0056' }}>{studentName}</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 1 }}>
                             <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Exam Name :</Typography>
-                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#003366' }}>{testName}</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#1e293b' }}>{testName}</Typography>
                         </Box>
                     </Box>
                 </Box>
@@ -276,7 +276,7 @@ const MockTestInterface = () => {
                 <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                     <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                         <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Remaining Time :</Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 900, bgcolor: '#00d2ff', px: 1, py: 0.2, borderRadius: 1 }}>{formatTime(timeLeft)}</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 900, bgcolor: '#fdf2f8', color: '#ca0056', border: '1px solid #ca0056', px: 1, py: 0.2, borderRadius: 1 }}>{formatTime(timeLeft)}</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Exam Center: <strong>Online</strong></Typography>
@@ -291,8 +291,8 @@ const MockTestInterface = () => {
                     <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', pb: 1 }}>
                         <Typography variant="h6" sx={{ fontWeight: 800 }}>Question {currentIdx + 1}:</Typography>
                         <Box sx={{ display: 'flex', gap: 1 }}>
-                            <IconButton size="small" sx={{ bgcolor: '#007bff', color: '#fff', '&:hover': { bgcolor: '#0056b3' } }}><ChevronUp size={16} /></IconButton>
-                            <IconButton size="small" sx={{ bgcolor: '#007bff', color: '#fff', '&:hover': { bgcolor: '#0056b3' } }}><ChevronDown size={16} /></IconButton>
+                            <IconButton size="small" sx={{ bgcolor: '#ca0056', color: '#fff', '&:hover': { bgcolor: '#b8003f' } }}><ChevronUp size={16} /></IconButton>
+                            <IconButton size="small" sx={{ bgcolor: '#ca0056', color: '#fff', '&:hover': { bgcolor: '#b8003f' } }}><ChevronDown size={16} /></IconButton>
                         </Box>
                     </Box>
 
@@ -300,7 +300,7 @@ const MockTestInterface = () => {
                         {(currentQuestion?.text || currentQuestion?.question_text) || (loading ? "Loading question..." : "Question text not available")}
                     </Typography>
 
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#003366' }}>Options</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b' }}>Options</Typography>
                     <Divider sx={{ my: 2 }} />
 
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
@@ -312,24 +312,24 @@ const MockTestInterface = () => {
                                     p: 2,
                                     borderRadius: 2,
                                     border: '1.5px solid',
-                                    borderColor: answers[currentIdx] === parseInt(key) ? '#db2777' : '#e2e8f0',
-                                    bgcolor: answers[currentIdx] === parseInt(key) ? '#db277705' : 'transparent',
+                                    borderColor: answers[currentIdx] === parseInt(key) ? '#ca0056' : '#e2e8f0',
+                                    bgcolor: answers[currentIdx] === parseInt(key) ? '#ca005605' : 'transparent',
                                     cursor: 'pointer',
                                     transition: 'all 0.2s',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 2,
-                                    '&:hover': { borderColor: '#db277780', bgcolor: '#db277703' }
+                                    '&:hover': { borderColor: '#ca005680', bgcolor: '#ca005603' }
                                 }}
                             >
                                 <Box sx={{
                                     width: 28, height: 28,
                                     borderRadius: '50%',
                                     border: '2px solid',
-                                    borderColor: answers[currentIdx] === parseInt(key) ? '#db2777' : '#cbd5e1',
+                                    borderColor: answers[currentIdx] === parseInt(key) ? '#ca0056' : '#cbd5e1',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     fontSize: '0.85rem', fontWeight: 800,
-                                    color: answers[currentIdx] === parseInt(key) ? '#db2777' : '#64748b'
+                                    color: answers[currentIdx] === parseInt(key) ? '#ca0056' : '#64748b'
                                 }}>
                                     {parseInt(key) + 1}
                                 </Box>
@@ -341,12 +341,12 @@ const MockTestInterface = () => {
                     {/* Button Bar Sticky Bottom of Left side */}
                     <Box sx={{ mt: 'auto', pt: 4, borderTop: '1px solid #eee', display: 'flex', justifyContent: 'space-between', gap: 1 }}>
                         <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button variant="contained" onClick={handleSaveNext} sx={{ bgcolor: '#5cb85c', '&:hover': { bgcolor: '#4cae4c' }, fontWeight: 700, textTransform: 'none' }}>SAVE & NEXT</Button>
+                            <Button variant="contained" onClick={handleSaveNext} sx={{ bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' }, fontWeight: 700, textTransform: 'none' }}>SAVE & NEXT</Button>
                             <Button variant="outlined" onClick={handleClear} sx={{ color: '#666', borderColor: '#ccc', fontWeight: 700, textTransform: 'none' }}>CLEAR</Button>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button variant="contained" onClick={handleMarkReview} sx={{ bgcolor: '#f0ad4e', '&:hover': { bgcolor: '#ec971f' }, fontWeight: 700, textTransform: 'none' }}>SAVE & MARK FOR REVIEW</Button>
-                            <Button variant="contained" onClick={handleMarkReview} sx={{ bgcolor: '#337ab7', '&:hover': { bgcolor: '#286090' }, fontWeight: 700, textTransform: 'none' }}>MARK FOR REVIEW & NEXT</Button>
+                            <Button variant="contained" onClick={handleMarkReview} sx={{ bgcolor: '#f59e0b', '&:hover': { bgcolor: '#d97706' }, fontWeight: 700, textTransform: 'none' }}>SAVE & MARK FOR REVIEW</Button>
+                            <Button variant="contained" onClick={handleMarkReview} sx={{ bgcolor: '#ca0056', '&:hover': { bgcolor: '#b8003f' }, fontWeight: 700, textTransform: 'none' }}>MARK FOR REVIEW & NEXT</Button>
                         </Box>
                     </Box>
                 </Box>
@@ -380,7 +380,7 @@ const MockTestInterface = () => {
                     </Box>
 
                     {/* Question Grid Title */}
-                    <Box sx={{ bgcolor: '#007bff', color: '#fff', py: 0.8, px: 2, mt: 2 }}>
+                    <Box sx={{ bgcolor: '#ca0056', color: '#fff', py: 0.8, px: 2, mt: 2 }}>
                         <Typography variant="caption" sx={{ fontWeight: 800 }}>Section: Mock Test</Typography>
                     </Box>
 
@@ -412,7 +412,7 @@ const MockTestInterface = () => {
                             variant="contained"
                             fullWidth
                             onClick={handleSubmit}
-                            sx={{ bgcolor: '#5cb85c', '&:hover': { bgcolor: '#4cae4c' }, fontWeight: 800, py: 1.2 }}
+                            sx={{ bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' }, fontWeight: 800, py: 1.2 }}
                         >
                             SUBMIT TEST
                         </Button>
@@ -421,7 +421,7 @@ const MockTestInterface = () => {
             </Box>
 
             {/* Footer Bar */}
-            <Box sx={{ bgcolor: '#00264d', color: '#fff', py: 1, textAlign: 'center', borderTop: '3px solid #db2777' }}>
+            <Box sx={{ bgcolor: '#1e293b', color: '#fff', py: 1, textAlign: 'center', borderTop: '3px solid #ca0056' }}>
                 <Typography variant="caption" sx={{ fontWeight: 700 }}>
                     © All Rights Reserved - Psychology Question Bank (Psy-Q)
                 </Typography>

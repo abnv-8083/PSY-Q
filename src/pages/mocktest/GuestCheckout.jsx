@@ -353,14 +353,14 @@ const GuestCheckout = () => {
                 variant="contained"
                 onClick={() => navigate('/academic/mocktest')}
                 sx={{
-                    bgcolor: '#db2777',
+                    bgcolor: '#ca0056',
                     py: 1.5,
                     px: 6,
                     borderRadius: 3,
                     fontWeight: 700,
                     textTransform: 'none',
                     fontSize: '1rem',
-                    '&:hover': { bgcolor: '#be185d' }
+                    '&:hover': { bgcolor: '#b8003f' }
                 }}
             >
                 Return to Dashboard
@@ -369,7 +369,7 @@ const GuestCheckout = () => {
     );
 
     return (
-        <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', pt: 4, pb: 8 }}>
+        <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fdf2f8 0%, #fef2f2 100%)', pt: 4, pb: 8 }}>
             <Container maxWidth="md">
                 {/* Header/Breadcrumbs */}
                 <Box sx={{ mb: 4 }}>
@@ -380,7 +380,7 @@ const GuestCheckout = () => {
                     >
                         Back to Tests
                     </Button>
-                    <Typography variant="h4" sx={{ fontWeight: 900, color: '#1a2035' }}>
+                    <Typography variant="h4" sx={{ fontWeight: 900, color: '#1e293b' }}>
                         Guest Checkout
                     </Typography>
                 </Box>
@@ -424,13 +424,13 @@ const GuestCheckout = () => {
                                             disabled={isProcessing}
                                             endIcon={isProcessing ? <CircularProgress size={20} color="inherit" /> : (activeStep === steps.length - 1 ? <CreditCard /> : <ChevronRight />)}
                                             sx={{
-                                                bgcolor: '#1a2035',
+                                                bgcolor: '#ca0056',
                                                 py: 1.2,
                                                 px: 4,
                                                 borderRadius: 3,
                                                 fontWeight: 700,
                                                 textTransform: 'none',
-                                                '&:hover': { bgcolor: '#0f172a' }
+                                                '&:hover': { bgcolor: '#b8003f' }
                                             }}
                                         >
                                             {activeStep === steps.length - 1 ? (isProcessing ? 'Processing...' : `Pay ₹${total}`) : 'Continue'}
@@ -443,14 +443,14 @@ const GuestCheckout = () => {
                         </Paper>
 
                         {activeStep === 0 && (
-                            <Paper sx={{ mt: 3, p: 3, borderRadius: 4, bgcolor: 'rgba(219, 39, 119, 0.05)', border: '1px solid rgba(219, 39, 119, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Paper sx={{ mt: 3, p: 3, borderRadius: 4, bgcolor: 'rgba(202, 0, 86, 0.05)', border: '1px solid rgba(202, 0, 86, 0.1)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                    <User size={20} color="#db2777" />
+                                    <User size={20} color="#ca0056" />
                                     <Typography variant="body2" sx={{ fontWeight: 600 }}>Already have an account?</Typography>
                                 </Box>
                                 <Button
                                     onClick={() => navigate('/student/signin')}
-                                    sx={{ color: '#db2777', fontWeight: 700, textTransform: 'none' }}
+                                    sx={{ color: '#ca0056', fontWeight: 700, textTransform: 'none' }}
                                 >
                                     Log in for faster checkout
                                 </Button>
@@ -467,7 +467,7 @@ const GuestCheckout = () => {
                             >
                                 <Paper sx={{ p: 4, borderRadius: 6, position: 'sticky', top: 120 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                                        <ShoppingBag size={24} color="#db2777" />
+                                        <ShoppingBag size={24} color="#ca0056" />
                                         <Typography variant="h6" sx={{ fontWeight: 800 }}>Purchase Info</Typography>
                                     </Box>
 
@@ -498,7 +498,7 @@ const GuestCheckout = () => {
 
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                                         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Grand Total</Typography>
-                                        <Typography variant="h5" sx={{ fontWeight: 900, color: '#db2777' }}>₹{total}</Typography>
+                                        <Typography variant="h5" sx={{ fontWeight: 900, color: '#ca0056' }}>₹{total}</Typography>
                                     </Box>
 
                                     <Box sx={{ mt: 4, p: 2, bgcolor: '#f1f5f9', borderRadius: 3 }}>

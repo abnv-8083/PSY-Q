@@ -6,7 +6,7 @@ import { CheckCircle2, XCircle, ChevronDown, RefreshCw, Home, Award, Sparkles, P
 import { AnimatePresence } from 'framer-motion';
 
 const ConfettiParticle = ({ side }) => {
-    const colors = ['#E91E63', '#FFD700', '#2196F3', '#4CAF50', '#FF5722'];
+    const colors = ['#ca0056', '#FFD700', '#1e293b', '#4CAF50', '#FF5722'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
     const randomAngle = (side === 'left' ? -45 : -135) + (Math.random() * 60 - 30);
     const distance = 200 + Math.random() * 300;
@@ -97,7 +97,7 @@ const ResultAnalytics = () => {
 
     if (loading) return (
         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: 2 }}>
-            <CircularProgress size={60} thickness={4} sx={{ color: '#db2777' }} />
+            <CircularProgress size={60} thickness={4} sx={{ color: '#ca0056' }} />
             <Typography variant="h6" sx={{ fontWeight: 700, color: '#666' }}>Analyzing Your Results...</Typography>
         </Box>
     );
@@ -128,7 +128,7 @@ const ResultAnalytics = () => {
                         left: '5%',
                         width: '35%',
                         height: '35%',
-                        background: 'radial-gradient(circle, rgba(219, 39, 119, 0.06) 0%, transparent 70%)',
+                        background: 'radial-gradient(circle, rgba(202, 0, 86, 0.06) 0%, transparent 70%)',
                         borderRadius: '50%',
                         filter: 'blur(60px)',
                     }}
@@ -183,7 +183,7 @@ const ResultAnalytics = () => {
                                     <Award size={220} color="#FFD700" />
                                 </motion.div>
                             ) : (
-                                <Award size={200} color="#E91E63" />
+                                <Award size={200} color="#ca0056" />
                             )}
                         </Box>
 
@@ -193,9 +193,9 @@ const ResultAnalytics = () => {
                                 sx={{
                                     width: 150, height: 150, borderRadius: '50%',
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                    border: '8px solid #E91E63',
+                                    border: '8px solid #ca0056',
                                     bgcolor: '#fff',
-                                    boxShadow: percentage >= 80 ? '0 0 30px rgba(255, 215, 0, 0.4)' : '0 0 20px rgba(233, 30, 99, 0.2)',
+                                    boxShadow: percentage >= 80 ? '0 0 30px rgba(255, 215, 0, 0.4)' : '0 0 20px rgba(202, 0, 86, 0.2)',
                                     animation: percentage >= 80 ? 'pulse 2s infinite' : 'none',
                                     '@keyframes pulse': {
                                         '0%': { transform: 'scale(1)' },
@@ -204,7 +204,7 @@ const ResultAnalytics = () => {
                                     }
                                 }}
                             >
-                                <Typography variant="h3" sx={{ fontWeight: 800, color: percentage >= 80 ? '#B8860B' : '#E91E63' }}>{score}</Typography>
+                                <Typography variant="h3" sx={{ fontWeight: 800, color: percentage >= 80 ? '#B8860B' : '#ca0056' }}>{score}</Typography>
                                 <Typography variant="body2" color="textSecondary">out of {total}</Typography>
                                 {percentage >= 80 && (
                                     <Box sx={{ position: 'absolute', top: -10, right: -10 }}>
@@ -229,7 +229,7 @@ const ResultAnalytics = () => {
                                 variant="contained"
                                 startIcon={<RefreshCw size={18} />}
                                 onClick={() => navigate(`/academic/mocktest`)}
-                                sx={{ bgcolor: '#E91E63', borderRadius: 2, px: 3, py: 1.2 }}
+                                sx={{ bgcolor: '#ca0056', borderRadius: 2, px: 3, py: 1.2, '&:hover': { bgcolor: '#b8003f' } }}
                             >
                                 Retake Test
                             </Button>
@@ -252,7 +252,7 @@ const ResultAnalytics = () => {
                                         animate={{ scale: [0, 1.5, 1], rotate: [45, -10, 0] }}
                                         transition={{ duration: 0.6, type: 'spring' }}
                                     >
-                                        <PartyPopper size={48} color="#E91E63" />
+                                        <PartyPopper size={48} color="#ca0056" />
                                         {Array.from({ length: 30 }).map((_, i) => (
                                             <ConfettiParticle key={i} side="left" />
                                         ))}
@@ -264,7 +264,7 @@ const ResultAnalytics = () => {
                                         animate={{ scale: [0, 1.5, 1], rotate: [-45, 10, 0] }}
                                         transition={{ duration: 0.6, type: 'spring' }}
                                     >
-                                        <PartyPopper size={48} color="#E91E63" style={{ transform: 'scaleX(-1)' }} />
+                                        <PartyPopper size={48} color="#ca0056" style={{ transform: 'scaleX(-1)' }} />
                                         {Array.from({ length: 30 }).map((_, i) => (
                                             <ConfettiParticle key={i} side="right" />
                                         ))}

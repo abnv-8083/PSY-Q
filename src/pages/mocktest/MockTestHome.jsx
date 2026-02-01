@@ -5,24 +5,25 @@ import {
 } from '@mui/material';
 import {
     BookOpen, CheckCircle, Star, Users, Award, Mail, Phone, MapPin,
-    ChevronRight, ChevronLeft, Clock, ShieldCheck, BarChart2, Zap, Target
+    ChevronRight, ChevronLeft, Clock, ShieldCheck, BarChart2, Zap, Target, Play, Calendar
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import MockTestNavbar from '../../components/MockTestNavbar';
+import Footer from '../../components/Footer';
 
 // --- Constants ---
 const COLORS = {
-    primary: '#2C3E50',
-    secondary: '#34495E',
-    accent: '#3498DB',
-    accentHover: '#2980B9',
-    background: '#F8F9FA',
+    primary: '#1e293b',
+    secondary: '#4b5563',
+    accent: '#ca0056',
+    accentHover: '#b8003f',
+    background: '#fdf2f8',
     cardBg: '#FFFFFF',
-    textLight: '#7F8C8D',
-    border: '#E0E0E0',
-    success: '#27AE60'
+    textLight: '#64748b',
+    border: '#e2e8f0',
+    success: '#10b981'
 };
 
 const FONTS = {
@@ -31,37 +32,143 @@ const FONTS = {
 
 // --- Components ---
 
-const HeroSection = ({ navigate }) => (
-    <Box sx={{
-        bgcolor: '#FFFFFF',
-        pt: { xs: 8, md: 12 },
-        pb: { xs: 8, md: 10 },
-        borderBottom: `1px solid ${COLORS.border}`,
-        position: 'relative',
-        overflow: 'hidden'
-    }}>
-        <Container maxWidth="lg">
-            <Grid container spacing={6} alignItems="center">
-                <Grid item xs={12} md={7}>
-                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
+const MarqueeQuotes = ({ phrases }) => {
+    // Join phrases with a separator for a continuous flow
+    const combinedText = phrases.join("   •   ") + "   •   ";
+
+    return (
+        <Box sx={{ minHeight: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
+            <Box sx={{
+                bgcolor: COLORS.accent,
+                px: 3,
+                py: 1.2,
+                borderRadius: '50px',
+                boxShadow: `0 4px 15px ${alpha(COLORS.accent, 0.25)}`,
+                display: 'flex',
+                alignItems: 'center',
+                minWidth: { xs: '320px', sm: '550px', md: '800px' },
+                height: '45px',
+                overflow: 'hidden',
+                position: 'relative'
+            }}>
+                <motion.div
+                    initial={{ x: 0 }}
+                    animate={{ x: "-50%" }}
+                    transition={{
+                        repeat: Infinity,
+                        duration: 60, // Much slower speed
+                        ease: "linear"
+                    }}
+                    style={{
+                        whiteSpace: 'nowrap',
+                        display: 'flex',
+                        position: 'absolute',
+                        left: 0,
+                        minWidth: '200%' // Ensure container is wide enough
+                    }}
+                >
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            color: 'white',
+                            fontWeight: 700,
+                            letterSpacing: 0.5,
+                            fontSize: '0.9rem',
+                            mr: 4 // Add spacing at the end of the first block
+                        }}
+                    >
+                        {combinedText}
+                    </Typography>
+                    {/* Duplicate the text to make the loop seamless */}
+                    <Typography
+                        variant="body2"
+                        sx={{
+                            color: 'white',
+                            fontWeight: 700,
+                            letterSpacing: 0.5,
+                            fontSize: '0.9rem',
+                            mr: 4 // Consistent spacing
+                        }}
+                    >
+                        {combinedText}
+                    </Typography>
+                </motion.div>
+            </Box>
+        </Box>
+    );
+};
+
+const AnimatedCounter = ({ end, label, suffix = "" }) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+        let startTime;
+        const duration = 2000; // 2 seconds
+
+        const animate = (currentTime) => {
+            if (!startTime) startTime = currentTime;
+            const progress = Math.min((currentTime - startTime) / duration, 1);
+            setCount(Math.floor(progress * end));
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }, [end]);
+
+    return (
+        <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h3" sx={{ fontWeight: 900, color: COLORS.accent, lineHeight: 1 }}>
+                {count}{suffix}
+            </Typography>
+            <Typography variant="caption" sx={{ color: COLORS.secondary, fontWeight: 700, letterSpacing: 0.5, display: 'block' }}>
+                {label}
+            </Typography>
+        </Box>
+    );
+};
+
+const HeroSection = ({ navigate }) => {
+    const quotes = [
+        "Every topper once made a small decision—to practice seriously.",
+        "Take that step today. We made this for you.",
+        "Now its your turn.."
+    ];
+
+    return (
+        <Box sx={{
+            bgcolor: '#FFFFFF',
+            pt: { xs: 4, md: 6 }, // Reduced padding to fit typing effect nicely
+            pb: { xs: 8, md: 10 },
+            borderBottom: `1px solid ${COLORS.border}`,
+            position: 'relative',
+            overflow: 'hidden',
+            textAlign: 'center'
+        }}>
+            <Container maxWidth="lg">
+                <Box sx={{ maxWidth: '900px', mx: 'auto', mb: 8 }}>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+                        <MarqueeQuotes phrases={quotes} />
                         <Typography variant="overline" sx={{
                             color: COLORS.accent, fontWeight: 800, letterSpacing: '0.15em', mb: 2, display: 'block'
                         }}>
-                            ACE YOUR EXAMS
+                            UGC NET/JRF MOCK TEST
                         </Typography>
                         <Typography variant="h1" sx={{
                             fontSize: { xs: '2.5rem', md: '3.5rem' },
                             fontWeight: 900, color: COLORS.primary, lineHeight: 1.1, mb: 3
                         }}>
-                            Master UGC NET <br />
+                            Master UGC NET - JRF <br />
                             <Box component="span" sx={{ color: COLORS.accent }}>Psychology</Box>
                         </Typography>
                         <Typography variant="body1" sx={{
-                            fontSize: '1.2rem', color: COLORS.secondary, mb: 5, maxWidth: '550px', lineHeight: 1.6
+                            fontSize: '1.2rem', color: COLORS.secondary, mb: 4, maxWidth: '650px', lineHeight: 1.6, mx: 'auto'
                         }}>
-                            Comprehensive mock tests, expert explanations, and real-time analytics to boost your preparation score.
+                            Boost your exam score through systematic practice of previous year questions with expert explanations
                         </Typography>
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 6, justifyContent: 'center' }}>
                             <Button
                                 variant="contained"
                                 size="large"
@@ -76,34 +183,50 @@ const HeroSection = ({ navigate }) => (
                             <Button
                                 variant="outlined"
                                 size="large"
-                                onClick={() => navigate('/academic/mocktest/features')}
+                                onClick={() => navigate('/academic/mocktest/tests')}
                                 sx={{
                                     color: COLORS.primary, borderColor: COLORS.primary, fontSize: '1.1rem', py: 1.5, px: 4, borderRadius: 2, textTransform: 'none', fontWeight: 700
                                 }}
                             >
-                                Explore Features
+                                Free Trail
                             </Button>
                         </Stack>
+
+                        <Stack direction="row" spacing={4} sx={{ justifyContent: 'center', mb: 4, mt: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Clock size={18} color={COLORS.accent} />
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>
+                                    24/7 Access
+                                </Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Calendar size={18} color={COLORS.accent} />
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>
+                                    1+ Year Validity
+                                </Typography>
+                            </Box>
+                        </Stack>
+
+                        <Box sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: { xs: 4, md: 6 },
+                            pt: 5,
+                            borderTop: `1px solid ${alpha(COLORS.border, 0.5)}`,
+                            justifyContent: 'center'
+                        }}>
+                            <AnimatedCounter end={50} label="FULL TESTS" suffix="+" />
+                            <AnimatedCounter end={12} label="YEARS OF PYQs" suffix="+" />
+                            <AnimatedCounter end={5} label="PRACTICE QUESTIONS" suffix="K+" />
+                            <AnimatedCounter end={2} label="TOTAL EXPLANATIONS" suffix="K+" />
+                            <AnimatedCounter end={2} label="TOTAL USERS" suffix="K+" />
+                        </Box>
                     </motion.div>
-                </Grid>
-                <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}>
-                        <Box
-                            component="img"
-                            src="/images/mocktest-hero.png"
-                            alt="Psychology Exam Prep"
-                            sx={{
-                                width: '100%', maxWidth: 400, borderRadius: 4, boxShadow: '0 20px 60px rgba(0,0,0,0.1)',
-                                transform: 'perspective(1000px) rotateY(-5deg)'
-                            }}
-                            onError={(e) => { e.target.src = 'https://placehold.co/600x400/eef2f5/2c3e50?text=Psychology+Prep'; }}
-                        />
-                    </motion.div>
-                </Grid>
-            </Grid>
-        </Container>
-    </Box>
-);
+                </Box>
+            </Container>
+        </Box>
+    );
+};
 
 const FeatureCardsSection = () => {
     const cardStyle = {
@@ -157,7 +280,7 @@ const FeatureCardsSection = () => {
                 </Box>
             </Box>
             <Typography variant="h6" align="center" sx={{ fontWeight: 800, mb: 1.5, color: COLORS.primary, lineHeight: 1.3, fontSize: '1rem' }}>
-                UGC-NET PAPER 2 PSYCHOLOGY<br />2020 December Questions
+                UGC-NET PAPER 2 PSYCHOLOGY<br />Previous Year Questions
             </Typography>
             <Stack spacing={1.5} sx={{ mt: 'auto' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: COLORS.background, p: 1, borderRadius: 2 }}>
@@ -166,7 +289,7 @@ const FeatureCardsSection = () => {
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: COLORS.background, p: 1, borderRadius: 2 }}>
                     <Clock size={16} color={COLORS.accent} />
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>3 Hours Duration</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>2 Hours Duration</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: COLORS.background, p: 1, borderRadius: 2 }}>
                     <Award size={16} color={COLORS.warning} style={{ color: '#F39C12' }} />
@@ -299,66 +422,6 @@ const Carousel = ({ title, items, renderItem, type = 'default' }) => {
     );
 };
 
-const AboutSection = () => (
-    <Box sx={{ bgcolor: COLORS.primary, color: 'white', py: 10 }}>
-        <Container maxWidth="lg">
-            <Grid container spacing={8}>
-                <Grid item xs={12} md={6}>
-                    <Typography variant="overline" sx={{ color: COLORS.accent, fontWeight: 700, letterSpacing: '0.1em' }}>
-                        ABOUT US
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800, mt: 1, mb: 4 }}>
-                        Empowering Future Psychologists
-                    </Typography>
-                    <Typography paragraph sx={{ opacity: 0.8, fontSize: '1.1rem', lineHeight: 1.8 }}>
-                        We are dedicated to providing the highest quality preparation resources for UGC NET Psychology aspirants. Our mission is to democratize access to expert-level guidance and comprehensive practice materials.
-                    </Typography>
-                    <Stack direction="row" spacing={4} sx={{ mt: 5 }}>
-                        <Box>
-                            <Typography variant="h3" sx={{ fontWeight: 800, color: COLORS.accent }}>5K+</Typography>
-                            <Typography variant="caption" sx={{ opacity: 0.7 }}>SUCCESSFUL STUDENTS</Typography>
-                        </Box>
-                        <Box>
-                            <Typography variant="h3" sx={{ fontWeight: 800, color: COLORS.accent }}>50+</Typography>
-                            <Typography variant="caption" sx={{ opacity: 0.7 }}>EXPERT MENTORS</Typography>
-                        </Box>
-                    </Stack>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <Grid container spacing={4}>
-                        <Grid item xs={12}>
-                            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-                                <MapPin color={COLORS.accent} />
-                                <Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 700 }}>Headquarters</Typography>
-                                    <Typography variant="body2" sx={{ opacity: 0.7 }}>123 Education Lane, Knowledge Park, New Delhi - 110001</Typography>
-                                </Box>
-                            </Box>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-                                <Mail color={COLORS.accent} />
-                                <Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 700 }}>Email Us</Typography>
-                                    <Typography variant="body2" sx={{ opacity: 0.7 }}>support@psy-q.com</Typography>
-                                </Box>
-                            </Box>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Box sx={{ display: 'flex', gap: 2 }}>
-                                <Phone color={COLORS.accent} />
-                                <Box>
-                                    <Typography variant="h6" sx={{ fontWeight: 700 }}>Call Us</Typography>
-                                    <Typography variant="body2" sx={{ opacity: 0.7 }}>+91 98765 43210</Typography>
-                                </Box>
-                            </Box>
-                        </Grid>
-                    </Grid>
-                </Grid>
-            </Grid>
-        </Container>
-    </Box>
-);
 
 const MockTestHome = () => {
     const navigate = useNavigate();
@@ -384,34 +447,102 @@ const MockTestHome = () => {
         fetchData();
     }, []);
 
-    const renderTestCard = (test) => (
-        <Card sx={{ height: '100%', borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: `1px solid ${COLORS.border}` }}>
-            <CardContent sx={{ p: 3 }}>
-                <Chip label={test.subject_id === 1 ? 'Psychology' : 'General'} size="small" sx={{ mb: 2, bgcolor: `${COLORS.accent}15`, color: COLORS.accent, fontWeight: 700 }} />
-                <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, minHeight: 64, lineHeight: 1.3 }}>
-                    {test.name}
-                </Typography>
-                <Stack spacing={1} sx={{ mb: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: COLORS.textLight }}>
-                        <span>Questions</span>
-                        <span style={{ fontWeight: 600, color: COLORS.primary }}>100</span>
+    const renderTestCard = (test) => {
+        // Mock data or logic to mimic Dashboard card logic if needed
+        const isLocked = false; // featured tests on home are usually free or clickable
+
+        return (
+            <motion.div
+                whileHover={{ y: -5 }}
+                style={{ height: '100%' }}
+            >
+                <Card sx={{
+                    height: '100%',
+                    minHeight: 320, // Uniform height
+                    borderRadius: 3,
+                    border: `1px solid ${COLORS.border}`,
+                    boxShadow: 'none',
+                    '&:hover': { boxShadow: '0 12px 24px rgba(0,0,0,0.05)', borderColor: COLORS.accent },
+                    transition: 'all 0.3s',
+                    display: 'flex', flexDirection: 'column'
+                }}>
+                    <CardContent sx={{ flexGrow: 1, p: 2.5, position: 'relative', overflow: 'hidden' }}>
+                        <Box sx={{
+                            position: 'absolute',
+                            right: -20,
+                            bottom: -20,
+                            opacity: 0.05,
+                            transform: 'rotate(-15deg)',
+                            pointerEvents: 'none'
+                        }}>
+                            <BookOpen size={120} color={COLORS.primary} />
+                        </Box>
+
+                        <Typography variant="overline" sx={{ color: COLORS.accent, fontWeight: 700, letterSpacing: 1 }}>
+                            UGC-NET PAPER 2 PSYCHOLOGY
+                        </Typography>
+
+                        <Typography variant="h6" sx={{
+                            fontWeight: 800, mb: 1, lineHeight: 1.3, minHeight: 48, color: COLORS.primary, fontSize: '1rem'
+                        }}>
+                            {test.name}
+                        </Typography>
+
+                        <Stack spacing={1.5} sx={{ mb: 3, mt: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>100 Questions</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>{test.duration} mins Duration</Typography>
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>200 Marks</Typography>
+                            </Box>
+                        </Stack>
+
+                        <Chip
+                            label="Expert Explanation in English"
+                            size="small"
+                            sx={{
+                                bgcolor: alpha(COLORS.accent, 0.1),
+                                color: COLORS.accent,
+                                fontWeight: 700,
+                                borderRadius: 1,
+                                width: '100%',
+                                justifyContent: 'center'
+                            }}
+                        />
+                    </CardContent>
+                    <Box sx={{ p: 2, pt: 0 }}>
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            onClick={() => navigate('/academic/mocktest/tests')}
+                            startIcon={<Play size={16} />}
+                            sx={{
+                                bgcolor: COLORS.accent,
+                                color: 'white',
+                                fontWeight: 700,
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                boxShadow: 'none',
+                                py: 1.5,
+                                '&:hover': {
+                                    bgcolor: COLORS.accentHover,
+                                    boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)'
+                                }
+                            }}
+                        >
+                            View Details
+                        </Button>
                     </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: COLORS.textLight }}>
-                        <span>Duration</span>
-                        <span style={{ fontWeight: 600, color: COLORS.primary }}>{test.duration} mins</span>
-                    </Box>
-                </Stack>
-                <Button
-                    fullWidth
-                    variant="outlined"
-                    onClick={() => navigate('/academic/mocktest/tests')}
-                    sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                >
-                    View Details
-                </Button>
-            </CardContent>
-        </Card>
-    );
+                </Card>
+            </motion.div>
+        );
+    };
 
     const renderBundleCard = (bundle, type) => {
         const isDark = type === 'dark';
@@ -419,7 +550,7 @@ const MockTestHome = () => {
             <Card sx={{
                 height: '100%',
                 borderRadius: 3,
-                bgcolor: isDark ? COLORS.secondary : 'white',
+                bgcolor: isDark ? COLORS.secondary : COLORS.background,
                 color: isDark ? 'white' : COLORS.primary,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
                 border: isDark ? 'none' : `1px solid ${COLORS.border}`
@@ -458,11 +589,51 @@ const MockTestHome = () => {
 
             <Carousel title="Premium Bundles" items={bundles} renderItem={renderBundleCard} type="light" />
 
-            <Box sx={{ bgcolor: '#2C3E50', py: 2 }}>
-                <Carousel title="Exclusive Collections" items={bundles} renderItem={renderBundleCard} type="dark" />
+            {/* About UGC NET Psychology Section */}
+            <Box sx={{ py: 10, bgcolor: 'white', borderTop: `1px solid ${COLORS.border}` }}>
+                <Container maxWidth="lg">
+                    <Typography variant="h4" sx={{ fontWeight: 900, mb: 4, color: COLORS.primary }}>
+                        About <Box component="span" sx={{ color: COLORS.accent }}>UGC NET Psychology</Box>
+                    </Typography>
+
+                    <Typography sx={{ fontSize: '1.1rem', color: COLORS.secondary, lineHeight: 1.8, mb: 3 }}>
+                        UGC NET Psychology is one of the most sought-after subjects under the National Eligibility Test conducted by the National Testing Agency (NTA). The examination determines eligibility for Assistant Professor and Junior Research Fellowship (JRF) in Indian universities and colleges.
+                    </Typography>
+
+                    <Typography sx={{ fontSize: '1.1rem', color: COLORS.secondary, lineHeight: 1.8, mb: 3 }}>
+                        The syllabus of UGC NET Psychology is vast, conceptual, and interdisciplinary, covering core areas such as Research Methods, Psychological Testing, Cognitive Psychology, Social Psychology, Developmental Psychology, Counseling, Psychopathology, Organizational Psychology, and Emerging Areas. The exam emphasizes conceptual clarity, application-based understanding, and familiarity with previous year question trends rather than rote memorization.
+                    </Typography>
+
+                    <Typography sx={{ fontSize: '1.1rem', color: COLORS.secondary, lineHeight: 1.8, mb: 4 }}>
+                        UGC NET Psychology follows an objective multiple-choice format, where accuracy, time management, and analytical thinking play a crucial role. Over the years, analysis of previous year questions (PYQs) reveals that the NTA often repeats themes, models, theorists, and research approaches, making systematic practice of PYQs an essential strategy for success.
+                    </Typography>
+
+                    <Box sx={{ p: 4, bgcolor: COLORS.background, borderRadius: 4, mb: 4, border: `1px solid ${alpha(COLORS.accent, 0.1)}` }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: COLORS.primary }}>
+                            A strong preparation approach for UGC NET Psychology involves:
+                        </Typography>
+                        <Stack spacing={2}>
+                            {[
+                                'Thorough understanding of core concepts',
+                                'Regular practice of previous year questions',
+                                'Exposure to exam-level mock tests',
+                                'Continuous performance analysis and revision'
+                            ].map((item, idx) => (
+                                <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                                    <CheckCircle size={20} color={COLORS.accent} style={{ marginTop: 2, flexShrink: 0 }} />
+                                    <Typography sx={{ fontWeight: 600, color: COLORS.secondary }}>{item}</Typography>
+                                </Box>
+                            ))}
+                        </Stack>
+                    </Box>
+
+                    <Typography sx={{ fontSize: '1.1rem', color: COLORS.secondary, lineHeight: 1.8 }}>
+                        With disciplined preparation and the right practice resources, aspirants can not only qualify NET but also aim for JRF and top ranks. UGC NET Psychology is not just an examination—it is a gateway to academic excellence, research opportunities, and a career in teaching and psychology.
+                    </Typography>
+                </Container>
             </Box>
 
-            <AboutSection />
+            <Footer />
         </Box>
     );
 };

@@ -7,10 +7,10 @@ import {
 import MockTestNavbar from '../../components/MockTestNavbar';
 
 const COLORS = {
-    primary: '#2C3E50',
-    secondary: '#34495E',
-    accent: '#3498DB',
-    background: '#F8F9FA'
+    primary: '#1e293b',
+    secondary: '#4b5563',
+    accent: '#ca0056',
+    background: '#fdf2f8'
 };
 
 const features = [
