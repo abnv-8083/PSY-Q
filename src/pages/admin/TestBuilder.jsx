@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
 import ModernDialog from '../../components/ModernDialog';
-import { Plus, Trash2, Clock, DollarSign, ChevronLeft, Target } from 'lucide-react';
+import { Plus, Trash2, Clock, DollarSign, ChevronLeft, Target, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [tests, setTests] = useState([]);
     const [openTestDialog, setOpenTestDialog] = useState(false);
     const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 60 });
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editingTest, setEditingTest] = useState(null);
 
     // Modern Dialog State
     const [dialog, setDialog] = useState({
@@ -44,33 +46,59 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         }
     };
 
-    const handleAddTest = async () => {
+    const handleSaveTest = async () => {
         if (!newTest.name) return;
         try {
-            const { error } = await supabase
-                .from('tests')
-                .insert({
-                    subject_id: subject.id,
-                    name: newTest.name,
-                    price: Number(newTest.price),
-                    duration: Number(newTest.duration),
-                    is_published: true
-                });
+            if (isEditMode && editingTest) {
+                const { error } = await supabase
+                    .from('tests')
+                    .update({
+                        name: newTest.name,
+                        price: Number(newTest.price),
+                        duration: Number(newTest.duration)
+                    })
+                    .eq('id', editingTest.id);
 
-            if (error) throw error;
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('tests')
+                    .insert({
+                        subject_id: subject.id,
+                        name: newTest.name,
+                        price: Number(newTest.price),
+                        duration: Number(newTest.duration),
+                        is_published: true
+                    });
+
+                if (error) throw error;
+            }
 
             setNewTest({ name: '', price: 0, duration: 60 });
             setOpenTestDialog(false);
+            setIsEditMode(false);
+            setEditingTest(null);
             fetchTests();
         } catch (error) {
-            console.error("Error adding test in Supabase:", error);
+            console.error(`Error ${isEditMode ? 'updating' : 'adding'} test in Supabase:`, error);
             setDialog({
                 open: true,
-                title: 'Add Failed',
-                message: "Failed to create the test. Please check all fields and try again.",
+                title: `${isEditMode ? 'Update' : 'Add'} Failed`,
+                message: `Failed to ${isEditMode ? 'update' : 'create'} the test. Please check all fields and try again.`,
                 type: 'error'
             });
         }
+    };
+
+    const handleEditClick = (test) => {
+        setNewTest({
+            name: test.name,
+            price: test.price,
+            duration: test.duration
+        });
+        setEditingTest(test);
+        setIsEditMode(true);
+        setOpenTestDialog(true);
     };
 
     const handleDeleteTest = async (id) => {
@@ -158,13 +186,22 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                                                 <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Created: {new Date(test.created_at).toLocaleDateString()}</Typography>
                                             </Box>
                                         </Box>
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleDeleteTest(test.id)}
-                                            sx={{ color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.05)', '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' } }}
-                                        >
-                                            <Trash2 size={18} />
-                                        </IconButton>
+                                        <Box sx={{ display: 'flex', gap: 1 }}>
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleEditClick(test)}
+                                                sx={{ color: '#6366f1', bgcolor: 'rgba(99, 102, 241, 0.05)', '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)' } }}
+                                            >
+                                                <Pencil size={18} />
+                                            </IconButton>
+                                            <IconButton
+                                                size="small"
+                                                onClick={() => handleDeleteTest(test.id)}
+                                                sx={{ color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.05)', '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' } }}
+                                            >
+                                                <Trash2 size={18} />
+                                            </IconButton>
+                                        </Box>
                                     </Box>
 
                                     <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
@@ -209,11 +246,16 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
 
             <Dialog
                 open={openTestDialog}
-                onClose={() => setOpenTestDialog(false)}
+                onClose={() => {
+                    setOpenTestDialog(false);
+                    setIsEditMode(false);
+                    setEditingTest(null);
+                    setNewTest({ name: '', price: 0, duration: 60 });
+                }}
                 fullWidth maxWidth="xs"
                 PaperProps={{ sx: { borderRadius: 5 } }}
             >
-                <DialogTitle sx={{ fontWeight: 900 }}>Add New Mock Test</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 900 }}>{isEditMode ? 'Edit Mock Test' : 'Add New Mock Test'}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
                         <TextField
@@ -240,17 +282,22 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 4, pt: 1 }}>
-                    <Button onClick={() => setOpenTestDialog(false)} sx={{ fontWeight: 700 }}>Cancel</Button>
+                    <Button onClick={() => {
+                        setOpenTestDialog(false);
+                        setIsEditMode(false);
+                        setEditingTest(null);
+                        setNewTest({ name: '', price: 0, duration: 60 });
+                    }} sx={{ fontWeight: 700 }}>Cancel</Button>
                     <Button
                         variant="contained"
-                        onClick={handleAddTest}
+                        onClick={handleSaveTest}
                         sx={{
                             bgcolor: '#E91E63', borderRadius: 3, fontWeight: 800, px: 4, py: 1.2,
                             boxShadow: '0 8px 20px rgba(233, 30, 99, 0.3)',
                             '&:hover': { bgcolor: '#D81B60' }
                         }}
                     >
-                        Create Test
+                        {isEditMode ? 'Save Changes' : 'Create Test'}
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Paper, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, FormLabel, RadioGroup, FormControlLabel, Radio, Divider, Grid } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
 import ModernDialog from '../../components/ModernDialog';
-import { Plus, Trash2, ChevronLeft, HelpCircle, CheckCircle2, MessageSquare, FileUp, Loader2 } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, HelpCircle, CheckCircle2, MessageSquare, FileUp, Loader2, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { extractTextFromPDF, parseQuestionsFromText } from '../../utils/pdfParser';
 
@@ -18,6 +18,8 @@ const QuestionBank = ({ subject, test, onBack }) => {
     const [importDialogOpen, setImportDialogOpen] = useState(false);
     const [importing, setImporting] = useState(false);
     const [parsedQuestions, setParsedQuestions] = useState([]);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editingQuestion, setEditingQuestion] = useState(null);
 
     // Modern Dialog State
     const [dialog, setDialog] = useState({
@@ -58,59 +60,58 @@ const QuestionBank = ({ subject, test, onBack }) => {
     const handleAddQuestion = async () => {
         if (!newQ.text || newQ.options.some(opt => !opt)) return;
         try {
-            const { error } = await supabase
-                .from('questions')
-                .insert({
-                    test_id: test.id,
-                    text: newQ.text,
-                    options: newQ.options,
-                    correct_key: newQ.correctKey,
-                    explanation: newQ.explanation
-                });
+            if (isEditMode && editingQuestion) {
+                const { error } = await supabase
+                    .from('questions')
+                    .update({
+                        text: newQ.text,
+                        options: newQ.options,
+                        correct_key: newQ.correctKey,
+                        explanation: newQ.explanation
+                    })
+                    .eq('id', editingQuestion.id);
 
-            if (error) throw error;
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('questions')
+                    .insert({
+                        test_id: test.id,
+                        text: newQ.text,
+                        options: newQ.options,
+                        correct_key: newQ.correctKey,
+                        explanation: newQ.explanation
+                    });
+
+                if (error) throw error;
+            }
 
             setNewQ({ text: '', options: ['', '', '', ''], correctKey: 0, explanation: '' });
             setOpenQDialog(false);
+            setIsEditMode(false);
+            setEditingQuestion(null);
             fetchQuestions();
         } catch (error) {
-            console.error("Error adding question to Supabase:", error);
+            console.error(`Error ${isEditMode ? 'updating' : 'adding'} question in Supabase:`, error);
             setDialog({
                 open: true,
-                title: 'Add Failed',
-                message: "Failed to add question to the database. Please try again.",
+                title: `${isEditMode ? 'Update' : 'Add'} Failed`,
+                message: `Failed to ${isEditMode ? 'update' : 'add'} question to the database. Please try again.`,
                 type: 'error'
             });
         }
     };
 
-    const handleDeleteQuestion = async (id) => {
-        setDialog({
-            open: true,
-            title: 'Delete Question?',
-            message: 'Are you sure you want to delete this question? This action cannot be undone.',
-            type: 'confirm',
-            onConfirm: async () => {
-                setDialog(prev => ({ ...prev, open: false }));
-                try {
-                    const { error } = await supabase
-                        .from('questions')
-                        .delete()
-                        .eq('id', id);
-
-                    if (error) throw error;
-                    fetchQuestions();
-                } catch (error) {
-                    console.error("Error deleting question in Supabase:", error);
-                    setDialog({
-                        open: true,
-                        title: 'Delete Failed',
-                        message: "Failed to delete question: " + (error.message || "Unknown error"),
-                        type: 'error'
-                    });
-                }
-            }
+    const handleEditClick = (q) => {
+        setNewQ({
+            text: q.text,
+            options: q.options,
+            correctKey: q.correctKey,
+            explanation: q.explanation || ''
         });
+        setEditingQuestion(q);
+        setIsEditMode(true);
+        setOpenQDialog(true);
     };
 
     const handleOptionChange = (index, value) => {
@@ -259,7 +260,14 @@ const QuestionBank = ({ subject, test, onBack }) => {
                                     transition: 'all 0.3s',
                                     '&:hover': { boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }
                                 }}>
-                                    <Box sx={{ position: 'absolute', top: 24, right: 24 }}>
+                                    <Box sx={{ position: 'absolute', top: 24, right: 24, display: 'flex', gap: 1 }}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => handleEditClick(q)}
+                                            sx={{ color: '#6366f1', bgcolor: 'rgba(99, 102, 241, 0.05)', '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)' } }}
+                                        >
+                                            <Pencil size={18} />
+                                        </IconButton>
                                         <IconButton
                                             size="small"
                                             onClick={() => handleDeleteQuestion(q.id)}
@@ -337,11 +345,16 @@ const QuestionBank = ({ subject, test, onBack }) => {
 
             <Dialog
                 open={openQDialog}
-                onClose={() => setOpenQDialog(false)}
+                onClose={() => {
+                    setOpenQDialog(false);
+                    setIsEditMode(false);
+                    setEditingQuestion(null);
+                    setNewQ({ text: '', options: ['', '', '', ''], correctKey: 0, explanation: '' });
+                }}
                 fullWidth maxWidth="md"
                 PaperProps={{ sx: { borderRadius: 5 } }}
             >
-                <DialogTitle sx={{ fontWeight: 900 }}>Add New Question</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 900 }}>{isEditMode ? 'Edit Question' : 'Add New Question'}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ mt: 1 }}>
                         <TextField
@@ -395,7 +408,12 @@ const QuestionBank = ({ subject, test, onBack }) => {
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 4, pt: 1 }}>
-                    <Button onClick={() => setOpenQDialog(false)} sx={{ fontWeight: 700 }}>Cancel</Button>
+                    <Button onClick={() => {
+                        setOpenQDialog(false);
+                        setIsEditMode(false);
+                        setEditingQuestion(null);
+                        setNewQ({ text: '', options: ['', '', '', ''], correctKey: 0, explanation: '' });
+                    }} sx={{ fontWeight: 700 }}>Cancel</Button>
                     <Button
                         variant="contained"
                         onClick={handleAddQuestion}
@@ -405,7 +423,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
                             '&:hover': { bgcolor: '#D81B60' }
                         }}
                     >
-                        Add to Bank
+                        {isEditMode ? 'Save Changes' : 'Add to Bank'}
                     </Button>
                 </DialogActions>
             </Dialog>
