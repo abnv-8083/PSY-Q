@@ -1,386 +1,263 @@
-import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import {
+    Box,
+    Container,
+    TextField,
+    Button,
+    Typography,
+    Paper,
+    InputAdornment,
+    IconButton,
+    Alert,
+    Link,
+    Avatar,
+    alpha
+} from '@mui/material';
+import { Mail, Lock, ShieldCheck, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+// --- Constants ---
+const COLORS = {
+    primary: '#1e293b',
+    secondary: '#4b5563',
+    accent: '#ca0056',
+    accentHover: '#b8003f',
+    background: '#fdf2f8',
+    cardBg: '#FFFFFF',
+    textLight: '#64748b',
+    border: '#e2e8f0',
+    success: '#10b981'
+};
+
+const FONTS = {
+    primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
+};
 
 const SignIn = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+        setError('');
+    };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: formData.email,
+                password: formData.password
+            });
 
-    setIsSubmitting(true);
-    try {
-      // 1. Try Supabase Login First
-      const { data: sbData, error: sbError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password
-      });
+            if (error) throw error;
 
-      let userData = null;
-      let finalUid = null;
+            // Check if user exists in admins table
+            const { data: admin } = await supabase
+                .from('admins')
+                .select('id')
+                .eq('id', data.user.id)
+                .single();
 
-      if (!sbError && sbData.user) {
-        finalUid = sbData.user.id;
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', finalUid)
-          .single();
-        userData = profile || { role: 'student' };
-      } else {
-        // 2. Fallback to Firebase for legacy accounts
-        const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-        const user = userCredential.user;
-        finalUid = user.uid;
+            if (admin) {
+                navigate('/admin');
+            } else {
+                setError('Access denied. Admin credentials required.');
+                await supabase.auth.signOut();
+            }
+        } catch (error) {
+            setError(error.message || 'Failed to sign in');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        const userDoc = await getDoc(doc(db, 'users', finalUid));
-        userData = userDoc.exists() ? userDoc.data() : { role: 'student' };
-      }
-
-      const from =
-        location.state?.from?.pathname ||
-        (userData.role === 'admin' || userData.role === 'sub-admin'
-          ? '/admin'
-          : '/academic/mocktest');
-      navigate(from, { replace: true });
-    } catch (error) {
-      console.error(error);
-      setErrors({ form: error.message });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-  };
-
-  return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Animated Background Blobs */}
-      <div style={{
-        position: 'absolute',
-        top: '-10%',
-        left: '-10%',
-        width: '40%',
-        height: '40%',
-        background: 'rgba(233, 30, 99, 0.3)',
-        borderRadius: '50%',
-        filter: 'blur(80px)',
-        animation: 'pulse 4s ease-in-out infinite'
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '-10%',
-        right: '-10%',
-        width: '40%',
-        height: '40%',
-        background: 'rgba(99, 102, 241, 0.3)',
-        borderRadius: '50%',
-        filter: 'blur(80px)',
-        animation: 'pulse 4s ease-in-out infinite 2s'
-      }} />
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        style={{
-          width: '100%',
-          maxWidth: '480px',
-          position: 'relative',
-          zIndex: 10
-        }}
-      >
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '24px',
-          padding: '48px',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
-        }}>
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-            <motion.img
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              src="/logos/new-logo.jpeg"
-              alt="Psy-Q Logo"
-              style={{
-                height: '64px',
-                margin: '0 auto 24px',
-                borderRadius: '16px'
-              }}
-            />
-            <h1 style={{
-              fontSize: '32px',
-              fontWeight: '800',
-              color: '#1a1a1a',
-              marginBottom: '8px',
-              letterSpacing: '-0.5px'
-            }}>Welcome Back</h1>
-            <p style={{
-              fontSize: '16px',
-              color: '#6b7280'
-            }}>Access your professional dashboard</p>
-          </div>
-
-          <form onSubmit={handleSubmit} style={{ marginBottom: '32px' }}>
-            <AnimatePresence mode="wait">
-              {errors.form && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  style={{
-                    padding: '16px',
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                    borderRadius: '12px',
-                    color: '#dc2626',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    textAlign: 'center',
-                    marginBottom: '20px'
-                  }}
-                >
-                  {errors.form}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                fontSize: '12px',
-                fontWeight: '700',
-                color: '#6b7280',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                marginBottom: '8px',
-                display: 'block',
-                marginLeft: '4px'
-              }}>Email Address</label>
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '16px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none'
-                }}>
-                  <Mail size={18} color="#9ca3af" />
-                </div>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  style={{
-                    width: '100%',
-                    paddingLeft: '48px',
-                    paddingRight: '16px',
-                    paddingTop: '16px',
-                    paddingBottom: '16px',
-                    background: '#f9fafb',
-                    border: errors.email ? '2px solid #ef4444' : '1px solid #e5e7eb',
-                    borderRadius: '12px',
-                    fontSize: '16px',
-                    outline: 'none',
-                    transition: 'all 0.2s',
-                    fontFamily: 'Inter, sans-serif'
-                  }}
-                  placeholder="admin@psyq.com"
-                  onFocus={(e) => e.target.style.borderColor = '#E91E63'}
-                  onBlur={(e) => !errors.email && (e.target.style.borderColor = '#e5e7eb')}
-                />
-              </div>
-              {errors.email && <p style={{
-                color: '#ef4444',
-                fontSize: '11px',
-                marginTop: '6px',
-                marginLeft: '4px',
-                fontWeight: '700',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
-              }}>{errors.email}</p>}
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                fontSize: '12px',
-                fontWeight: '700',
-                color: '#6b7280',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                marginBottom: '8px',
-                display: 'block',
-                marginLeft: '4px'
-              }}>Password</label>
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '16px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  pointerEvents: 'none'
-                }}>
-                  <Lock size={18} color="#9ca3af" />
-                </div>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  style={{
-                    width: '100%',
-                    paddingLeft: '48px',
-                    paddingRight: '16px',
-                    paddingTop: '16px',
-                    paddingBottom: '16px',
-                    background: '#f9fafb',
-                    border: errors.password ? '2px solid #ef4444' : '1px solid #e5e7eb',
-                    borderRadius: '12px',
-                    fontSize: '16px',
-                    outline: 'none',
-                    transition: 'all 0.2s',
-                    fontFamily: 'Inter, sans-serif'
-                  }}
-                  placeholder="••••••••••••••••"
-                  onFocus={(e) => e.target.style.borderColor = '#E91E63'}
-                  onBlur={(e) => !errors.password && (e.target.style.borderColor = '#e5e7eb')}
-                />
-              </div>
-              {errors.password && <p style={{
-                color: '#ef4444',
-                fontSize: '11px',
-                marginTop: '6px',
-                marginLeft: '4px',
-                fontWeight: '700',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em'
-              }}>{errors.password}</p>}
-            </div>
-
-            <div style={{ textAlign: 'right', marginBottom: '24px' }}>
-              <Link to="/soon" style={{
-                fontSize: '12px',
-                color: '#6b7280',
-                textDecoration: 'none',
-                transition: 'color 0.2s'
-              }}></Link>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                background: 'linear-gradient(135deg, #E91E63 0%, #C2185B 100%)',
-                color: 'white',
-                fontWeight: '700',
-                padding: '16px',
-                borderRadius: '12px',
-                border: 'none',
-                fontSize: '16px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                opacity: isSubmitting ? 0.5 : 1,
+    return (
+        <Box
+            sx={{
+                minHeight: '100vh',
+                background: `linear-gradient(135deg, ${COLORS.background} 0%, #FFFFFF 100%)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '8px',
-                boxShadow: '0 10px 30px rgba(233, 30, 99, 0.3)',
-                transition: 'all 0.2s'
-              }}
-            >
-              {isSubmitting ? 'Verifying Identity...' : 'Sign In to Dashboard'}
-              <ArrowRight size={20} />
-            </motion.button>
-          </form>
+                fontFamily: FONTS.primary,
+                py: 4
+            }}
+        >
+            <Container maxWidth="sm">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: { xs: 3, md: 5 },
+                            borderRadius: 6,
+                            bgcolor: 'white',
+                            border: `1px solid ${COLORS.border}`,
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.05)'
+                        }}
+                    >
+                        <Box sx={{ textAlign: 'center', mb: 4 }}>
+                            <motion.div
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.2, type: 'spring' }}
+                            >
+                                <Avatar
+                                    sx={{
+                                        width: 80,
+                                        height: 80,
+                                        margin: '0 auto 20px',
+                                        background: `linear-gradient(135deg, ${alpha(COLORS.primary, 0.9)} 0%, ${COLORS.primary} 100%)`,
+                                        boxShadow: `0 8px 16px ${alpha(COLORS.primary, 0.2)}`
+                                    }}
+                                >
+                                    <ShieldCheck size={40} color="white" />
+                                </Avatar>
+                            </motion.div>
 
+                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>
+                                Admin Portal
+                            </Typography>
+                            <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 500 }}>
+                                Unauthorized access is strictly prohibited.
+                            </Typography>
+                        </Box>
 
+                        {error && (
+                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                                <Alert
+                                    severity="error"
+                                    sx={{
+                                        mb: 3,
+                                        borderRadius: 2,
+                                        '& .MuiAlert-message': { fontWeight: 500 }
+                                    }}
+                                >
+                                    {error}
+                                </Alert>
+                            </motion.div>
+                        )}
 
-          <p style={{
-            marginTop: '32px',
-            textAlign: 'center',
-            fontSize: '14px',
-            color: '#6b7280'
-          }}>
-            Internal use only. <Link to="/signup" style={{
-              color: '#1a1a1a',
-              fontWeight: '700',
-              textDecoration: 'none',
-              transition: 'color 0.2s'
-            }}></Link>
-          </p>
-        </div>
+                        <form onSubmit={handleSubmit}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Email Address"
+                                    name="email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                    variant="outlined"
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 3,
+                                            bgcolor: '#f8fafc',
+                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
+                                            '&:hover fieldset': { borderColor: COLORS.primary },
+                                            '&.Mui-focused fieldset': { borderColor: COLORS.primary },
+                                        },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.primary }
+                                    }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Mail size={20} color={COLORS.textLight} />
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
 
-        {/* Footer Info */}
-        <div style={{
-          marginTop: '32px',
-          textAlign: 'center',
-          fontSize: '12px',
-          color: 'rgba(255, 255, 255, 0.8)',
-          fontWeight: '500',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase'
-        }}>
-          Psy-Q Admin Gateway | 256-bit Encrypted
-        </div>
-      </motion.div>
+                                <TextField
+                                    fullWidth
+                                    label="Password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                    variant="outlined"
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 3,
+                                            bgcolor: '#f8fafc',
+                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
+                                            '&:hover fieldset': { borderColor: COLORS.primary },
+                                            '&.Mui-focused fieldset': { borderColor: COLORS.primary },
+                                        },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.primary }
+                                    }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Lock size={20} color={COLORS.textLight} />
+                                            </InputAdornment>
+                                        ),
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    edge="end"
+                                                    size="small"
+                                                >
+                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.1); }
-        }
-      `}</style>
-    </div>
-  );
+                                <Button
+                                    fullWidth
+                                    type="submit"
+                                    variant="contained"
+                                    size="large"
+                                    disabled={loading}
+                                    endIcon={!loading && <ArrowRight size={20} />}
+                                    sx={{
+                                        mt: 1,
+                                        py: 1.8,
+                                        borderRadius: 3,
+                                        bgcolor: COLORS.primary,
+                                        fontWeight: 800,
+                                        fontSize: '1rem',
+                                        textTransform: 'none',
+                                        boxShadow: `0 10px 20px ${alpha(COLORS.primary, 0.2)}`,
+                                        '&:hover': {
+                                            bgcolor: '#0f172a',
+                                            boxShadow: `0 12px 24px ${alpha(COLORS.primary, 0.3)}`,
+                                            transform: 'translateY(-2px)'
+                                        },
+                                        transition: 'all 0.3s'
+                                    }}
+                                >
+                                    {loading ? 'Authenticating...' : 'Sign In to Dashboard'}
+                                </Button>
+                            </Box>
+                        </form>
+                    </Paper>
+                </motion.div>
+            </Container>
+        </Box>
+    );
 };
 
 export default SignIn;

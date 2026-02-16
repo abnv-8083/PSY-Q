@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
+import NotificationsCarousel from '../../components/NotificationsCarousel';
+import { fetchBundles } from '../../api/bundlesApi';
 
 // --- Constants ---
 const COLORS = {
@@ -221,6 +223,10 @@ const HeroSection = ({ navigate }) => {
                             <AnimatedCounter end={2} label="TOTAL EXPLANATIONS" suffix="K+" />
                             <AnimatedCounter end={2} label="TOTAL USERS" suffix="K+" />
                         </Box>
+
+                        <Box sx={{ mt: 8, mb: 2 }}>
+                            <NotificationsCarousel />
+                        </Box>
                     </motion.div>
                 </Box>
             </Container>
@@ -285,15 +291,15 @@ const FeatureCardsSection = () => {
             <Stack spacing={1.5} sx={{ mt: 'auto' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: COLORS.background, p: 1, borderRadius: 2 }}>
                     <CheckCircle size={16} color={COLORS.success} />
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>100 Questions</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Dynamic Question Sets</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: COLORS.background, p: 1, borderRadius: 2 }}>
                     <Clock size={16} color={COLORS.accent} />
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>2 Hours Duration</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Timed Exams</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: COLORS.background, p: 1, borderRadius: 2 }}>
                     <Award size={16} color={COLORS.warning} style={{ color: '#F39C12' }} />
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>200 Marks</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Rich Analytics</Typography>
                 </Box>
             </Stack>
         </>
@@ -430,19 +436,20 @@ const MockTestHome = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            // Fetch Tests
-            const { data: testsData } = await supabase
-                .from('tests')
-                .select('*')
-                .limit(6);
-            if (testsData) setTests(testsData);
+            try {
+                // Fetch Tests
+                const { data: testsData } = await supabase
+                    .from('tests')
+                    .select('*, questions(id)')
+                    .limit(6);
+                if (testsData) setTests(testsData || []);
 
-            // Fetch Bundles
-            const { data: bundlesData } = await supabase
-                .from('bundles')
-                .select('*')
-                .limit(6);
-            if (bundlesData) setBundles(bundlesData);
+                // Fetch Bundles using the API for calculated fields
+                const bundlesData = await fetchBundles();
+                setBundles(bundlesData || []);
+            } catch (error) {
+                console.error("Error fetching home data:", error);
+            }
         };
         fetchData();
     }, []);
@@ -491,7 +498,7 @@ const MockTestHome = () => {
                         <Stack spacing={1.5} sx={{ mb: 3, mt: 2 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>100 Questions</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>{test.questions?.length || 0} Questions</Typography>
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
@@ -499,7 +506,7 @@ const MockTestHome = () => {
                             </Box>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                 <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>200 Marks</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>{test.questions?.length || 0} Marks</Typography>
                             </Box>
                         </Stack>
 
@@ -521,59 +528,27 @@ const MockTestHome = () => {
                             fullWidth
                             variant="contained"
                             onClick={() => navigate('/academic/mocktest/tests')}
-                            startIcon={<Play size={16} />}
+                            startIcon={test.price === 0 ? <Play size={16} /> : <Zap size={16} />}
                             sx={{
-                                bgcolor: COLORS.accent,
+                                bgcolor: test.price === 0 ? COLORS.success : COLORS.accent,
                                 color: 'white',
-                                fontWeight: 700,
+                                fontWeight: 800,
                                 borderRadius: 2,
                                 textTransform: 'none',
                                 boxShadow: 'none',
                                 py: 1.5,
+                                fontSize: '1rem',
                                 '&:hover': {
-                                    bgcolor: COLORS.accentHover,
+                                    bgcolor: test.price === 0 ? '#059669' : COLORS.accentHover,
                                     boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)'
                                 }
                             }}
                         >
-                            View Details
+                            {test.price > 0 ? `₹${test.price}` : 'Free'}
                         </Button>
                     </Box>
                 </Card>
             </motion.div>
-        );
-    };
-
-    const renderBundleCard = (bundle, type) => {
-        const isDark = type === 'dark';
-        return (
-            <Card sx={{
-                height: '100%',
-                borderRadius: 3,
-                bgcolor: isDark ? COLORS.secondary : COLORS.background,
-                color: isDark ? 'white' : COLORS.primary,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-                border: isDark ? 'none' : `1px solid ${COLORS.border}`
-            }}>
-                <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>{bundle.name}</Typography>
-                    <Typography variant="body2" sx={{ mb: 3, opacity: 0.7, minHeight: 40 }}>{bundle.description?.substring(0, 60)}...</Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 800, mb: 3, color: isDark ? COLORS.accent : COLORS.primary }}>₹{bundle.price}</Typography>
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        sx={{
-                            bgcolor: isDark ? COLORS.accent : COLORS.primary,
-                            color: 'white',
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontWeight: 700
-                        }}
-                    >
-                        Explore Bundle
-                    </Button>
-                </CardContent>
-            </Card>
         );
     };
 
@@ -587,7 +562,224 @@ const MockTestHome = () => {
                 <Carousel title="Featured Mock Tests" items={tests} renderItem={renderTestCard} />
             </Box>
 
-            <Carousel title="Premium Bundles" items={bundles} renderItem={renderBundleCard} type="light" />
+            {/* Subscription Packages Section */}
+            <Box sx={{ py: 10, bgcolor: 'white' }}>
+                <Container maxWidth="lg">
+                    <Typography
+                        variant="h4"
+                        sx={{
+                            fontWeight: 900,
+                            mb: 2,
+                            textAlign: 'left',
+                            color: COLORS.primary
+                        }}
+                    >
+                        Available Packages
+                    </Typography>
+                    <Typography
+                        sx={{
+                            textAlign: 'left',
+                            color: COLORS.textLight,
+                            mb: 6,
+                            fontSize: '1.1rem'
+                        }}
+                    >
+                        Choose the perfect plan for your UGC NET Psychology preparation
+                    </Typography>
+
+                    <Box
+                        sx={{
+                            width: '100%',
+                            maxWidth: 1200,
+                            mx: 'auto',
+                            px: 2,
+                            overflowX: 'auto',
+                            pb: 4,
+                            '&::-webkit-scrollbar': {
+                                height: '8px',
+                            },
+                            '&::-webkit-scrollbar-track': {
+                                background: alpha(COLORS.border, 0.5),
+                                borderRadius: '10px',
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                                background: alpha(COLORS.accent, 0.3),
+                                borderRadius: '10px',
+                                '&:hover': {
+                                    background: alpha(COLORS.accent, 0.5),
+                                },
+                            },
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: 3,
+                                pb: 1,
+                                minWidth: 'min-content'
+                            }}
+                        >
+                            {bundles
+                                .sort((a, b) => {
+                                    const order = { 'BASIC': 1, 'ADVANCED': 2, 'PREMIUM': 3 };
+                                    return (order[a.bundle_type] || 99) - (order[b.bundle_type] || 99);
+                                })
+                                .slice(0, 3)
+                                .map((bundle, index) => (
+                                    <Box
+                                        key={bundle.id}
+                                        sx={{
+                                            flex: '0 0 auto',
+                                            width: { xs: '280px', sm: '320px', md: '350px' }
+                                        }}
+                                    >
+                                        <motion.div
+                                            whileHover={{ y: -6 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <Card sx={{
+                                                height: 480,
+                                                borderRadius: 3.5,
+                                                overflow: 'hidden',
+                                                border: bundle.bundle_type === 'PREMIUM'
+                                                    ? `3px solid ${COLORS.accent}`
+                                                    : `2px solid ${COLORS.border}`,
+                                                boxShadow: bundle.bundle_type === 'PREMIUM'
+                                                    ? `0 6px 20px ${alpha(COLORS.accent, 0.2)}`
+                                                    : '0 4px 15px rgba(0,0,0,0.06)',
+                                                position: 'relative',
+                                                transition: 'all 0.3s',
+                                                '&:hover': {
+                                                    boxShadow: bundle.bundle_type === 'PREMIUM'
+                                                        ? `0 12px 40px ${alpha(COLORS.accent, 0.3)}`
+                                                        : '0 10px 30px rgba(0,0,0,0.1)',
+                                                    borderColor: COLORS.accent
+                                                }
+                                            }}>
+                                                {/* Best Value Badge for Premium */}
+                                                {bundle.bundle_type === 'PREMIUM' && (
+                                                    <Box sx={{
+                                                        position: 'absolute',
+                                                        top: 10,
+                                                        right: 10,
+                                                        bgcolor: COLORS.accent,
+                                                        color: 'white',
+                                                        px: 1.2,
+                                                        py: 0.3,
+                                                        borderRadius: 1.2,
+                                                        fontWeight: 800,
+                                                        fontSize: '0.65rem',
+                                                        zIndex: 10,
+                                                        boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
+                                                    }}>
+                                                        BEST VALUE
+                                                    </Box>
+                                                )}
+
+                                                {/* Header with Background Image - Using plan-specific image */}
+                                                <Box sx={{
+                                                    height: 120,
+                                                    backgroundImage: bundle.bundle_type === 'BASIC'
+                                                        ? `url(/images/card_basic.jpeg)`
+                                                        : bundle.bundle_type === 'ADVANCED'
+                                                            ? `url(/images/card_advanced.jpeg)`
+                                                            : `url(/images/card_premium.jpeg)`,
+                                                    backgroundSize: 'cover',
+                                                    backgroundPosition: 'center'
+                                                }} />
+
+                                                <CardContent sx={{ p: 2.5, display: 'flex', flexDirection: 'column', height: 'calc(100% - 120px)' }}>
+                                                    <Typography variant="subtitle1" sx={{ fontWeight: 900, mb: 0.5, color: COLORS.primary, fontSize: '1.05rem', lineHeight: 1.2 }}>
+                                                        {bundle.name}
+                                                    </Typography>
+
+                                                    <Typography variant="body2" sx={{ color: COLORS.textLight, mb: 1.5, fontSize: '0.8rem', lineHeight: 1.3 }}>
+                                                        {bundle.description}
+                                                    </Typography>
+
+                                                    <Stack spacing={1.2} sx={{ mb: 2, flexGrow: 1 }}>
+                                                        {bundle.features?.slice(0, 4).map((feature, idx) => (
+                                                            <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+                                                                <CheckCircle size={14} color={COLORS.accent} style={{ marginTop: 2, flexShrink: 0 }} />
+                                                                <Typography sx={{
+                                                                    fontWeight: feature.toLowerCase().includes('validity') ? 800 : 500,
+                                                                    color: feature.toLowerCase().includes('validity') ? COLORS.accent : COLORS.secondary,
+                                                                    fontSize: '0.8rem',
+                                                                    lineHeight: 1.4
+                                                                }}>
+                                                                    {feature}
+                                                                </Typography>
+                                                            </Box>
+                                                        ))}
+                                                    </Stack>
+
+                                                    <Box sx={{ mt: 'auto' }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: 1, mb: 1.5 }}>
+                                                            {bundle.offer_price && Number(bundle.offer_price) < Number(bundle.regular_price) ? (
+                                                                <>
+                                                                    <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.accent }}>
+                                                                        ₹{bundle.offer_price}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" sx={{
+                                                                        fontWeight: 600,
+                                                                        color: COLORS.textLight,
+                                                                        textDecoration: 'line-through',
+                                                                        fontSize: '0.9rem'
+                                                                    }}>
+                                                                        ₹{bundle.regular_price}
+                                                                    </Typography>
+                                                                    {bundle.discount_percentage > 0 && (
+                                                                        <Chip
+                                                                            label={`${bundle.discount_percentage}% OFF`}
+                                                                            size="small"
+                                                                            sx={{
+                                                                                bgcolor: '#dcfce7',
+                                                                                color: '#059669',
+                                                                                fontWeight: 800,
+                                                                                fontSize: '0.7rem',
+                                                                                height: 20
+                                                                            }}
+                                                                        />
+                                                                    )}
+                                                                </>
+                                                            ) : (
+                                                                <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary }}>
+                                                                    ₹{bundle.regular_price}
+                                                                </Typography>
+                                                            )}
+                                                        </Box>
+
+                                                        <Button
+                                                            fullWidth
+                                                            variant="contained"
+                                                            size="small"
+                                                            sx={{
+                                                                bgcolor: bundle.bundle_type === 'PREMIUM' ? COLORS.accent : COLORS.primary,
+                                                                color: 'white',
+                                                                py: 1,
+                                                                borderRadius: 1.5,
+                                                                fontWeight: 700,
+                                                                textTransform: 'none',
+                                                                fontSize: '0.85rem',
+                                                                boxShadow: 'none',
+                                                                '&:hover': {
+                                                                    bgcolor: bundle.bundle_type === 'PREMIUM' ? COLORS.accentHover : COLORS.secondary,
+                                                                    transform: 'translateY(-1px)',
+                                                                }
+                                                            }}
+                                                        >
+                                                            Upgrade Now
+                                                        </Button>
+                                                    </Box>
+                                                </CardContent>
+                                            </Card>
+                                        </motion.div>
+                                    </Box>
+                                ))}
+                        </Box>
+                    </Box>
+                </Container>
+            </Box>
 
             {/* About UGC NET Psychology Section */}
             <Box sx={{ py: 10, bgcolor: 'white', borderTop: `1px solid ${COLORS.border}` }}>

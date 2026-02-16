@@ -11,7 +11,11 @@ import {
     Divider,
     Avatar,
     Select,
-    MenuItem
+    MenuItem,
+    Drawer,
+    useMediaQuery,
+    useTheme,
+    Fab
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -22,8 +26,9 @@ import {
     ChevronDown,
     ChevronUp,
     User,
-    Menu,
-    LogOut
+    Menu as MenuIcon,
+    LogOut,
+    X
 } from 'lucide-react';
 import { auth } from '../../lib/firebase';
 import { supabase } from '../../lib/supabaseClient';
@@ -32,6 +37,8 @@ import ModernDialog from '../../components/ModernDialog';
 const MockTestInterface = () => {
     const { subjectId, testId } = useParams();
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const [questions, setQuestions] = useState([]);
     const [currentIdx, setCurrentIdx] = useState(0);
@@ -39,10 +46,11 @@ const MockTestInterface = () => {
     const [answers, setAnswers] = useState({});
     const [flags, setFlags] = useState({});
     const [visited, setVisited] = useState({ 0: true });
-    const [timeLeft, setTimeLeft] = useState(7200); // Default 120 mins
+    const [timeLeft, setTimeLeft] = useState(6000); // Default 100 mins
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [studentName, setStudentName] = useState('Student');
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     // Modern Dialog State
     const [dialog, setDialog] = useState({
@@ -81,17 +89,28 @@ const MockTestInterface = () => {
                     correctKey: q.correct_key !== undefined ? q.correct_key : q.correct_answer
                 })));
 
-                // Fetch Student Profile for exact name
+                // Fetch Student Profile from students table first, then profiles
                 if (auth.currentUser) {
-                    const { data: profile } = await supabase
-                        .from('profiles')
+                    const { data: studentProfile } = await supabase
+                        .from('students')
                         .select('full_name')
                         .eq('id', auth.currentUser.uid)
                         .single();
-                    if (profile?.full_name) {
-                        setStudentName(profile.full_name);
-                    } else if (auth.currentUser.displayName) {
-                        setStudentName(auth.currentUser.displayName);
+
+                    if (studentProfile?.full_name) {
+                        setStudentName(studentProfile.full_name);
+                    } else {
+                        // Fallback to profiles table
+                        const { data: profile } = await supabase
+                            .from('profiles')
+                            .select('full_name')
+                            .eq('id', auth.currentUser.uid)
+                            .single();
+                        if (profile?.full_name) {
+                            setStudentName(profile.full_name);
+                        } else if (auth.currentUser.displayName) {
+                            setStudentName(auth.currentUser.displayName);
+                        }
                     }
                 }
             } catch (err) {
@@ -229,15 +248,86 @@ const MockTestInterface = () => {
         return null;
     };
 
+    const SidebarContent = () => (
+        <>
+            {/* Status Board */}
+            <Box sx={{ p: 2, borderBottom: '1.5px dashed #ccc' }}>
+                <Grid container spacing={1.5}>
+                    <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <StatusShape status="not-visited" label={questions.length - Object.keys(visited).length} />
+                        <Typography variant="caption" sx={{ fontWeight: 600, fontSize: { xs: '0.65rem', md: '0.75rem' } }}>Not Visited</Typography>
+                    </Grid>
+                    <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <StatusShape status="not-answered" label={Object.keys(visited).filter(idx => answers[idx] === undefined && !flags[idx]).length} />
+                        <Typography variant="caption" sx={{ fontWeight: 600, fontSize: { xs: '0.65rem', md: '0.75rem' } }}>Not Answered</Typography>
+                    </Grid>
+                    <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <StatusShape status="answered" label={Object.keys(answers).filter(idx => !flags[idx]).length} />
+                        <Typography variant="caption" sx={{ fontWeight: 600, fontSize: { xs: '0.65rem', md: '0.75rem' } }}>Answered</Typography>
+                    </Grid>
+                    <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <StatusShape status="marked" label={Object.keys(flags).filter(idx => answers[idx] === undefined).length} />
+                        <Typography variant="caption" sx={{ fontWeight: 600, fontSize: { xs: '0.65rem', md: '0.75rem' } }}>Marked</Typography>
+                    </Grid>
+                    <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <StatusShape status="answered-marked" label={Object.keys(flags).filter(idx => answers[idx] !== undefined).length} />
+                        <Typography variant="caption" sx={{ fontWeight: 600, fontSize: { xs: '0.65rem', md: '0.75rem' } }}>Answered & Marked</Typography>
+                    </Grid>
+                </Grid>
+            </Box>
+
+            {/* Question Grid Title */}
+            <Box sx={{ bgcolor: '#ca0056', color: '#fff', py: 0.8, px: 2, mt: 2 }}>
+                <Typography variant="caption" sx={{ fontWeight: 800 }}>Section: Mock Test</Typography>
+            </Box>
+
+            {/* Question Grid */}
+            <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
+                <Typography variant="caption" display="block" sx={{ mb: 1.5, fontWeight: 700, color: '#666' }}>SELECT A QUESTION:</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, p: 1 }}>
+                    {questions.map((_, idx) => (
+                        <Box
+                            key={idx}
+                            onClick={() => {
+                                setCurrentIdx(idx);
+                                setVisited(prev => ({ ...prev, [idx]: true }));
+                                if (isMobile) setDrawerOpen(false);
+                            }}
+                            sx={{ cursor: 'pointer', display: 'flex', justifyContent: 'center' }}
+                        >
+                            <StatusShape
+                                status={getStatusColor(idx)}
+                                label={idx + 1}
+                            />
+                        </Box>
+                    ))}
+                </Box>
+            </Box>
+
+            {/* Sidebar Footer Buttons */}
+            <Box sx={{ p: 2, borderTop: '1px solid #ddd', bgcolor: '#f8f9fa' }}>
+                <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={handleSubmit}
+                    sx={{ bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' }, fontWeight: 800, py: 1.2 }}
+                >
+                    SUBMIT TEST
+                </Button>
+            </Box>
+        </>
+    );
+
     return (
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
             {/* Top Bar */}
-            {/* Top Bar */}
-            <Box sx={{ bgcolor: '#1e293b', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, height: 32 }}>
-                <IconButton size="small" sx={{ color: '#fff', p: 0.5 }} onClick={() => navigate('/academic/mocktest')}>
-                    <Home size={14} />
-                    <Typography variant="caption" sx={{ ml: 0.5, fontSize: '0.7rem' }}>Home</Typography>
-                </IconButton>
+            <Box sx={{ bgcolor: '#1e293b', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, height: 32 }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton size="small" sx={{ color: '#fff', p: 0.5 }} onClick={() => navigate('/academic/mocktest')}>
+                        <Home size={14} />
+                        <Typography variant="caption" sx={{ ml: 0.5, fontSize: '0.7rem', display: { xs: 'none', sm: 'inline' } }}>Home</Typography>
+                    </IconButton>
+                </Box>
                 <IconButton size="small" sx={{ color: '#ff4d4d', p: 0.5, '&:hover': { bgcolor: 'rgba(255, 77, 77, 0.1)' } }} onClick={handleQuit}>
                     <LogOut size={14} />
                     <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 700, fontSize: '0.7rem' }}>QUIT</Typography>
@@ -245,41 +335,37 @@ const MockTestInterface = () => {
             </Box>
 
             {/* Logo Bar */}
-            {/* Logo Bar */}
-            <Box sx={{ py: 0.5, px: { xs: 2, md: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', height: 45 }}>
-                <Box component="img" src="/logos/psyq-logo-header.png" sx={{ height: 30 }} />
+            <Box sx={{ py: 0.5, px: { xs: 1, md: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', height: 45 }}>
+                <Box component="img" src="/logos/psyq-logo-header.png" sx={{ height: { xs: 24, md: 30 } }} />
                 <Box sx={{ textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b' }}>PSYCHOLOGY QUESTION BANK</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Box component="img" src="/logos/ignou.png" sx={{ height: 25, opacity: 0.7 }} />
+                    <Box component="img" src="/logos/ignou.png" sx={{ height: { xs: 20, md: 25 }, opacity: 0.7 }} />
                 </Box>
             </Box>
 
             {/* Candidate Header */}
-            {/* Candidate Header */}
-            <Box sx={{ bgcolor: '#f8f9fa', py: 0.5, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ddd', height: 40 }}>
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                    <Avatar sx={{ bgcolor: '#e0e0e0', color: '#666', width: 32, height: 32 }}><User size={18} /></Avatar>
+            <Box sx={{ bgcolor: '#f8f9fa', py: 0.5, px: { xs: 1, md: 3 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ddd', minHeight: 40, flexWrap: 'wrap', gap: 1 }}>
+                <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, alignItems: 'center', flex: 1 }}>
+                    <Avatar sx={{ bgcolor: '#e0e0e0', color: '#666', width: { xs: 28, md: 32 }, height: { xs: 28, md: 32 } }}><User size={18} /></Avatar>
                     <Box>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Candidate Name :</Typography>
-                            <Typography variant="caption" sx={{ fontWeight: 800, color: '#ca0056' }}>{studentName}</Typography>
+                        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#666', fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
+                                {isMobile ? studentName : `Candidate: ${studentName}`}
+                            </Typography>
                         </Box>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Exam Name :</Typography>
+                        <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Exam:</Typography>
                             <Typography variant="caption" sx={{ fontWeight: 800, color: '#1e293b' }}>{testName}</Typography>
                         </Box>
                     </Box>
                 </Box>
 
-                <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                        <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Remaining Time :</Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 900, bgcolor: '#fdf2f8', color: '#ca0056', border: '1px solid #ca0056', px: 1, py: 0.2, borderRadius: 1 }}>{formatTime(timeLeft)}</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="caption" sx={{ fontWeight: 600, color: '#666' }}>Exam Center: <strong>Online</strong></Typography>
+                <Box sx={{ display: 'flex', gap: { xs: 1, md: 2 }, alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+                        <Clock size={14} color="#ca0056" />
+                        <Typography variant="caption" sx={{ fontWeight: 900, bgcolor: '#fdf2f8', color: '#ca0056', border: '1px solid #ca0056', px: 1, py: 0.2, borderRadius: 1, fontSize: { xs: '0.7rem', md: '0.75rem' } }}>{formatTime(timeLeft)}</Typography>
                     </Box>
                 </Box>
             </Box>
@@ -287,29 +373,43 @@ const MockTestInterface = () => {
             {/* Main Content Area */}
             <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
                 {/* Left: Question Area */}
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', p: 3, position: 'relative' }}>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', p: { xs: 2, md: 3 }, position: 'relative' }}>
                     <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', pb: 1 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 800 }}>Question {currentIdx + 1}:</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 800, fontSize: { xs: '1rem', md: '1.25rem' } }}>Q {currentIdx + 1}</Typography>
                         <Box sx={{ display: 'flex', gap: 1 }}>
-                            <IconButton size="small" sx={{ bgcolor: '#ca0056', color: '#fff', '&:hover': { bgcolor: '#b8003f' } }}><ChevronUp size={16} /></IconButton>
-                            <IconButton size="small" sx={{ bgcolor: '#ca0056', color: '#fff', '&:hover': { bgcolor: '#b8003f' } }}><ChevronDown size={16} /></IconButton>
+                            <IconButton
+                                size="small"
+                                onClick={() => currentIdx > 0 && setCurrentIdx(currentIdx - 1)}
+                                disabled={currentIdx === 0}
+                                sx={{ bgcolor: '#ca0056', color: '#fff', '&:hover': { bgcolor: '#b8003f' }, '&:disabled': { bgcolor: '#ccc' } }}
+                            >
+                                <ChevronUp size={16} />
+                            </IconButton>
+                            <IconButton
+                                size="small"
+                                onClick={() => currentIdx < questions.length - 1 && setCurrentIdx(currentIdx + 1)}
+                                disabled={currentIdx === questions.length - 1}
+                                sx={{ bgcolor: '#ca0056', color: '#fff', '&:hover': { bgcolor: '#b8003f' }, '&:disabled': { bgcolor: '#ccc' } }}
+                            >
+                                <ChevronDown size={16} />
+                            </IconButton>
                         </Box>
                     </Box>
 
-                    <Typography variant="body1" sx={{ mt: 2, mb: 4, fontWeight: 500, lineHeight: 1.6, fontSize: '1.05rem', color: '#1a2035', whiteSpace: 'pre-wrap' }}>
+                    <Typography variant="body1" sx={{ mt: 2, mb: 4, fontWeight: 500, lineHeight: 1.6, fontSize: { xs: '0.95rem', md: '1.05rem' }, color: '#1a2035', whiteSpace: 'pre-wrap' }}>
                         {(currentQuestion?.text || currentQuestion?.question_text) || (loading ? "Loading question..." : "Question text not available")}
                     </Typography>
 
-                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b' }}>Options</Typography>
-                    <Divider sx={{ my: 2 }} />
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b', mb: 1 }}>Options</Typography>
+                    <Divider sx={{ mb: 2 }} />
 
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {currentQuestion?.options && Object.entries(currentQuestion.options).map(([key, value]) => (
                             <Box
                                 key={key}
                                 onClick={() => handleAnswerSelect(parseInt(key))}
                                 sx={{
-                                    p: 2,
+                                    p: { xs: 1.5, md: 2 },
                                     borderRadius: 2,
                                     border: '1.5px solid',
                                     borderColor: answers[currentIdx] === parseInt(key) ? '#ca0056' : '#e2e8f0',
@@ -318,111 +418,132 @@ const MockTestInterface = () => {
                                     transition: 'all 0.2s',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: 2,
+                                    gap: { xs: 1.5, md: 2 },
                                     '&:hover': { borderColor: '#ca005680', bgcolor: '#ca005603' }
                                 }}
                             >
                                 <Box sx={{
-                                    width: 28, height: 28,
+                                    width: { xs: 24, md: 28 },
+                                    height: { xs: 24, md: 28 },
                                     borderRadius: '50%',
                                     border: '2px solid',
                                     borderColor: answers[currentIdx] === parseInt(key) ? '#ca0056' : '#cbd5e1',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    fontSize: '0.85rem', fontWeight: 800,
-                                    color: answers[currentIdx] === parseInt(key) ? '#ca0056' : '#64748b'
+                                    fontSize: { xs: '0.75rem', md: '0.85rem' },
+                                    fontWeight: 800,
+                                    color: answers[currentIdx] === parseInt(key) ? '#ca0056' : '#64748b',
+                                    flexShrink: 0
                                 }}>
                                     {parseInt(key) + 1}
                                 </Box>
-                                <Typography variant="body1" sx={{ fontWeight: 500 }}>{value}</Typography>
+                                <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: '0.9rem', md: '1rem' } }}>{value}</Typography>
                             </Box>
                         ))}
                     </Box>
 
                     {/* Button Bar Sticky Bottom of Left side */}
-                    <Box sx={{ mt: 'auto', pt: 4, borderTop: '1px solid #eee', display: 'flex', justifyContent: 'space-between', gap: 1 }}>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button variant="contained" onClick={handleSaveNext} sx={{ bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' }, fontWeight: 700, textTransform: 'none' }}>SAVE & NEXT</Button>
-                            <Button variant="outlined" onClick={handleClear} sx={{ color: '#666', borderColor: '#ccc', fontWeight: 700, textTransform: 'none' }}>CLEAR</Button>
+                    <Box sx={{ mt: 'auto', pt: 3, borderTop: '1px solid #eee', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', gap: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            <Button
+                                variant="contained"
+                                onClick={handleSaveNext}
+                                sx={{
+                                    bgcolor: '#10b981',
+                                    '&:hover': { bgcolor: '#059669' },
+                                    fontWeight: 700,
+                                    textTransform: 'none',
+                                    fontSize: { xs: '0.75rem', md: '0.875rem' },
+                                    px: { xs: 2, md: 3 }
+                                }}
+                            >
+                                {isMobile ? 'SAVE & NEXT' : 'SAVE & NEXT'}
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                onClick={handleClear}
+                                sx={{
+                                    color: '#666',
+                                    borderColor: '#ccc',
+                                    fontWeight: 700,
+                                    textTransform: 'none',
+                                    fontSize: { xs: '0.75rem', md: '0.875rem' },
+                                    px: { xs: 2, md: 3 }
+                                }}
+                            >
+                                CLEAR
+                            </Button>
                         </Box>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button variant="contained" onClick={handleMarkReview} sx={{ bgcolor: '#f59e0b', '&:hover': { bgcolor: '#d97706' }, fontWeight: 700, textTransform: 'none' }}>SAVE & MARK FOR REVIEW</Button>
-                            <Button variant="contained" onClick={handleMarkReview} sx={{ bgcolor: '#ca0056', '&:hover': { bgcolor: '#b8003f' }, fontWeight: 700, textTransform: 'none' }}>MARK FOR REVIEW & NEXT</Button>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            <Button
+                                variant="contained"
+                                onClick={handleMarkReview}
+                                sx={{
+                                    bgcolor: '#9b59b6',
+                                    '&:hover': { bgcolor: '#8e44ad' },
+                                    fontWeight: 700,
+                                    textTransform: 'none',
+                                    fontSize: { xs: '0.75rem', md: '0.875rem' },
+                                    px: { xs: 2, md: 3 }
+                                }}
+                            >
+                                {isMobile ? 'MARK & NEXT' : 'MARK FOR REVIEW & NEXT'}
+                            </Button>
                         </Box>
                     </Box>
                 </Box>
 
-                {/* Right: Sidebar */}
-                <Box sx={{ width: 340, borderLeft: '1px solid #ddd', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
-                    {/* Status Board */}
-                    <Box sx={{ p: 2, borderBottom: '1.5px dashed #ccc' }}>
-                        <Grid container spacing={1.5}>
-                            <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <StatusShape status="not-visited" label={questions.length - Object.keys(visited).length} />
-                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Not Visited</Typography>
-                            </Grid>
-                            <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <StatusShape status="not-answered" label={Object.keys(visited).filter(idx => answers[idx] === undefined && !flags[idx]).length} />
-                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Not Answered</Typography>
-                            </Grid>
-                            <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <StatusShape status="answered" label={Object.keys(answers).filter(idx => !flags[idx]).length} />
-                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Answered</Typography>
-                            </Grid>
-                            <Grid item xs={6} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <StatusShape status="marked" label={Object.keys(flags).filter(idx => answers[idx] === undefined).length} />
-                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Marked for Review</Typography>
-                            </Grid>
-                            <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <StatusShape status="answered-marked" label={Object.keys(flags).filter(idx => answers[idx] !== undefined).length} />
-                                <Typography variant="caption" sx={{ fontWeight: 600 }}>Answered & Marked for Review (considered for evaluation)</Typography>
-                            </Grid>
-                        </Grid>
+                {/* Right: Sidebar - Desktop */}
+                {!isMobile && (
+                    <Box sx={{ width: 340, borderLeft: '1px solid #ddd', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
+                        <SidebarContent />
                     </Box>
-
-                    {/* Question Grid Title */}
-                    <Box sx={{ bgcolor: '#ca0056', color: '#fff', py: 0.8, px: 2, mt: 2 }}>
-                        <Typography variant="caption" sx={{ fontWeight: 800 }}>Section: Mock Test</Typography>
-                    </Box>
-
-                    {/* Question Grid */}
-                    <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
-                        <Typography variant="caption" display="block" sx={{ mb: 1.5, fontWeight: 700, color: '#666' }}>SELECT A QUESTION:</Typography>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, p: 1 }}>
-                            {questions.map((_, idx) => (
-                                <Box
-                                    key={idx}
-                                    onClick={() => {
-                                        setCurrentIdx(idx);
-                                        setVisited(prev => ({ ...prev, [idx]: true }));
-                                    }}
-                                    sx={{ cursor: 'pointer', display: 'flex', justifyContent: 'center' }}
-                                >
-                                    <StatusShape
-                                        status={getStatusColor(idx)}
-                                        label={idx + 1}
-                                    />
-                                </Box>
-                            ))}
-                        </Box>
-                    </Box>
-
-                    {/* Sidebar Footer Buttons */}
-                    <Box sx={{ p: 2, borderTop: '1px solid #ddd', bgcolor: '#f8f9fa' }}>
-                        <Button
-                            variant="contained"
-                            fullWidth
-                            onClick={handleSubmit}
-                            sx={{ bgcolor: '#10b981', '&:hover': { bgcolor: '#059669' }, fontWeight: 800, py: 1.2 }}
-                        >
-                            SUBMIT TEST
-                        </Button>
-                    </Box>
-                </Box>
+                )}
             </Box>
+
+            {/* Mobile: Floating Action Button for Question Palette */}
+            {isMobile && (
+                <Fab
+                    color="primary"
+                    onClick={() => setDrawerOpen(true)}
+                    sx={{
+                        position: 'fixed',
+                        bottom: 16,
+                        right: 16,
+                        bgcolor: '#ca0056',
+                        '&:hover': { bgcolor: '#b8003f' },
+                        zIndex: 1000
+                    }}
+                >
+                    <MenuIcon size={24} />
+                </Fab>
+            )}
+
+            {/* Mobile: Drawer for Question Palette */}
+            <Drawer
+                anchor="right"
+                open={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                sx={{
+                    '& .MuiDrawer-paper': {
+                        width: { xs: '85%', sm: 340 },
+                        maxWidth: 340
+                    }
+                }}
+            >
+                <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ddd' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 800 }}>Question Palette</Typography>
+                        <IconButton onClick={() => setDrawerOpen(false)}>
+                            <X size={20} />
+                        </IconButton>
+                    </Box>
+                    <SidebarContent />
+                </Box>
+            </Drawer>
 
             {/* Footer Bar */}
             <Box sx={{ bgcolor: '#1e293b', color: '#fff', py: 1, textAlign: 'center', borderTop: '3px solid #ca0056' }}>
-                <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, fontSize: { xs: '0.65rem', md: '0.75rem' } }}>
                     © All Rights Reserved - Psychology Question Bank (Psy-Q)
                 </Typography>
             </Box>

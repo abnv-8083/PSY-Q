@@ -1,492 +1,479 @@
-import { useState } from 'react';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth, db } from '../lib/firebase';
-import { setDoc, doc } from 'firebase/firestore';
-import { useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, ArrowRight, GraduationCap, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { supabase } from '../lib/supabaseClient';
+import {
+    Box,
+    Container,
+    TextField,
+    Button,
+    Typography,
+    Paper,
+    InputAdornment,
+    IconButton,
+    Alert,
+    Link,
+    Avatar,
+    alpha,
+    Grid
+} from '@mui/material';
+import { Mail, Lock, School, Eye, EyeOff, User, Phone, CheckCircle, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+// --- Constants (Matching MockTestHome) ---
+const COLORS = {
+    primary: '#1e293b',
+    secondary: '#4b5563',
+    accent: '#ca0056',
+    accentHover: '#b8003f',
+    background: '#fdf2f8',
+    cardBg: '#FFFFFF',
+    textLight: '#64748b',
+    border: '#e2e8f0',
+    success: '#10b981'
+};
+
+const FONTS = {
+    primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
+};
 
 const StudentSignUp = () => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: ''
+    });
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'Full name is required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+        setError('');
+    };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        setSuccess(false);
 
-    setIsSubmitting(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      const user = userCredential.user;
-
-      await updateProfile(user, { displayName: formData.name });
-
-      await setDoc(doc(db, 'users', user.uid), {
-        name: formData.name,
-        email: formData.email,
-        role: 'student',
-        createdAt: new Date().toISOString()
-      });
-
-      navigate('/academic/mocktest');
-    } catch (error) {
-      console.error(error);
-      setErrors({ form: error.message });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
-  };
-
-  return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      background: 'linear-gradient(135deg, #dbeafe 0%, #fce7f3 100%)',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Animated Background Blobs */}
-      <div style={{
-        position: 'absolute',
-        top: '-10%',
-        right: '-10%',
-        width: '50%',
-        height: '50%',
-        background: 'rgba(59, 130, 246, 0.15)',
-        borderRadius: '50%',
-        filter: 'blur(80px)',
-        animation: 'pulse 6s ease-in-out infinite'
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '-10%',
-        left: '-10%',
-        width: '50%',
-        height: '50%',
-        background: 'rgba(233, 30, 99, 0.15)',
-        borderRadius: '50%',
-        filter: 'blur(80px)',
-        animation: 'pulse 6s ease-in-out infinite 3s'
-      }} />
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        style={{
-          width: '100%',
-          maxWidth: '520px',
-          position: 'relative',
-          zIndex: 10
-        }}
-      >
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(24px)',
-          borderRadius: '32px',
-          padding: '40px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.12)',
-          border: '1px solid rgba(255, 255, 255, 0.5)'
-        }}>
-          {/* Header */}
-          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <motion.div
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              style={{
-                width: '64px',
-                height: '64px',
-                background: 'white',
-                borderRadius: '18px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-                boxShadow: '0 8px 20px rgba(0,0,0,0.06)'
-              }}
-            >
-              <img
-                src="/logos/new-logo.jpeg"
-                alt="Psy-Q Logo"
-                style={{ height: '40px', borderRadius: '8px' }}
-              />
-            </motion.div>
-            <h1 style={{
-              fontSize: '30px',
-              fontWeight: '800',
-              color: '#0f172a',
-              marginBottom: '8px',
-              letterSpacing: '-0.025em'
-            }}>Join the Academy</h1>
-            <p style={{
-              fontSize: '15px',
-              color: '#475569',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px'
-            }}>
-              <GraduationCap size={18} className="text-blue-500" />
-              Unlock your academic potential
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} style={{ marginBottom: '24px' }}>
-            <AnimatePresence mode="wait">
-              {errors.form && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  style={{
-                    padding: '12px',
-                    background: '#fef2f2',
-                    border: '1px solid #fee2e2',
-                    borderRadius: '12px',
-                    color: '#dc2626',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    textAlign: 'center',
-                    marginBottom: '20px'
-                  }}
-                >
-                  {errors.form}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px', marginBottom: '20px' }}>
-              <div>
-                <label style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#64748b',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  marginBottom: '6px',
-                  display: 'block',
-                  marginLeft: '4px'
-                }}>Full Name</label>
-                <div style={{ position: 'relative' }}>
-                  <div style={{
-                    position: 'absolute',
-                    left: '16px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    pointerEvents: 'none',
-                    color: '#94a3b8'
-                  }}>
-                    <User size={18} />
-                  </div>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      paddingLeft: '48px',
-                      paddingRight: '16px',
-                      paddingTop: '12px',
-                      paddingBottom: '12px',
-                      background: 'rgba(248, 250, 252, 0.7)',
-                      border: errors.name ? '1px solid #ef4444' : '1px solid #e2e8f0',
-                      borderRadius: '14px',
-                      fontSize: '15px',
-                      outline: 'none',
-                      transition: 'all 0.2s',
-                    }}
-                    placeholder="John Doe"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#3b82f6';
-                      e.target.style.background = '#fff';
-                    }}
-                    onBlur={(e) => {
-                      if (!errors.name) {
-                        e.target.style.borderColor = '#e2e8f0';
-                        e.target.style.background = 'rgba(248, 250, 252, 0.7)';
-                      }
-                    }}
-                  />
-                </div>
-                {errors.name && <p style={{ color: '#ef4444', fontSize: '11px', marginTop: '4px', marginLeft: '4px' }}>{errors.name}</p>}
-              </div>
-
-              <div>
-                <label style={{
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  color: '#64748b',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  marginBottom: '6px',
-                  display: 'block',
-                  marginLeft: '4px'
-                }}>Email Address</label>
-                <div style={{ position: 'relative' }}>
-                  <div style={{
-                    position: 'absolute',
-                    left: '16px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    pointerEvents: 'none',
-                    color: '#94a3b8'
-                  }}>
-                    <Mail size={18} />
-                  </div>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      paddingLeft: '48px',
-                      paddingRight: '16px',
-                      paddingTop: '12px',
-                      paddingBottom: '12px',
-                      background: 'rgba(248, 250, 252, 0.7)',
-                      border: errors.email ? '1px solid #ef4444' : '1px solid #e2e8f0',
-                      borderRadius: '14px',
-                      fontSize: '15px',
-                      outline: 'none',
-                      transition: 'all 0.2s',
-                    }}
-                    placeholder="john@example.com"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#3b82f6';
-                      e.target.style.background = '#fff';
-                    }}
-                    onBlur={(e) => {
-                      if (!errors.email) {
-                        e.target.style.borderColor = '#e2e8f0';
-                        e.target.style.background = 'rgba(248, 250, 252, 0.7)';
-                      }
-                    }}
-                  />
-                </div>
-                {errors.email && <p style={{ color: '#ef4444', fontSize: '11px', marginTop: '4px', marginLeft: '4px' }}>{errors.email}</p>}
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'navigator.maxTouchPoints > 0 ? "1fr" : "1fr 1fr"', gap: '16px' }}>
-                <div>
-                  <label style={{
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    color: '#64748b',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    marginBottom: '6px',
-                    display: 'block',
-                    marginLeft: '4px'
-                  }}>Password</label>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{
-                      position: 'absolute',
-                      left: '16px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'none',
-                      color: '#94a3b8'
-                    }}>
-                      <Lock size={18} />
-                    </div>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      style={{
-                        width: '100%',
-                        paddingLeft: '48px',
-                        paddingRight: '16px',
-                        paddingTop: '12px',
-                        paddingBottom: '12px',
-                        background: 'rgba(248, 250, 252, 0.7)',
-                        border: errors.password ? '1px solid #ef4444' : '1px solid #e2e8f0',
-                        borderRadius: '14px',
-                        fontSize: '15px',
-                        outline: 'none',
-                        transition: 'all 0.2s',
-                      }}
-                      placeholder="••••••••"
-                      onFocus={(e) => {
-                        e.target.style.borderColor = '#3b82f6';
-                        e.target.style.background = '#fff';
-                      }}
-                      onBlur={(e) => {
-                        if (!errors.password) {
-                          e.target.style.borderColor = '#e2e8f0';
-                          e.target.style.background = 'rgba(248, 250, 252, 0.7)';
-                        }
-                      }}
-                    />
-                  </div>
-                  {errors.password && <p style={{ color: '#ef4444', fontSize: '11px', marginTop: '4px', marginLeft: '4px' }}>{errors.password}</p>}
-                </div>
-
-                <div>
-                  <label style={{
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    color: '#64748b',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    marginBottom: '6px',
-                    display: 'block',
-                    marginLeft: '4px'
-                  }}>Confirm</label>
-                  <div style={{ position: 'relative' }}>
-                    <div style={{
-                      position: 'absolute',
-                      left: '16px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'none',
-                      color: '#94a3b8'
-                    }}>
-                      <ShieldCheck size={18} />
-                    </div>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      style={{
-                        width: '100%',
-                        paddingLeft: '48px',
-                        paddingRight: '16px',
-                        paddingTop: '12px',
-                        paddingBottom: '12px',
-                        background: 'rgba(248, 250, 252, 0.7)',
-                        border: errors.confirmPassword ? '1px solid #ef4444' : '1px solid #e2e8f0',
-                        borderRadius: '14px',
-                        fontSize: '15px',
-                        outline: 'none',
-                        transition: 'all 0.2s',
-                      }}
-                      placeholder="••••••••"
-                      onFocus={(e) => {
-                        e.target.style.borderColor = '#3b82f6';
-                        e.target.style.background = '#fff';
-                      }}
-                      onBlur={(e) => {
-                        if (!errors.confirmPassword) {
-                          e.target.style.borderColor = '#e2e8f0';
-                          e.target.style.background = 'rgba(248, 250, 252, 0.7)';
-                        }
-                      }}
-                    />
-                  </div>
-                  {errors.confirmPassword && <p style={{ color: '#ef4444', fontSize: '11px', marginTop: '4px', marginLeft: '4px' }}>{errors.confirmPassword}</p>}
-                </div>
-              </div>
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.01, translateY: -1 }}
-              whileTap={{ scale: 0.99 }}
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                color: 'white',
-                fontWeight: '700',
-                padding: '14px',
-                borderRadius: '16px',
-                border: 'none',
-                fontSize: '16px',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                opacity: isSubmitting ? 0.7 : 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '10px',
-                boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.4)',
-                transition: 'all 0.3s'
-              }}
-            >
-              {isSubmitting ? 'Creating Profile...' : 'Begin Academic Journey'}
-              <ArrowRight size={20} />
-            </motion.button>
-          </form>
-
-
-
-          <p style={{
-            marginTop: '28px',
-            textAlign: 'center',
-            fontSize: '14px',
-            color: '#64748b'
-          }}>
-            Already have an account? <Link to="/student/signin" style={{
-              color: '#3b82f6',
-              fontWeight: '700',
-              textDecoration: 'none'
-            }}
-              onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
-              onMouseOut={(e) => e.target.style.textDecoration = 'none'}
-            >
-              Sign back in
-            </Link>
-          </p>
-        </div>
-
-        <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '12px', color: '#64748b', fontWeight: '500' }}>
-          Your data is secured by Psy-Q Advanced Protection
-        </p>
-      </motion.div>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.15; transform: scale(1); }
-          50% { opacity: 0.25; transform: scale(1.05); }
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
+            setLoading(false);
+            return;
         }
-      `}</style>
-    </div>
-  );
+
+        if (formData.password.length < 6) {
+            setError('Password must be at least 6 characters');
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const { data, error: signUpError } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
+                options: {
+                    data: {
+                        full_name: formData.name,
+                        phone: formData.phone,
+                        role: 'student'
+                    },
+                    emailRedirectTo: `${window.location.origin}/student/signin`
+                }
+            });
+
+            if (signUpError) throw signUpError;
+
+            if (data.user) {
+                const { error: studentError } = await supabase
+                    .from('students')
+                    .insert([
+                        {
+                            id: data.user.id,
+                            full_name: formData.name,
+                            email: formData.email,
+                            phone: formData.phone
+                        }
+                    ]);
+
+                if (studentError && !studentError.message.includes('duplicate')) {
+                    throw studentError;
+                }
+            }
+
+            setSuccess(true);
+            setFormData({ name: '', email: '', phone: '', password: '', confirmPassword: '' });
+        } catch (error) {
+            setError(error.message || 'Failed to create student account');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (success) {
+        return (
+            <Box
+                sx={{
+                    minHeight: '100vh',
+                    background: `linear-gradient(135deg, ${COLORS.background} 0%, #FFFFFF 100%)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 4
+                }}
+            >
+                <Container maxWidth="sm">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.4 }}
+                    >
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 5,
+                                borderRadius: 6,
+                                textAlign: 'center',
+                                border: `1px solid ${COLORS.border}`,
+                                boxShadow: '0 20px 40px rgba(0,0,0,0.05)'
+                            }}
+                        >
+                            <Avatar
+                                sx={{
+                                    width: 100,
+                                    height: 100,
+                                    margin: '0 auto 24px',
+                                    bgcolor: alpha(COLORS.success, 0.1),
+                                    color: COLORS.success,
+                                    boxShadow: `0 12px 24px ${alpha(COLORS.success, 0.2)}`
+                                }}
+                            >
+                                <CheckCircle size={50} />
+                            </Avatar>
+                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 2, letterSpacing: '-0.02em' }}>
+                                Registration Successful!
+                            </Typography>
+                            <Typography variant="body1" sx={{ color: COLORS.textLight, mb: 4, fontWeight: 500, lineHeight: 1.6 }}>
+                                We've sent a verification email to your address. Please confirm your email to start practicing.
+                            </Typography>
+                            <Button
+                                component={RouterLink}
+                                to="/student/signin"
+                                variant="contained"
+                                size="large"
+                                fullWidth
+                                sx={{
+                                    py: 1.5,
+                                    borderRadius: 3,
+                                    bgcolor: COLORS.accent,
+                                    fontWeight: 800,
+                                    '&:hover': { bgcolor: COLORS.accentHover }
+                                }}
+                            >
+                                Go to Sign In
+                            </Button>
+                        </Paper>
+                    </motion.div>
+                </Container>
+            </Box>
+        );
+    }
+
+    return (
+        <Box
+            sx={{
+                minHeight: '100vh',
+                background: `linear-gradient(135deg, ${COLORS.background} 0%, #FFFFFF 100%)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: FONTS.primary,
+                py: { xs: 4, md: 8 }
+            }}
+        >
+            <Container maxWidth="sm">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: { xs: 3, md: 5 },
+                            borderRadius: 6,
+                            bgcolor: 'white',
+                            border: `1px solid ${COLORS.border}`,
+                            boxShadow: '0 25px 50px rgba(0,0,0,0.08)' // Enhanced shadow
+                        }}
+                    >
+                        <Box sx={{ textAlign: 'center', mb: 4 }}>
+                            <motion.div
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.2, type: 'spring' }}
+                            >
+                                <Avatar
+                                    sx={{
+                                        width: 80,
+                                        height: 80,
+                                        margin: '0 auto 20px',
+                                        background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${COLORS.accentHover} 100%)`,
+                                        boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.4)}`
+                                    }}
+                                >
+                                    <School size={40} color="white" />
+                                </Avatar>
+                            </motion.div>
+                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1, letterSpacing: '-0.02em' }}>
+                                Create Account
+                            </Typography>
+                            <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 500, fontSize: '1.05rem' }}>
+                                Join our community and start excelling today.
+                            </Typography>
+                        </Box>
+
+                        {error && (
+                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
+                                <Alert
+                                    severity="error"
+                                    sx={{
+                                        mb: 3,
+                                        borderRadius: 2,
+                                        '& .MuiAlert-message': { fontWeight: 500 }
+                                    }}
+                                >
+                                    {error}
+                                </Alert>
+                            </motion.div>
+                        )}
+
+                        <form onSubmit={handleSubmit}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                                <TextField
+                                    fullWidth
+                                    label="Full Name"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleChange}
+                                    required
+                                    variant="outlined"
+                                    placeholder="John Doe"
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 3,
+                                            bgcolor: '#f8fafc',
+                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
+                                            '&:hover fieldset': { borderColor: COLORS.accent },
+                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
+                                        },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
+                                    }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <User size={20} color={COLORS.textLight} />
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+
+                                <TextField
+                                    fullWidth
+                                    label="Email Address"
+                                    name="email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                    variant="outlined"
+                                    placeholder="you@example.com"
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 3,
+                                            bgcolor: '#f8fafc',
+                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
+                                            '&:hover fieldset': { borderColor: COLORS.accent },
+                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
+                                        },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
+                                    }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Mail size={20} color={COLORS.textLight} />
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+
+                                <TextField
+                                    fullWidth
+                                    label="Phone Number"
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    required
+                                    variant="outlined"
+                                    placeholder="+1 (555) 000-0000"
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 3,
+                                            bgcolor: '#f8fafc',
+                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
+                                            '&:hover fieldset': { borderColor: COLORS.accent },
+                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
+                                        },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
+                                    }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Phone size={20} color={COLORS.textLight} />
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+
+                                <TextField
+                                    fullWidth
+                                    label="Password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                    variant="outlined"
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 3,
+                                            bgcolor: '#f8fafc',
+                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
+                                            '&:hover fieldset': { borderColor: COLORS.accent },
+                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
+                                        },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
+                                    }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Lock size={20} color={COLORS.textLight} />
+                                            </InputAdornment>
+                                        ),
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    edge="end"
+                                                    size="small"
+                                                >
+                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+
+                                <TextField
+                                    fullWidth
+                                    label="Confirm Password"
+                                    name="confirmPassword"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    required
+                                    variant="outlined"
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: 3,
+                                            bgcolor: '#f8fafc',
+                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
+                                            '&:hover fieldset': { borderColor: COLORS.accent },
+                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
+                                        },
+                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
+                                    }}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Lock size={20} color={COLORS.textLight} />
+                                            </InputAdornment>
+                                        ),
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    edge="end"
+                                                    size="small"
+                                                >
+                                                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                />
+
+                                <Button
+                                    fullWidth
+                                    type="submit"
+                                    variant="contained"
+                                    size="large"
+                                    disabled={loading}
+                                    endIcon={!loading && <ArrowRight size={20} />}
+                                    sx={{
+                                        mt: 1,
+                                        py: 1.8,
+                                        borderRadius: 3,
+                                        background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${COLORS.accentHover} 100%)`,
+                                        fontWeight: 800,
+                                        fontSize: '1rem',
+                                        textTransform: 'none',
+                                        boxShadow: `0 10px 20px ${alpha(COLORS.accent, 0.25)}`,
+                                        '&:hover': {
+                                            background: `linear-gradient(135deg, ${COLORS.accentHover} 0%, #9f0035 100%)`,
+                                            boxShadow: `0 15px 30px ${alpha(COLORS.accent, 0.35)}`,
+                                            transform: 'translateY(-2px)'
+                                        },
+                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                    }}
+                                >
+                                    {loading ? 'Creating Account...' : 'Sign Up Now'}
+                                </Button>
+                            </Box>
+                        </form>
+
+                        <Box sx={{ textAlign: 'center', mt: 4 }}>
+                            <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 500 }}>
+                                Already have an account?{' '}
+                                <Link
+                                    component={RouterLink}
+                                    to="/student/signin"
+                                    sx={{
+                                        color: COLORS.accent,
+                                        fontWeight: 800,
+                                        textDecoration: 'none',
+                                        ml: 0.5,
+                                        '&:hover': { textDecoration: 'underline' }
+                                    }}
+                                >
+                                    Sign In
+                                </Link>
+                            </Typography>
+                        </Box>
+                    </Paper>
+                </motion.div>
+            </Container>
+        </Box>
+    );
 };
 
 export default StudentSignUp;
-
-

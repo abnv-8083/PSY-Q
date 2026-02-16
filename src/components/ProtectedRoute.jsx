@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { auth, db } from '../lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { supabase } from '../lib/supabaseClient';
 import { Box, CircularProgress, Typography, Button } from '@mui/material';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -14,36 +12,62 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            console.log("🛡️ ProtectedRoute: auth state changed", currentUser?.email);
-            if (currentUser) {
-                setUser(currentUser);
-                // Fetch user profile from Firestore
-                try {
-                    const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
-                        console.log("🛡️ ProtectedRoute: user data found:", data.role, "| Blocked:", data.isBlocked);
-                        setRole(data.role);
-                        setIsBlocked(data.isBlocked || false);
+        const checkAuth = async () => {
+            try {
+                const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+                console.log("🛡️ ProtectedRoute: auth state check", currentUser?.email);
+
+                if (currentUser) {
+                    setUser(currentUser);
+                    // Fetch user profile from Supabase
+                    const { data: profile, error } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', currentUser.id)
+                        .single();
+
+                    if (profile) {
+                        // isBlocked is not in the schema yet, defaulting to false or checking if it exists in metadata
+                        console.log("🛡️ ProtectedRoute: user data found:", profile.role);
+                        setRole(profile.role);
+                        setIsBlocked(false); // Defaulting to false as column likely doesn't exist yet
                     } else {
-                        console.log("🛡️ ProtectedRoute: user doc does not exist");
-                        setRole(null);
+                        console.log("🛡️ ProtectedRoute: user profile not found");
+                        // If no profile, assume student role or handle error
+                        setRole('student');
                         setIsBlocked(false);
                     }
-                } catch (error) {
-                    console.error("🛡️ ProtectedRoute: Error fetching user data:", error);
+                } else {
+                    console.log("🛡️ ProtectedRoute: no user logged in");
+                    setUser(null);
+                    setRole(null);
+                    setIsBlocked(false);
                 }
-            } else {
-                console.log("🛡️ ProtectedRoute: no user logged in");
+            } catch (error) {
+                console.error("🛡️ ProtectedRoute: Error checking auth:", error);
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkAuth();
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_OUT') {
                 setUser(null);
                 setRole(null);
-                setIsBlocked(false);
+            } else if (event === 'SIGNED_IN' && session?.user) {
+                // Re-check profile on sign in
+                checkAuth();
             }
-            setLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     if (loading) {

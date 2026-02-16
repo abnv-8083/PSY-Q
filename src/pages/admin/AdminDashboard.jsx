@@ -1,817 +1,351 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Button, Divider, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Avatar, Menu, MenuItem, Fade } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
-import { db, auth } from '../../lib/firebase';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import { collection, query, orderBy, limit, doc, getDoc } from 'firebase/firestore';
-import { Settings, Users, BookOpen, Database, Trash2, ExternalLink, Edit, Ban, CheckCircle, LogOut, UserPlus, User, ChevronDown, Package } from 'lucide-react';
-import emailjs from '@emailjs/browser';
-import { useNavigate } from 'react-router-dom';
-import ModernDialog from '../../components/ModernDialog';
-import ContentManagement from './ContentManagement';
+import {
+    Box,
+    Container,
+    Typography,
+    Card,
+    CardContent,
+    IconButton,
+    Drawer,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    ListItemButton,
+    Avatar,
+    Divider,
+    alpha,
+    Paper
+} from '@mui/material';
+import {
+    LayoutDashboard,
+    Package,
+    FileText,
+    HelpCircle,
+    ClipboardList,
+    Mail,
+    LogOut,
+    Menu,
+    User,
+    ChevronRight
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import BundleManagement from './BundleManagement';
+import ContactSubmissions from './ContactSubmissions';
+import ContentManagement from './ContentManagement';
+import QuestionBank from './QuestionBank';
+import TestBuilder from './TestBuilder';
+
+// Premium Color Theme
+const COLORS = {
+    primary: '#1e293b',
+    secondary: '#4b5563',
+    accent: '#ca0056',
+    accentHover: '#b8003f',
+    background: '#fdf2f8',
+    cardBg: '#FFFFFF',
+    textLight: '#64748b',
+    border: '#e2e8f0',
+    success: '#10b981'
+};
+
+const FONTS = {
+    primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
+};
 
 const AdminDashboard = () => {
+    const location = useLocation();
     const navigate = useNavigate();
-    const [tab, setTab] = useState(0);
-    const [stats, setStats] = useState({ subjects: 0, tests: 0, attempts: 0 });
-    const [recentAttempts, setRecentAttempts] = useState([]);
-    const [subAdmins, setSubAdmins] = useState([]);
-    const [subjects, setSubjects] = useState([]);
-    const [activeSubject, setActiveSubject] = useState(null);
-    const [subjectsWithTests, setSubjectsWithTests] = useState([]);
-    const [editAdmin, setEditAdmin] = useState(null);
-    const [openEditDialog, setOpenEditDialog] = useState(false);
-    const [openAddDialog, setOpenAddDialog] = useState(false);
-    const [newAdmin, setNewAdmin] = useState({ name: '', email: '', role: 'sub-admin' });
-    const [creatingAdmin, setCreatingAdmin] = useState(false);
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [currentUserProfile, setCurrentUserProfile] = useState(null);
-
-    // Modern Dialog State
-    const [dialog, setDialog] = useState({
-        open: false,
-        title: '',
-        message: '',
-        type: 'info',
-        onConfirm: null
-    });
-
-    const allowedSubjects = ['Psychology'];
-
-    const isSubjectAllowed = (s) => {
-        const name = s?.name || '';
-        const visible = s?.visible;
-        const allowedByName = allowedSubjects.includes(name);
-        const allowedByFlag = visible !== false;
-        return allowedByName && allowedByFlag;
-    };
+    const [user, setUser] = useState(null);
+    const [sidebarOpen, setSidebarOpen] = useState(true);
 
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                // 1. Fetch Admin Profile
-                if (auth.currentUser) {
-                    const adminDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-                    if (adminDoc.exists()) {
-                        setCurrentUserProfile(adminDoc.data());
-                    }
-                } else {
-                    const { data: { user: sbUser } } = await supabase.auth.getUser();
-                    if (sbUser) {
-                        const { data: profile } = await supabase
-                            .from('profiles')
-                            .select('*')
-                            .eq('id', sbUser.id)
-                            .single();
-                        if (profile) setCurrentUserProfile(profile);
-                    }
-                }
-
-                // 2. Fetch Subjects and Test Counts from Supabase
-                const { data: subjectsData, error: subjectsError } = await supabase
-                    .from('subjects')
-                    .select('*, tests(id)');
-
-                if (subjectsError) throw subjectsError;
-
-                const filteredSubjects = subjectsData.filter(isSubjectAllowed);
-                setSubjects(filteredSubjects);
-
-                // Set Psychology as active
-                const psych = filteredSubjects.find(s => s.name === 'Psychology');
-                if (psych) {
-                    setActiveSubject(psych);
-                } else if (filteredSubjects.length > 0 && !activeSubject) {
-                    setActiveSubject(filteredSubjects[0]);
-                }
-
-                // Format subjects for table view
-                const subjectsWithCounts = filteredSubjects.map(s => ({
-                    ...s,
-                    testCount: s.tests?.length || 0
-                }));
-                setSubjectsWithTests(subjectsWithCounts);
-
-                // 3. Fetch Attempts stats from Supabase
-                const { count: attemptCount, error: attemptError } = await supabase
-                    .from('attempts')
-                    .select('*', { count: 'exact', head: true });
-
-                if (attemptError) throw attemptError;
-
-                setStats({
-                    subjects: filteredSubjects.length,
-                    tests: subjectsWithCounts.reduce((acc, s) => acc + s.testCount, 0),
-                    attempts: attemptCount || 0
-                });
-
-                // 4. Fetch Recent Attempts with Joins
-                const { data: recentData, error: recentError } = await supabase
-                    .from('attempts')
-                    .select('*, tests(name)')
-                    .order('created_at', { ascending: false })
-                    .limit(5);
-
-                if (recentError) throw recentError;
-
-                // Sync with Firebase Usernames for now
-                const augmentedAttempts = await Promise.all(recentData.map(async (attempt) => {
-                    let userName = 'Unknown User';
-                    try {
-                        if (attempt.user_id) {
-                            const userDoc = await getDoc(doc(db, 'users', attempt.user_id));
-                            if (userDoc.exists()) {
-                                userName = userDoc.data().name || userDoc.data().email || 'Unnamed User';
-                            }
-                        }
-                    } catch (e) { }
-                    return {
-                        ...attempt,
-                        userName,
-                        testName: attempt.tests?.name || 'Unnamed Test',
-                        timestamp: { toDate: () => new Date(attempt.created_at) } // Compatibility
-                    };
-                }));
-
-                setRecentAttempts(augmentedAttempts);
-
-                // 5. Fetch Sub-admins from Supabase (Profiles table)
-                const { data: profilesData, error: profilesError } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .in('role', ['admin', 'sub-admin', 'superadmin']);
-
-                if (profilesError) throw profilesError;
-                setSubAdmins(profilesData);
-            } catch (error) {
-                console.error("Error fetching admin data from Supabase:", error);
-            }
-        };
-        fetchStats();
-    }, [tab]);
-
-    const handleSubjectClick = (subject) => {
-        setActiveSubject(subject);
-        if (tab !== 1 && tab !== 2) {
-            setTab(1); // Switch to Content Management tab by default
-        }
-    };
-
-    const handleDeleteSubject = async (e, subjectId, subjectName) => {
-        e.stopPropagation();
-        setDialog({
-            open: true,
-            title: 'Delete Subject?',
-            message: `Are you sure you want to delete the subject "${subjectName}" and all its tests? This action cannot be undone.`,
-            type: 'confirm',
-            onConfirm: async () => {
-                setDialog(prev => ({ ...prev, open: false }));
-                try {
-                    const { error } = await supabase
-                        .from('subjects')
-                        .delete()
-                        .eq('id', subjectId);
-
-                    if (error) throw error;
-
-                    setSubjects(prev => prev.filter(s => s.id !== subjectId));
-                    if (activeSubject?.id === subjectId) {
-                        setActiveSubject(null);
-                    }
-                    setDialog({
-                        open: true,
-                        title: 'Subject Deleted',
-                        message: "The subject and all its tests have been removed.",
-                        type: 'success'
-                    });
-                } catch (error) {
-                    console.error("Error deleting subject from Supabase:", error);
-                    setDialog({
-                        open: true,
-                        title: 'Delete Failed',
-                        message: "Failed to delete subject: " + error.message,
-                        type: 'error'
-                    });
-                }
-            }
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setUser(user);
         });
-    };
-
-    const handleDeleteSubAdmin = async (id) => {
-        setDialog({
-            open: true,
-            title: 'Remove Admin?',
-            message: "Remove this admin from the list? \n\nNote: This removes their dashboard access. To completely delete their account, you must also remove them from the Supabase Auth Console.",
-            type: 'confirm',
-            onConfirm: async () => {
-                setDialog(prev => ({ ...prev, open: false }));
-                try {
-                    const { error } = await supabase.from('profiles').delete().eq('id', id);
-                    if (error) throw error;
-                    setSubAdmins(prev => prev.filter(u => u.id !== id));
-                } catch (error) {
-                    setDialog({
-                        open: true,
-                        title: 'Removal Failed',
-                        message: "Failed to remove admin: " + error.message,
-                        type: 'error'
-                    });
-                }
-            }
-        });
-    };
-
-    const handleEditAdmin = (admin) => {
-        setEditAdmin({ ...admin });
-        setOpenEditDialog(true);
-    };
-
-    const handleUpdateAdmin = async () => {
-        if (!editAdmin) return;
-        try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({
-                    full_name: editAdmin.name || editAdmin.full_name,
-                    email: editAdmin.email,
-                    role: editAdmin.role
-                })
-                .eq('id', editAdmin.id);
-
-            if (error) throw error;
-
-            setSubAdmins(prev => prev.map(a => a.id === editAdmin.id ? editAdmin : a));
-            setOpenEditDialog(false);
-            setEditAdmin(null);
-        } catch (error) {
-            console.error("Error updating admin:", error);
-            setDialog({
-                open: true,
-                title: 'Update Failed',
-                message: "Failed to update admin profile: " + error.message,
-                type: 'error'
-            });
-        }
-    };
-
-    const handleToggleBlock = async (admin) => {
-        const newBlockedStatus = !admin.is_blocked;
-        const action = newBlockedStatus ? 'block' : 'unblock';
-
-        setDialog({
-            open: true,
-            title: `${newBlockedStatus ? 'Block' : 'Unblock'} Admin?`,
-            message: `Are you sure you want to ${action} ${admin.full_name || admin.name || admin.email}?`,
-            type: 'confirm',
-            onConfirm: async () => {
-                setDialog(prev => ({ ...prev, open: false }));
-                try {
-                    const { error } = await supabase
-                        .from('profiles')
-                        .update({ is_blocked: newBlockedStatus })
-                        .eq('id', admin.id);
-
-                    if (error) throw error;
-
-                    setSubAdmins(prev => prev.map(a =>
-                        a.id === admin.id ? { ...a, is_blocked: newBlockedStatus } : a
-                    ));
-                } catch (error) {
-                    console.error("Error toggling block status:", error);
-                    setDialog({
-                        open: true,
-                        title: 'Action Failed',
-                        message: `Failed to ${action} admin: ` + error.message,
-                        type: 'error'
-                    });
-                }
-            }
-        });
-    };
+    }, []);
 
     const handleLogout = async () => {
-        try {
-            await auth.signOut();
-            navigate('/signin');
-        } catch (error) {
-            console.error("Error logging out:", error);
-            setDialog({
-                open: true,
-                title: 'Logout Failed',
-                message: "Failed to log out safely: " + error.message,
-                type: 'error'
-            });
-        }
+        await supabase.auth.signOut();
+        navigate('/signin');
     };
 
-    const handleAddAdmin = async () => {
-        if (!newAdmin.name || !newAdmin.email) {
-            setDialog({
-                open: true,
-                title: 'Missing Fields',
-                message: "Please fill in both name and email to create a new admin.",
-                type: 'warning'
-            });
-            return;
+    const menuItems = [
+        {
+            path: '/admin',
+            label: 'Dashboard',
+            icon: LayoutDashboard,
+            exact: true
+        },
+        {
+            path: '/admin/bundles',
+            label: 'Bundle Management',
+            icon: Package
+        },
+        {
+            path: '/admin/content',
+            label: 'Content Management',
+            icon: FileText
+        },
+        {
+            path: '/admin/tests',
+            label: 'Test Builder',
+            icon: ClipboardList
+        },
+        {
+            path: '/admin/contacts',
+            label: 'Contact Submissions',
+            icon: Mail
         }
+    ];
 
-        setCreatingAdmin(true);
-        try {
-            // Generate a temporary password
-            const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
-
-            // 1. Create user in Supabase Auth
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: newAdmin.email,
-                password: tempPassword,
-                options: {
-                    data: {
-                        full_name: newAdmin.name,
-                        role: newAdmin.role
-                    }
-                }
-            });
-
-            if (authError) throw authError;
-
-            const user = authData.user;
-
-            // 2. Create profile in Supabase table
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .upsert({
-                    id: user.id,
-                    full_name: newAdmin.name,
-                    email: newAdmin.email,
-                    role: newAdmin.role,
-                    is_blocked: false,
-                    permissions: {
-                        manageUsers: true,
-                        manageContent: true,
-                        viewAnalytics: true
-                    }
-                });
-
-            if (profileError) throw profileError;
-
-            // 3. Send credentials via email using EmailJS
-            await emailjs.send(
-                import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                {
-                    to_name: newAdmin.name,
-                    to_email: newAdmin.email,
-                    admin_name: newAdmin.name,
-                    temp_password: tempPassword,
-                    role: newAdmin.role,
-                    login_link: window.location.origin + '/signin'
-                },
-                import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-            );
-
-            // Update local state
-            setSubAdmins(prev => [...prev, {
-                id: user.id,
-                full_name: newAdmin.name,
-                email: newAdmin.email,
-                role: newAdmin.role,
-                is_blocked: false
-            }]);
-            setOpenAddDialog(false);
-            setNewAdmin({ name: '', email: '', role: 'sub-admin' });
-            setDialog({
-                open: true,
-                title: 'Admin Created',
-                message: "Admin successfully registered in Supabase. An email with their temporary password has been sent.",
-                type: 'success'
-            });
-
-        } catch (error) {
-            console.error("Error adding admin:", error);
-            setDialog({
-                open: true,
-                title: 'Registration Error',
-                message: "Failed to create account: " + error.message,
-                type: 'error'
-            });
-        } finally {
-            setCreatingAdmin(false);
+    const isActive = (path, exact = false) => {
+        if (exact) {
+            return location.pathname === path;
         }
+        return location.pathname.startsWith(path);
+    };
+
+    const handleNavigation = (path) => {
+        navigate(path);
     };
 
     return (
-        <Box className="mesh-bg" sx={{ display: 'flex', minHeight: '100vh', color: '#1e293b' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh', background: `linear-gradient(135deg, ${COLORS.background} 0%, #FFFFFF 100%)`, fontFamily: FONTS.primary }}>
             {/* Sidebar */}
-            <Box sx={{
-                width: 280,
-                bgcolor: '#0f172a',
-                color: '#fff',
-                display: 'flex',
-                flexDirection: 'column',
-                p: 3,
-                borderRight: '1px solid rgba(255,255,255,0.05)',
-                position: 'sticky',
-                top: 0,
-                height: '100vh',
-                zIndex: 1000,
-                backdropFilter: 'blur(20px)',
-                background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
-                display: { xs: 'none', md: 'flex' }
-            }}>
-                <Box sx={{ mb: 6, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{
-                        width: 45, height: 45, borderRadius: 3,
-                        bgcolor: '#E91E63', display: 'flex',
-                        alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 0 20px rgba(233, 30, 99, 0.4)'
-                    }}>
-                        <Settings color="#fff" size={24} />
-                    </Box>
-                    <Box>
-                        <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: -1, lineHeight: 1 }}>Psy-Q</Typography>
-                        <Typography variant="caption" sx={{ color: '#E91E63', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1.5 }}>Admin Portal</Typography>
-                    </Box>
-                </Box>
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, overflowY: 'auto', pr: 1 }}>
-                    <SidebarItem icon={<Database size={20} />} label="Dashboard" active={tab === 0} onClick={() => setTab(0)} />
-                    <SidebarItem icon={<BookOpen size={20} />} label="Content Management" active={tab === 1} onClick={() => setTab(1)} />
-                    <SidebarItem icon={<Package size={20} />} label="Bundle Management" active={tab === 2} onClick={() => setTab(2)} />
-                    <SidebarItem icon={<Users size={20} />} label="Admin Users" active={tab === 3} onClick={() => setTab(3)} />
-
-                    <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.1)' }} />
-
-                    <Typography variant="caption" sx={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.5, fontWeight: 800, mb: 2, px: 1 }}>
-                        Subjects ({subjects.length})
-                    </Typography>
-
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        {subjects.map((subject) => (
-                            <Box
-                                key={subject.id}
-                                onClick={() => handleSubjectClick(subject)}
-                                sx={{
-                                    p: 1.5, borderRadius: 3, cursor: 'pointer',
-                                    bgcolor: 'rgba(255,255,255,0.03)',
-                                    border: '1px solid rgba(255,255,255,0.05)',
-                                    transition: 'all 0.2s',
-                                    '&:hover': {
-                                        bgcolor: 'rgba(255,255,255,0.08)',
-                                        borderColor: 'rgba(233, 30, 99, 0.4)',
-                                        '& .delete-btn': { opacity: 1 }
-                                    }
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant="body2" sx={{ fontWeight: 700, color: '#f8fafc' }}>{subject.name}</Typography>
-                                    <IconButton
-                                        className="delete-btn"
-                                        size="small"
-                                        onClick={(e) => handleDeleteSubject(e, subject.id, subject.name)}
-                                        sx={{ opacity: 0, p: 0.5, color: 'rgba(255,255,255,0.3)', '&:hover': { color: '#ef4444' } }}
-                                    >
-                                        <Trash2 size={14} />
-                                    </IconButton>
-                                </Box>
-                            </Box>
-                        ))}
-                    </Box>
-                </Box>
-
-                <Box sx={{
-                    mt: 3, p: 2.5, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.05)', display: 'flex',
-                    alignItems: 'center', gap: 2
-                }}>
-                    <Avatar sx={{ bgcolor: '#E91E63', fontWeight: 700, width: 40, height: 40, fontSize: '0.875rem' }}>
-                        {currentUserProfile?.fullName?.charAt(0) || 'A'}
-                    </Avatar>
-                    <Box sx={{ flex: 1, overflow: 'hidden' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {currentUserProfile?.fullName || 'Admin User'}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b', display: 'block' }}>Administrator</Typography>
-                    </Box>
-                    <IconButton size="small" onClick={() => navigate('/')} sx={{ color: '#64748b' }}>
-                        <LogOut size={16} />
-                    </IconButton>
-                </Box>
-            </Box>
-
-            {/* Main Content */}
-            <Box sx={{ flex: 1, p: { xs: 3, md: 6 }, overflow: 'auto' }}>
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={tab}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        {tab === 0 && (
-                            <>
-                                <Box sx={{ mb: 5 }}>
-                                    <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>Dashboard Overview</Typography>
-                                    <Typography variant="body1" sx={{ color: '#64748b' }}>Welcome back to the management console.</Typography>
-                                </Box>
-
-                                <Grid container spacing={3} sx={{ mb: 6 }}>
-                                    <StatCard icon={<Database size={24} color="#E91E63" />} label="Total Subjects" value={stats.subjects} />
-                                    <StatCard icon={<BookOpen size={24} color="#E91E63" />} label="Total Mock Tests" value={stats.tests} />
-                                    <StatCard icon={<Users size={24} color="#E91E63" />} label="Student Attempts" value={stats.attempts} />
-                                </Grid>
-
-                                <Typography variant="h5" sx={{ fontWeight: 800, mb: 3, color: '#0f172a' }}>Recent Activity</Typography>
-                                <Paper className="glass-card" sx={{ borderRadius: 5, overflow: 'hidden', mb: 4 }}>
-                                    <TableContainer>
-                                        <Table>
-                                            <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
-                                                <TableRow>
-                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>STUDENT</TableCell>
-                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>MOCK TEST</TableCell>
-                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>SCORE</TableCell>
-                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>DATE</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {recentAttempts.length === 0 ? (
-                                                    <TableRow><TableCell colSpan={4} align="center" sx={{ py: 4, color: '#64748b' }}>No recent attempts found.</TableCell></TableRow>
-                                                ) : (
-                                                    recentAttempts.map((attempt) => (
-                                                        <TableRow key={attempt.id} sx={{ '&:hover': { bgcolor: 'rgba(233, 30, 99, 0.02)' } }}>
-                                                            <TableCell sx={{ fontWeight: 700 }}>{attempt.userName}</TableCell>
-                                                            <TableCell>{attempt.testName}</TableCell>
-                                                            <TableCell>
-                                                                <Typography sx={{ fontWeight: 800, color: '#059669' }}>{attempt.score}/{attempt.total}</Typography>
-                                                            </TableCell>
-                                                            <TableCell sx={{ color: '#64748b', fontSize: '0.875rem' }}>{attempt.timestamp?.toDate().toLocaleDateString()}</TableCell>
-                                                        </TableRow>
-                                                    ))
-                                                )}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                </Paper>
-                            </>
-                        )}
-
-                        {tab === 1 && <ContentManagement initialSubject={activeSubject} onSubjectChange={() => setActiveSubject(null)} />}
-                        {tab === 2 && <BundleManagement subject={activeSubject} />}
-
-                        {tab === 3 && (
-                            <>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                                    <Box>
-                                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>Admin Accounts</Typography>
-                                        <Typography variant="body1" sx={{ color: '#64748b' }}>Manage your team and permissions.</Typography>
-                                    </Box>
-                                    <Button
-                                        variant="contained"
-                                        startIcon={<UserPlus size={18} />}
-                                        onClick={() => setOpenAddDialog(true)}
-                                        sx={{
-                                            bgcolor: '#E91E63', borderRadius: 3, px: 3, py: 1.5,
-                                            fontWeight: 800, textTransform: 'none',
-                                            boxShadow: '0 8px 20px rgba(233, 30, 99, 0.3)',
-                                            '&:hover': { bgcolor: '#D81B60', boxShadow: '0 10px 25px rgba(233, 30, 99, 0.4)' }
-                                        }}
-                                    >
-                                        Add Admin
-                                    </Button>
-                                </Box>
-
-                                <Paper className="glass-card" sx={{ borderRadius: 5, overflow: 'hidden' }}>
-                                    <TableContainer>
-                                        <Table>
-                                            <TableHead sx={{ bgcolor: 'rgba(0,0,0,0.02)' }}>
-                                                <TableRow>
-                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>ADMIN</TableCell>
-                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>EMAIL</TableCell>
-                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>ROLE</TableCell>
-                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }}>STATUS</TableCell>
-                                                    <TableCell sx={{ fontWeight: 800, color: '#64748b' }} align="right">ACTIONS</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {subAdmins.map((admin) => (
-                                                    <TableRow key={admin.id} sx={{ '&:hover': { bgcolor: 'rgba(233, 30, 99, 0.02)' } }}>
-                                                        <TableCell>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                                <Avatar sx={{ bgcolor: admin.is_blocked ? '#94a3b8' : '#6366f1', width: 32, height: 32, fontSize: '0.75rem' }}>
-                                                                    {(admin.full_name || admin.name || 'A')[0]}
-                                                                </Avatar>
-                                                                <Typography sx={{ fontWeight: 700 }}>{admin.full_name || admin.name || 'Admin User'}</Typography>
-                                                            </Box>
-                                                        </TableCell>
-                                                        <TableCell>{admin.email}</TableCell>
-                                                        <TableCell>
-                                                            <Box sx={{ px: 1.5, py: 0.5, bgcolor: '#f1f5f9', borderRadius: 2, display: 'inline-block' }}>
-                                                                <Typography variant="caption" sx={{ color: '#475569', fontWeight: 800, textTransform: 'uppercase' }}>{admin.role}</Typography>
-                                                            </Box>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Box sx={{
-                                                                px: 1.5, py: 0.5, borderRadius: 2, display: 'inline-block',
-                                                                bgcolor: admin.is_blocked ? '#fee2e2' : '#dcfce7',
-                                                                color: admin.is_blocked ? '#ef4444' : '#059669'
-                                                            }}>
-                                                                <Typography variant="caption" sx={{ fontWeight: 800 }}>{admin.is_blocked ? 'BLOCKED' : 'ACTIVE'}</Typography>
-                                                            </Box>
-                                                        </TableCell>
-                                                        <TableCell align="right">
-                                                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                                                                <IconButton size="small" onClick={() => handleEditAdmin(admin)} sx={{ color: '#6366f1' }}>
-                                                                    <Edit size={18} />
-                                                                </IconButton>
-                                                                <IconButton
-                                                                    size="small"
-                                                                    onClick={() => handleToggleBlock(admin)}
-                                                                    sx={{ color: admin.is_blocked ? '#059669' : '#f59e0b' }}
-                                                                >
-                                                                    {admin.is_blocked ? <CheckCircle size={18} /> : <Ban size={18} />}
-                                                                </IconButton>
-                                                                <IconButton size="small" color="error" onClick={() => handleDeleteSubAdmin(admin.id)}>
-                                                                    <Trash2 size={18} />
-                                                                </IconButton>
-                                                            </Box>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                                {subAdmins.length === 0 && (
-                                                    <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: '#64748b' }}>No admins found.</TableCell></TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                </Paper>
-                            </>
-                        )}
-                    </motion.div>
-                </AnimatePresence>
-            </Box>
-
-            {/* Edit Admin Dialog */}
-            <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: 5 } }}>
-                <DialogTitle sx={{ fontWeight: 800 }}>Edit Admin Account</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        fullWidth label="Full Name" margin="normal"
-                        value={editAdmin?.full_name || editAdmin?.name || ''}
-                        onChange={(e) => setEditAdmin({ ...editAdmin, full_name: e.target.value })}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                    />
-                    <TextField
-                        fullWidth label="Email" margin="normal" type="email"
-                        value={editAdmin?.email || ''}
-                        onChange={(e) => setEditAdmin({ ...editAdmin, email: e.target.value })}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                    />
-                    <TextField
-                        fullWidth select label="Role" margin="normal"
-                        value={editAdmin?.role || 'admin'}
-                        onChange={(e) => setEditAdmin({ ...editAdmin, role: e.target.value })}
-                        SelectProps={{ native: true }}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                    >
-                        <option value="admin">Admin</option>
-                        <option value="sub-admin">Sub-admin</option>
-                    </TextField>
-                </DialogContent>
-                <DialogActions sx={{ p: 3 }}>
-                    <Button onClick={() => setOpenEditDialog(false)} sx={{ fontWeight: 700 }}>Cancel</Button>
-                    <Button
-                        variant="contained" onClick={handleUpdateAdmin}
-                        sx={{ bgcolor: '#E91E63', borderRadius: 3, fontWeight: 800, px: 3 }}
-                    >
-                        Update
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            {/* Add Admin Dialog */}
-            <Dialog
-                open={openAddDialog}
-                onClose={() => !creatingAdmin && setOpenAddDialog(false)}
-                fullWidth maxWidth="sm"
-                PaperProps={{ sx: { borderRadius: 5 } }}
+            <Drawer
+                variant="permanent"
+                sx={{
+                    width: sidebarOpen ? 280 : 80,
+                    flexShrink: 0,
+                    '& .MuiDrawer-paper': {
+                        width: sidebarOpen ? 280 : 80,
+                        boxSizing: 'border-box',
+                        background: `linear-gradient(180deg, ${COLORS.primary} 0%, #0f172a 100%)`,
+                        borderRight: 'none',
+                        transition: 'width 0.3s',
+                        boxShadow: '4px 0 20px rgba(0,0,0,0.1)'
+                    },
+                }}
             >
-                <DialogTitle sx={{ fontWeight: 900, pb: 0 }}>Create Admin Account</DialogTitle>
-                <DialogContent>
-                    <Box sx={{ py: 2 }}>
-                        <Typography variant="body2" sx={{ color: '#64748b', mb: 3 }}>
-                            A new admin account will be created. Login credentials will be sent to the email address provided.
+                {/* Header */}
+                <Box sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    {sidebarOpen && (
+                        <Typography variant="h5" sx={{
+                            fontWeight: 900,
+                            background: `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)`,
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text'
+                        }}>
+                            Admin Panel
                         </Typography>
-                        <TextField
-                            fullWidth label="Admin Full Name" margin="normal"
-                            value={newAdmin.name}
-                            onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
-                            placeholder="e.g. Rahul Sharma"
-                            disabled={creatingAdmin}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                        />
-                        <TextField
-                            fullWidth label="Email Address" margin="normal" type="email"
-                            value={newAdmin.email}
-                            onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
-                            placeholder="admin@psyq.com"
-                            disabled={creatingAdmin}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                        />
-                        <TextField
-                            fullWidth select label="Assign Role" margin="normal"
-                            value={newAdmin.role}
-                            onChange={(e) => setNewAdmin({ ...newAdmin, role: e.target.value })}
-                            SelectProps={{ native: true }}
-                            disabled={creatingAdmin}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                        >
-                            <option value="sub-admin">Sub-admin (Content Management)</option>
-                            <option value="admin">Full Admin</option>
-                        </TextField>
-                    </Box>
-                </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 3 }}>
-                    <Button onClick={() => setOpenAddDialog(false)} disabled={creatingAdmin} sx={{ fontWeight: 700 }}>Cancel</Button>
-                    <Button
-                        variant="contained"
-                        onClick={handleAddAdmin}
-                        disabled={creatingAdmin}
+                    )}
+                    <IconButton
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
                         sx={{
-                            bgcolor: '#E91E63', borderRadius: 3, fontWeight: 800, px: 4, py: 1,
-                            boxShadow: '0 8px 20px rgba(233, 30, 99, 0.3)'
+                            bgcolor: 'rgba(255,255,255,0.1)',
+                            color: '#fff',
+                            '&:hover': {
+                                bgcolor: 'rgba(255,255,255,0.2)',
+                                transform: 'scale(1.1)'
+                            }
                         }}
                     >
-                        {creatingAdmin ? 'Creating...' : 'Create Admin'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                        <Menu size={20} />
+                    </IconButton>
+                </Box>
 
-            <ModernDialog
-                open={dialog.open}
-                onClose={() => setDialog(prev => ({ ...prev, open: false }))}
-                onConfirm={dialog.onConfirm}
-                title={dialog.title}
-                message={dialog.message}
-                type={dialog.type}
-            />
+                {/* Navigation */}
+                <List sx={{ px: 2, py: 3, flexGrow: 1 }}>
+                    {menuItems.map((item) => {
+                        const Icon = item.icon;
+                        const active = isActive(item.path, item.exact);
+
+                        return (
+                            <ListItem key={item.path} disablePadding sx={{ mb: 1 }}>
+                                <ListItemButton
+                                    onClick={() => handleNavigation(item.path)}
+                                    sx={{
+                                        borderRadius: 3,
+                                        py: 1.5,
+                                        px: 2,
+                                        background: active ? `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)` : 'transparent',
+                                        color: active ? '#fff' : '#cbd5e1',
+                                        fontWeight: active ? 700 : 500,
+                                        boxShadow: active ? `0 8px 16px ${alpha(COLORS.accent, 0.3)}` : 'none',
+                                        '&:hover': {
+                                            bgcolor: active ? undefined : 'rgba(255,255,255,0.05)',
+                                            color: '#fff'
+                                        }
+                                    }}
+                                >
+                                    <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+                                        <Icon size={22} />
+                                    </ListItemIcon>
+                                    {sidebarOpen && (
+                                        <>
+                                            <ListItemText
+                                                primary={item.label}
+                                                primaryTypographyProps={{
+                                                    fontWeight: active ? 700 : 600,
+                                                    fontSize: '0.95rem'
+                                                }}
+                                            />
+                                            {active && <ChevronRight size={18} />}
+                                        </>
+                                    )}
+                                </ListItemButton>
+                            </ListItem>
+                        );
+                    })}
+                </List>
+
+                {/* User Section */}
+                <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                    {sidebarOpen && user && (
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                mb: 2,
+                                p: 2,
+                                background: 'rgba(255,255,255,0.05)',
+                                backdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: 3
+                            }}
+                        >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Avatar
+                                    sx={{
+                                        width: 40,
+                                        height: 40,
+                                        background: `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)`
+                                    }}
+                                >
+                                    <User size={20} />
+                                </Avatar>
+                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                    <Typography variant="body2" sx={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {user.email}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+                                        Administrator
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Paper>
+                    )}
+                    <ListItemButton
+                        onClick={handleLogout}
+                        sx={{
+                            borderRadius: 3,
+                            py: 1.5,
+                            px: 2,
+                            bgcolor: 'rgba(239, 68, 68, 0.1)',
+                            color: '#fca5a5',
+                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            fontWeight: 700,
+                            '&:hover': {
+                                bgcolor: '#ef4444',
+                                color: '#fff'
+                            }
+                        }}
+                    >
+                        <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+                            <LogOut size={20} />
+                        </ListItemIcon>
+                        {sidebarOpen && <ListItemText primary="Logout" primaryTypographyProps={{ fontWeight: 700, fontSize: '0.95rem' }} />}
+                    </ListItemButton>
+                </Box>
+            </Drawer>
+
+            {/* Main Content */}
+            <Box component="main" sx={{ flexGrow: 1, overflow: 'auto' }}>
+                <Routes>
+                    <Route
+                        path="/"
+                        element={
+                            <Container maxWidth="xl" sx={{ py: 6 }}>
+                                {/* Header */}
+                                <Box sx={{ mb: 6 }}>
+                                    <Typography variant="h3" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1.5, fontSize: '2.5rem' }}>
+                                        Welcome to Admin Dashboard
+                                    </Typography>
+                                    <Typography variant="h6" sx={{ color: COLORS.textLight, fontWeight: 500, fontSize: '1.1rem' }}>
+                                        Manage your mock test platform from here
+                                    </Typography>
+                                </Box>
+
+                                {/* Dashboard Cards */}
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }, gap: 4 }}>
+                                    {menuItems.slice(1).map((item) => {
+                                        const Icon = item.icon;
+                                        return (
+                                            <motion.div
+                                                key={item.path}
+                                                whileHover={{ y: -8 }}
+                                                transition={{ duration: 0.2 }}
+                                            >
+                                                <Card
+                                                    onClick={() => handleNavigation(item.path)}
+                                                    sx={{
+                                                        cursor: 'pointer',
+                                                        borderRadius: 4,
+                                                        border: `2px solid ${COLORS.border}`,
+                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                                        transition: 'all 0.3s',
+                                                        '&:hover': {
+                                                            borderColor: COLORS.accent,
+                                                            boxShadow: `0 20px 40px ${alpha(COLORS.accent, 0.15)}`
+                                                        }
+                                                    }}
+                                                >
+                                                    <CardContent sx={{ p: 4 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+                                                            <Box
+                                                                sx={{
+                                                                    p: 2.5,
+                                                                    borderRadius: 3,
+                                                                    background: `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)`,
+                                                                    boxShadow: `0 8px 20px ${alpha(COLORS.accent, 0.3)}`,
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}
+                                                            >
+                                                                <Icon size={32} color="#fff" strokeWidth={2.5} />
+                                                            </Box>
+                                                            <Box sx={{ flexGrow: 1 }}>
+                                                                <Typography variant="h6" sx={{ fontWeight: 800, color: COLORS.primary, mb: 1, fontSize: '1.25rem' }}>
+                                                                    {item.label}
+                                                                </Typography>
+                                                                <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 500, fontSize: '0.95rem' }}>
+                                                                    Manage {item.label.toLowerCase()}
+                                                                </Typography>
+                                                            </Box>
+                                                            <ChevronRight size={24} style={{ color: COLORS.textLight }} />
+                                                        </Box>
+                                                    </CardContent>
+                                                </Card>
+                                            </motion.div>
+                                        );
+                                    })}
+                                </Box>
+                            </Container>
+                        }
+                    />
+                    <Route path="/bundles" element={<BundleManagement />} />
+                    <Route path="/content" element={<ContentManagement />} />
+                    <Route path="/questions" element={<QuestionBank />} />
+                    <Route path="/tests" element={<TestBuilder />} />
+                    <Route path="/contacts" element={<ContactSubmissions />} />
+                </Routes>
+            </Box>
         </Box>
     );
 };
-
-const SidebarItem = ({ icon, label, active, onClick }) => (
-    <Box
-        onClick={onClick}
-        sx={{
-            display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 3, cursor: 'pointer',
-            bgcolor: active ? 'rgba(233, 30, 99, 0.15)' : 'transparent',
-            color: active ? '#fff' : '#94a3b8',
-            transition: 'all 0.2s',
-            position: 'relative',
-            overflow: 'hidden',
-            '&:hover': {
-                bgcolor: active ? 'rgba(233, 30, 99, 0.2)' : 'rgba(255,255,255,0.03)',
-                color: '#fff',
-                transform: 'translateX(4px)'
-            },
-            ...(active && {
-                '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    left: 0, top: '20%', bottom: '20%',
-                    width: 3,
-                    bgcolor: '#E91E63',
-                    borderRadius: '0 4px 4px 0',
-                    boxShadow: '0 0 10px #E91E63'
-                }
-            })
-        }}
-    >
-        {icon}
-        <Typography sx={{ fontWeight: 700, fontSize: '0.925rem' }}>{label}</Typography>
-    </Box>
-);
-
-const StatCard = ({ icon, label, value }) => (
-    <Grid size={{ xs: 12, sm: 4 }}>
-        <Paper className="glass-card" sx={{
-            p: 4, borderRadius: 5, display: 'flex', alignItems: 'center', gap: 3,
-            transition: 'all 0.3s',
-            '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 12px 40px rgba(0,0,0,0.08)' }
-        }}>
-            <Box sx={{
-                p: 2, borderRadius: 4,
-                bgcolor: 'rgba(233, 30, 99, 0.08)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-                {icon}
-            </Box>
-            <Box>
-                <Typography variant="h3" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1, mb: 0.5 }}>{value}</Typography>
-                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, fontSize: '0.75rem' }}>{label}</Typography>
-            </Box>
-        </Paper>
-    </Grid>
-);
 
 export default AdminDashboard;

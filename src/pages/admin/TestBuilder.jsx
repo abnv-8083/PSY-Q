@@ -1,14 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, alpha } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
 import ModernDialog from '../../components/ModernDialog';
-import { Plus, Trash2, Clock, DollarSign, ChevronLeft, Target, Pencil } from 'lucide-react';
+import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DragDropContext, Draggable } from 'react-beautiful-dnd';
+import { StrictModeDroppable } from '../../components/StrictModeDroppable';
+
+// Premium Color Theme
+const COLORS = {
+    primary: '#1e293b',
+    secondary: '#4b5563',
+    accent: '#ca0056',
+    accentHover: '#b8003f',
+    background: '#fdf2f8',
+    cardBg: '#FFFFFF',
+    textLight: '#64748b',
+    border: '#e2e8f0',
+    success: '#10b981'
+};
 
 const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [tests, setTests] = useState([]);
     const [openTestDialog, setOpenTestDialog] = useState(false);
-    const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 60 });
+    const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 100, year: '' });
     const [isEditMode, setIsEditMode] = useState(false);
     const [editingTest, setEditingTest] = useState(null);
 
@@ -22,16 +37,19 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     });
 
     useEffect(() => {
-        fetchTests();
-    }, [subject.id]);
+        if (subject && subject.id) {
+            fetchTests();
+        }
+    }, [subject?.id]);
 
     const fetchTests = async () => {
+        if (!subject || !subject.id) return;
         try {
             const { data, error } = await supabase
                 .from('tests')
-                .select('*')
+                .select('*, questions(count)')
                 .eq('subject_id', subject.id)
-                .order('created_at', { ascending: true });
+                .order('display_order', { ascending: true });
 
             if (error) throw error;
             setTests(data);
@@ -55,7 +73,8 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     .update({
                         name: newTest.name,
                         price: Number(newTest.price),
-                        duration: Number(newTest.duration)
+                        duration: Number(newTest.duration),
+                        year: newTest.year ? Number(newTest.year) : null
                     })
                     .eq('id', editingTest.id);
 
@@ -68,13 +87,15 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                         name: newTest.name,
                         price: Number(newTest.price),
                         duration: Number(newTest.duration),
-                        is_published: true
+                        year: newTest.year ? Number(newTest.year) : null,
+                        is_published: true,
+                        display_order: tests.length > 0 ? Math.max(...tests.map(t => t.display_order || 0)) + 1 : 0
                     });
 
                 if (error) throw error;
             }
 
-            setNewTest({ name: '', price: 0, duration: 60 });
+            setNewTest({ name: '', price: 0, duration: 100, year: '' });
             setOpenTestDialog(false);
             setIsEditMode(false);
             setEditingTest(null);
@@ -94,7 +115,8 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         setNewTest({
             name: test.name,
             price: test.price,
-            duration: test.duration
+            duration: test.duration,
+            year: test.year || ''
         });
         setEditingTest(test);
         setIsEditMode(true);
@@ -130,119 +152,245 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         });
     };
 
+    const handleDragEnd = async (result) => {
+        if (!result.destination) return;
+
+        const items = Array.from(tests);
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+
+        // Update local state immediately for UX
+        setTests(items);
+
+        try {
+            // Batch update display_order in Supabase
+            const updates = items.map((test, index) =>
+                supabase
+                    .from('tests')
+                    .update({ display_order: index })
+                    .eq('id', test.id)
+            );
+
+            await Promise.all(updates);
+        } catch (error) {
+            console.error("Error reordering tests:", error);
+            fetchTests();
+        }
+    };
+
+    if (!subject) {
+        return (
+            <Box sx={{ p: 4, textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                <Layout size={64} color={COLORS.textLight} style={{ marginBottom: 16, opacity: 0.5 }} />
+                <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>
+                    No Subject Selected
+                </Typography>
+                <Typography variant="body1" sx={{ color: COLORS.textLight, mb: 4, maxWidth: 400 }}>
+                    Please select a subject from the Content Management section to view and manage its tests.
+                </Typography>
+                <Button
+                    variant="contained"
+                    onClick={onBack}
+                    sx={{ bgcolor: COLORS.primary, borderRadius: 3, fontWeight: 800, px: 4 }}
+                >
+                    Go to Content Management
+                </Button>
+            </Box>
+        );
+    }
+
     return (
-        <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ p: { xs: 3, md: 6 } }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
                     {onBack && (
                         <IconButton
                             onClick={onBack}
-                            sx={{ bgcolor: 'rgba(0,0,0,0.03)', '&:hover': { bgcolor: 'rgba(0,0,0,0.06)' } }}
+                            sx={{
+                                bgcolor: 'rgba(0,0,0,0.04)',
+                                '&:hover': { bgcolor: 'rgba(0,0,0,0.08)', transform: 'translateX(-2px)' },
+                                transition: 'all 0.2s'
+                            }}
                         >
                             <ChevronLeft />
                         </IconButton>
                     )}
                     <Box>
-                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#0f172a', letterSpacing: -1 }}>Mock Tests</Typography>
-                        <Typography variant="body1" sx={{ color: '#64748b' }}>Manage test list for {subject.name}.</Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                            <Avatar sx={{ bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent }}>
+                                <Layers size={20} />
+                            </Avatar>
+                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -1 }}>Mock Tests</Typography>
+                        </Box>
+                        <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 600 }}>
+                            Manage tests for <Chip label={subject.name} size="small" sx={{ fontWeight: 800, bgcolor: COLORS.primary, color: 'white', ml: 1 }} />
+                        </Typography>
                     </Box>
                 </Box>
                 <Button
                     variant="contained"
                     startIcon={<Plus size={18} />}
-                    onClick={() => setOpenTestDialog(true)}
+                    onClick={() => {
+                        setNewTest({ name: '', price: 0, duration: 100, year: '' });
+                        setIsEditMode(false);
+                        setEditingTest(null);
+                        setOpenTestDialog(true);
+                    }}
                     sx={{
-                        bgcolor: '#E91E63', borderRadius: 3, px: 3, py: 1.5,
-                        fontWeight: 800, textTransform: 'none',
-                        boxShadow: '0 8px 20px rgba(233, 30, 99, 0.3)',
-                        '&:hover': { bgcolor: '#D81B60', boxShadow: '0 10px 25px rgba(233, 30, 99, 0.4)' }
+                        bgcolor: COLORS.accent, borderRadius: 4, px: 3, py: 1.5,
+                        fontWeight: 900, textTransform: 'none',
+                        boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.3)}`,
+                        '&:hover': { bgcolor: COLORS.accentHover, boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.4)}`, transform: 'translateY(-2px)' },
+                        transition: 'all 0.3s'
                     }}
                 >
                     Add New Test
                 </Button>
             </Box>
 
-            <Grid container spacing={3}>
-                <AnimatePresence>
-                    {tests.map((test, index) => (
-                        <Grid size={{ xs: 12, md: 6 }} key={test.id}>
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.05 }}
-                            >
-                                <Paper className="glass-card" sx={{
-                                    p: 3, borderRadius: 5, position: 'relative',
-                                    transition: 'all 0.3s',
-                                    '&:hover': { transform: 'translateY(-5px)', boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }
-                                }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: 'rgba(233, 30, 99, 0.08)', color: '#E91E63' }}>
-                                                <Target size={24} />
-                                            </Box>
-                                            <Box>
-                                                <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a', lineHeight: 1.2 }}>{test.name}</Typography>
-                                                <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Created: {new Date(test.created_at).toLocaleDateString()}</Typography>
-                                            </Box>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', gap: 1 }}>
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => handleEditClick(test)}
-                                                sx={{ color: '#6366f1', bgcolor: 'rgba(99, 102, 241, 0.05)', '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)' } }}
+            <DragDropContext onDragEnd={handleDragEnd}>
+                <StrictModeDroppable droppableId="tests-list">
+                    {(provided) => (
+                        <Box
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                            sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 3 }}
+                        >
+                            <AnimatePresence>
+                                {tests.map((test, index) => (
+                                    <Draggable key={test.id} draggableId={test.id.toString()} index={index}>
+                                        {(provided, snapshot) => (
+                                            <Box
+                                                ref={provided.innerRef}
+                                                {...provided.draggableProps}
+                                                sx={{ width: { xs: '100%', md: 'calc(50% - 12px)' } }}
                                             >
-                                                <Pencil size={18} />
-                                            </IconButton>
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => handleDeleteTest(test.id)}
-                                                sx={{ color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.05)', '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' } }}
-                                            >
-                                                <Trash2 size={18} />
-                                            </IconButton>
-                                        </Box>
-                                    </Box>
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ delay: index * 0.05 }}
+                                                >
+                                                    <Paper sx={{
+                                                        p: 4, borderRadius: 6, position: 'relative',
+                                                        transition: 'all 0.3s',
+                                                        border: snapshot.isDragging ? `2px solid ${COLORS.accent}` : `1px solid ${COLORS.border}`,
+                                                        bgcolor: snapshot.isDragging ? alpha(COLORS.accent, 0.02) : '#fff',
+                                                        boxShadow: snapshot.isDragging ? `0 20px 48px ${alpha(COLORS.accent, 0.2)}` : 'none',
+                                                        '&:hover': { transform: 'translateY(-6px)', boxShadow: '0 16px 40px rgba(0,0,0,0.06)', borderColor: COLORS.accent }
+                                                    }}>
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+                                                                <Box
+                                                                    {...provided.dragHandleProps}
+                                                                    sx={{ cursor: 'grab', color: COLORS.textLight, '&:hover': { color: COLORS.primary } }}
+                                                                >
+                                                                    <GripVertical size={24} />
+                                                                </Box>
+                                                                <Box sx={{ p: 2, borderRadius: 4, bgcolor: alpha(COLORS.accent, 0.08), color: COLORS.accent }}>
+                                                                    <Target size={28} />
+                                                                </Box>
+                                                                <Box>
+                                                                    <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.primary, lineHeight: 1.2 }}>{test.name}</Typography>
+                                                                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>Added: {new Date(test.created_at).toLocaleDateString()}</Typography>
+                                                                </Box>
+                                                            </Box>
+                                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleEditClick(test)}
+                                                                    sx={{ bgcolor: alpha('#6366f1', 0.1), color: '#6366f1', '&:hover': { bgcolor: alpha('#6366f1', 0.2) } }}
+                                                                >
+                                                                    <Pencil size={18} />
+                                                                </IconButton>
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleDeleteTest(test.id)}
+                                                                    sx={{ bgcolor: alpha('#ef4444', 0.1), color: '#ef4444', '&:hover': { bgcolor: alpha('#ef4444', 0.2) } }}
+                                                                >
+                                                                    <Trash2 size={18} />
+                                                                </IconButton>
+                                                            </Box>
+                                                        </Box>
 
-                                    <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
-                                        <Box sx={{ px: 2, py: 0.75, borderRadius: 2, bgcolor: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <Clock size={14} color="#64748b" />
-                                            <Typography variant="body2" sx={{ fontWeight: 800, color: '#475569' }}>{test.duration}m</Typography>
-                                        </Box>
-                                        <Box sx={{
-                                            px: 2, py: 0.75, borderRadius: 2,
-                                            bgcolor: test.price === 0 ? 'rgba(34, 197, 94, 0.08)' : 'rgba(99, 102, 241, 0.08)',
-                                            display: 'flex', alignItems: 'center', gap: 1
-                                        }}>
-                                            <Typography variant="body2" sx={{
-                                                fontWeight: 900,
-                                                color: test.price === 0 ? '#16a34a' : '#6366f1'
-                                            }}>
-                                                {test.price === 0 ? 'FREE' : `₹${test.price}`}
-                                            </Typography>
-                                        </Box>
-                                    </Box>
+                                                        <Box sx={{ display: 'flex', gap: 1.5, mb: 4 }}>
+                                                            <Box sx={{ px: 2, py: 1, borderRadius: 3, bgcolor: '#f8fafc', border: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                                <Clock size={16} color={COLORS.textLight} />
+                                                                <Typography variant="body2" sx={{ fontWeight: 900, color: COLORS.primary }}>{test.duration} mins</Typography>
+                                                            </Box>
+                                                            <Box sx={{ px: 2, py: 1, borderRadius: 3, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                                <HelpCircle size={16} color="#0284c7" />
+                                                                <Typography variant="body2" sx={{ fontWeight: 900, color: '#0369a1' }}>
+                                                                    {test.questions?.[0]?.count || 0} Questions
+                                                                </Typography>
+                                                            </Box>
+                                                            <Box sx={{
+                                                                px: 2, py: 1, borderRadius: 3,
+                                                                bgcolor: test.price === 0 ? alpha(COLORS.success, 0.08) : alpha('#6366f1', 0.08),
+                                                                border: `1px solid ${test.price === 0 ? alpha(COLORS.success, 0.2) : alpha('#6366f1', 0.2)}`,
+                                                                display: 'flex', alignItems: 'center', gap: 1.5
+                                                            }}>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontWeight: 900,
+                                                                    color: test.price === 0 ? COLORS.success : '#6366f1'
+                                                                }}>
+                                                                    {test.price === 0 ? 'FREE TRIAL' : `₹${test.price}`}
+                                                                </Typography>
+                                                            </Box>
+                                                            {test.year && (
+                                                                <Box sx={{ px: 2, py: 1, borderRadius: 3, bgcolor: '#fffbed', border: '1px solid #fef3c7', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                                    <Calendar size={16} color="#d97706" />
+                                                                    <Typography variant="body2" sx={{ fontWeight: 900, color: '#92400e' }}>{test.year}</Typography>
+                                                                </Box>
+                                                            )}
+                                                        </Box>
 
-                                    <Button
-                                        fullWidth
-                                        variant="contained"
-                                        onClick={() => onManageQuestions(test)}
-                                        sx={{
-                                            borderRadius: 3, py: 1.5,
-                                            bgcolor: '#0f172a', color: '#fff',
-                                            fontWeight: 800, textTransform: 'none',
-                                            boxShadow: '0 4px 12px rgba(15, 23, 42, 0.1)',
-                                            '&:hover': { bgcolor: '#1e293b', transform: 'translateY(-2px)' }
-                                        }}
-                                    >
-                                        Manage Question Bank
-                                    </Button>
-                                </Paper>
-                            </motion.div>
-                        </Grid>
-                    ))}
-                </AnimatePresence>
-            </Grid>
+                                                        <Button
+                                                            fullWidth
+                                                            variant="contained"
+                                                            onClick={() => onManageQuestions(test)}
+                                                            sx={{
+                                                                borderRadius: 4, py: 2,
+                                                                bgcolor: COLORS.primary, color: '#fff',
+                                                                fontWeight: 900, textTransform: 'none', fontSize: '1rem',
+                                                                boxShadow: `0 8px 20px ${alpha(COLORS.primary, 0.2)}`,
+                                                                '&:hover': { bgcolor: '#000', transform: 'translateY(-2px)', boxShadow: `0 12px 28px ${alpha(COLORS.primary, 0.3)}` },
+                                                                transition: 'all 0.3s'
+                                                            }}
+                                                        >
+                                                            Manage Question Bank
+                                                        </Button>
+                                                    </Paper>
+                                                </motion.div>
+                                            </Box>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </AnimatePresence>
+                        </Box>
+                    )}
+                </StrictModeDroppable>
+            </DragDropContext>
+
+            {tests.length === 0 && (
+                <Box sx={{ py: 12, textAlign: 'center' }}>
+                    <Box sx={{ mb: 4, display: 'inline-flex', p: 3, bgcolor: 'rgba(0,0,0,0.03)', borderRadius: '50%' }}>
+                        <Layout size={64} color={COLORS.textLight} />
+                    </Box>
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1.5 }}>No Tests Found</Typography>
+                    <Typography variant="body1" sx={{ color: COLORS.textLight, maxWidth: 400, mx: 'auto', mb: 4 }}>
+                        You haven't created any tests for this subject yet. Start by adding a new mock test.
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        startIcon={<Plus />}
+                        onClick={() => setOpenTestDialog(true)}
+                        sx={{ bgcolor: COLORS.accent, borderRadius: 4, px: 4, py: 1.5, fontWeight: 900 }}
+                    >
+                        Create Your First Test
+                    </Button>
+                </Box>
+            )}
 
             <Dialog
                 open={openTestDialog}
@@ -250,51 +398,64 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     setOpenTestDialog(false);
                     setIsEditMode(false);
                     setEditingTest(null);
-                    setNewTest({ name: '', price: 0, duration: 60 });
+                    setNewTest({ name: '', price: 0, duration: 100, year: '' });
                 }}
                 fullWidth maxWidth="xs"
-                PaperProps={{ sx: { borderRadius: 5 } }}
+                PaperProps={{ sx: { borderRadius: 6, p: 2 } }}
             >
-                <DialogTitle sx={{ fontWeight: 900 }}>{isEditMode ? 'Edit Mock Test' : 'Add New Mock Test'}</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary }}>
+                    {isEditMode ? 'Edit Mock Test' : 'Add New Mock Test'}
+                </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 1 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5, pt: 2 }}>
                         <TextField
                             fullWidth label="Test Name"
+                            placeholder="e.g. Psychology Basics - Part 1"
                             value={newTest.name} onChange={(e) => setNewTest({ ...newTest, name: e.target.value })}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
+                            InputProps={{ sx: { fontWeight: 700, fontSize: '1.1rem' } }}
                         />
-                        <Grid container spacing={2}>
-                            <Grid size={6}>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth label="Year" type="number"
+                                    placeholder="e.g. 2025"
+                                    value={newTest.year} onChange={(e) => setNewTest({ ...newTest, year: e.target.value })}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={6}>
                                 <TextField
                                     fullWidth label="Duration (mins)" type="number"
                                     value={newTest.duration} onChange={(e) => setNewTest({ ...newTest, duration: e.target.value })}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
                                 />
                             </Grid>
-                            <Grid size={6}>
+                            <Grid item xs={12} md={6}>
                                 <TextField
-                                    fullWidth label="Price (0 for Free)" type="number"
+                                    fullWidth label="Price (₹)" type="number"
                                     value={newTest.price} onChange={(e) => setNewTest({ ...newTest, price: e.target.value })}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
                                 />
                             </Grid>
                         </Grid>
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ p: 4, pt: 1 }}>
+                <DialogActions sx={{ p: 4, pt: 2 }}>
                     <Button onClick={() => {
                         setOpenTestDialog(false);
                         setIsEditMode(false);
                         setEditingTest(null);
-                        setNewTest({ name: '', price: 0, duration: 60 });
-                    }} sx={{ fontWeight: 700 }}>Cancel</Button>
+                        setNewTest({ name: '', price: 0, duration: 100, year: '' });
+                    }} sx={{ fontWeight: 800, color: COLORS.textLight }}>Cancel</Button>
                     <Button
                         variant="contained"
                         onClick={handleSaveTest}
+                        disabled={!newTest.name}
                         sx={{
-                            bgcolor: '#E91E63', borderRadius: 3, fontWeight: 800, px: 4, py: 1.2,
-                            boxShadow: '0 8px 20px rgba(233, 30, 99, 0.3)',
-                            '&:hover': { bgcolor: '#D81B60' }
+                            bgcolor: COLORS.accent, borderRadius: 4, fontWeight: 900, px: 5, py: 1.5,
+                            boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.4)}`,
+                            '&:hover': { bgcolor: COLORS.accentHover, boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.5)}` }
                         }}
                     >
                         {isEditMode ? 'Save Changes' : 'Create Test'}

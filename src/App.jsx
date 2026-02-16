@@ -5,7 +5,6 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Therapists from './pages/Therapists';
 import TherapistProfile from './pages/TherapistProfile';
-import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import StudentSignIn from './pages/StudentSignIn';
 import StudentSignUp from './pages/StudentSignUp';
@@ -20,6 +19,7 @@ import Academic from './pages/academic';
 import MockTestDashboard from './pages/mocktest/MockTestDashboard';
 import MockTestHome from './pages/mocktest/MockTestHome';
 import MockTestFeatures from './pages/mocktest/MockTestFeatures';
+import MockTestContact from './pages/mocktest/MockTestContact';
 import GeneralInstructions from './pages/mocktest/GeneralInstructions';
 import MockTestInterface from './pages/mocktest/MockTestInterface';
 import ResultAnalytics from './pages/mocktest/ResultAnalytics';
@@ -46,7 +46,6 @@ function App() {
           <Route path="/therapists" element={<Layout><Therapists /></Layout>} />
           <Route path="/therapists/:id" element={<Layout><TherapistProfile /></Layout>} />
           {/* Admin / internal auth */}
-          <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
 
           {/* Student auth */}
@@ -63,6 +62,7 @@ function App() {
           <Route path="/academic/mocktest" element={<MockTestHome />} />
           <Route path="/academic/mocktest/tests" element={<MockTestDashboard />} />
           <Route path="/academic/mocktest/features" element={<MockTestFeatures />} />
+          <Route path="/academic/mocktest/contact" element={<MockTestContact />} />
           <Route path="/academic/mocktest/:subjectId/:testId/rules" element={<GeneralInstructions />} />
           <Route path="/academic/mocktest/:subjectId/:testId/exam" element={<MockTestInterface />} />
           <Route path="/academic/mocktest/:subjectId/:testId/results" element={<ResultAnalytics />} />

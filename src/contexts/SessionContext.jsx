@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth } from '../lib/firebase';
-import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { supabase } from '../lib/supabaseClient';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,9 +18,27 @@ export const useSession = () => {
 
 export const SessionProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [lastActivity, setLastActivity] = useState(Date.now());
     const [showWarning, setShowWarning] = useState(false);
+
+    // Fetch user profile
+    const fetchProfile = async (userId) => {
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (error) throw error;
+            setProfile(data);
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+            setProfile(null);
+        }
+    };
 
     // Track user activity
     const updateActivity = () => {
@@ -33,25 +49,23 @@ export const SessionProvider = ({ children }) => {
     // Handle automatic logout
     const handleAutoLogout = async () => {
         try {
-            await firebaseSignOut(auth);
             await supabase.auth.signOut();
+            setUser(null);
+            setProfile(null);
             setShowWarning(false);
-            // Redirect will be handled by auth state change
+            window.location.href = '/signin';
         } catch (error) {
             console.error('Auto-logout error:', error);
         }
     };
 
-    // Extend session (called when user dismisses warning)
-    const extendSession = () => {
-        updateActivity();
-    };
-
     // Manual logout
     const logout = async () => {
         try {
-            await firebaseSignOut(auth);
             await supabase.auth.signOut();
+            setUser(null);
+            setProfile(null);
+            window.location.href = '/signin';
         } catch (error) {
             console.error('Logout error:', error);
         }
@@ -59,39 +73,35 @@ export const SessionProvider = ({ children }) => {
 
     // Listen to Auth state changes
     useEffect(() => {
-        // 1. Firebase Listener
-        const unsubscribeFirebase = onAuthStateChanged(auth, async (currentUser) => {
+        // Initial session check
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
             if (currentUser) {
-                setUser(currentUser);
-                updateActivity();
-                setLoading(false);
-            } else {
-                // Check if Supabase has a user before setting null
-                const { data: { user: sbUser } } = await supabase.auth.getUser();
-                if (!sbUser) {
-                    setUser(null);
-                    setLoading(false);
-                }
+                fetchProfile(currentUser.id);
             }
+            setLoading(false);
         });
 
-        // 2. Supabase Listener
+        // Supabase Listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (session?.user) {
-                setUser(session.user);
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+
+            if (currentUser) {
+                fetchProfile(currentUser.id);
+            } else {
+                setProfile(null);
+            }
+
+            setLoading(false);
+
+            if (event === 'SIGNED_IN') {
                 updateActivity();
-                setLoading(false);
-            } else if (event === 'SIGNED_OUT') {
-                // Check if Firebase has a user before setting null
-                if (!auth.currentUser) {
-                    setUser(null);
-                    setLoading(false);
-                }
             }
         });
 
         return () => {
-            unsubscribeFirebase();
             subscription.unsubscribe();
         };
     }, []);
@@ -137,9 +147,10 @@ export const SessionProvider = ({ children }) => {
 
     const value = {
         user,
+        profile,
         loading,
         logout,
-        extendSession,
+        extendSession: updateActivity,
         showWarning,
         timeUntilLogout: user ? Math.max(0, SESSION_TIMEOUT - (Date.now() - lastActivity)) : 0
     };

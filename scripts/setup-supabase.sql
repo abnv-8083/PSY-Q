@@ -14,7 +14,7 @@ CREATE TABLE tests (
   subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   price NUMERIC DEFAULT 0,
-  duration INTEGER DEFAULT 60, -- in minutes
+  duration INTEGER DEFAULT 100, -- in minutes
   is_published BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

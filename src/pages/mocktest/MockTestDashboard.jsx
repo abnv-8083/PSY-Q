@@ -1,868 +1,588 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box, Container, Typography, Grid, Card, CardContent, Button, Chip,
-    CircularProgress, Paper, Tabs, Tab, TextField, useMediaQuery, useTheme,
-    Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
-    Stack, alpha, Divider
+    Stack, useTheme, useMediaQuery, Paper, Skeleton, alpha, IconButton, Avatar, Menu, MenuItem, Divider,
+    TextField, InputAdornment
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { db, auth } from '../../lib/firebase';
 import { supabase } from '../../lib/supabaseClient';
-import { onAuthStateChanged } from 'firebase/auth';
 import {
-    BookOpen, Clock, CheckCircle, Search, Trophy, Zap, ShieldCheck,
-    Star, Info, Lock, PlayCircle, Filter, Layers, ChevronLeft, ChevronRight
+    BookOpen, Clock, ChevronRight, Target, Play, Calendar,
+    User, LogOut, CheckCircle, ArrowRight, Award, Zap, Search, X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import PaymentDialog from '../../components/PaymentDialog';
-import ModernDialog from '../../components/ModernDialog';
+import { motion, AnimatePresence } from 'framer-motion';
+import MockTestNavbar from '../../components/MockTestNavbar';
+import Footer from '../../components/Footer';
 
-// --- Design Constants ---
+// --- Constants (Shared with MockTestHome) ---
 const COLORS = {
-    primary: '#1e293b',       // Main headers
-    secondary: '#4b5563',     // Sub headers
-    accent: '#ca0056',        // Primary action
-    accentHover: '#b8003f',   // Hover state
-    background: '#fdf2f8',    // Page background
-    cardBg: '#FFFFFF',        // Card background
-    textLight: '#64748b',     // Secondary text
-    success: '#10b981',
-    warning: '#f59e0b',
-    border: '#e2e8f0'
+    primary: '#1e293b',
+    secondary: '#4b5563',
+    accent: '#ca0056',
+    accentHover: '#b8003f',
+    background: '#fdf2f8',
+    cardBg: '#FFFFFF',
+    textLight: '#64748b',
+    border: '#e2e8f0',
+    success: '#10b981'
 };
 
 const FONTS = {
     primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
 };
 
-import MockTestNavbar from '../../components/MockTestNavbar';
-
 const MockTestDashboard = () => {
-    // --- State Management ---
     const [subjects, setSubjects] = useState([]);
+    const [attempts, setAttempts] = useState({});
     const [loading, setLoading] = useState(true);
     const [selectedSubject, setSelectedSubject] = useState(null);
-    const [user, setUser] = useState(null);
-    const [attempts, setAttempts] = useState({});
-    const [bundles, setBundles] = useState([]);
-    const [userBundles, setUserBundles] = useState([]);
-
-    // UI State
-    const [activeTab, setActiveTab] = useState('all');
+    const [selectedYear, setSelectedYear] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState('name'); // name, price-low, price-high
-    const [selectedBundleIds, setSelectedBundleIds] = useState([]);
-    const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-    const [pendingTestData, setPendingTestData] = useState(null);
-    const [pendingBundleData, setPendingBundleData] = useState(null);
-
-    // Dialog State
-    const [dialog, setDialog] = useState({
-        open: false, title: '', message: '', type: 'info', onConfirm: null
-    });
-
+    const [user, setUser] = useState(null);
+    const [accessedTestIds, setAccessedTestIds] = useState(new Set());
     const navigate = useNavigate();
     const location = useLocation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-    const bundleScrollRef = useRef(null);
-    const testScrollRef = useRef(null);
+    useEffect(() => {
+        const fetchData = async (userId) => {
+            try {
+                // Fetch Subjects
+                const { data: subjectsData, error: subError } = await supabase
+                    .from('subjects')
+                    .select('*')
+                    .order('name');
 
-    const handleScroll = (ref, direction) => {
-        if (ref.current) {
-            const scrollAmount = direction === 'left' ? -400 : 400;
-            ref.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
-    };
+                if (subError) throw subError;
 
-    // --- Data Fetching & Real-time Sync ---
-    const fetchInitialData = async () => {
-        try {
-            // 1. Fetch Subjects & Tests
-            const { data: subjectsData, error: subjectsError } = await supabase
-                .from('subjects')
-                .select('*, tests(*)');
+                // Fetch Tests for all subjects
+                const { data: testsData, error: testsError } = await supabase
+                    .from('tests')
+                    .select('*, questions(count)');
 
-            if (subjectsError) throw subjectsError;
+                // Sort and filter in Javascript as a fallback
+                const filteredTests = (testsData || []).filter(t => t.is_published !== false);
+                const sortedTests = [...filteredTests].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
 
-            // Process Subjects
-            const formattedSubjects = subjectsData.map(s => ({
-                ...s,
-                tests: (s.tests || [])
-                    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-                    .map(t => ({ ...t, subjectId: s.id }))
-            }));
+                console.log("Dashboard Debug - Subjects:", subjectsData?.length);
+                console.log("Dashboard Debug - Tests Fetched:", testsData?.length);
+                console.log("Dashboard Debug - Tests Filtered:", sortedTests.length);
 
-            // Filter for Psychology or default
-            const psychologySubject = formattedSubjects.find(s => s.name === 'Psychology');
-            if (psychologySubject) {
-                setSubjects([psychologySubject]);
-                if (!selectedSubject) setSelectedSubject(psychologySubject.id);
-            } else if (formattedSubjects.length > 0) {
-                setSubjects(formattedSubjects);
-                if (!selectedSubject) setSelectedSubject(formattedSubjects[0].id);
-            } else {
-                setSubjects([]);
+                if (testsError) throw testsError;
+
+                // Map tests to subjects
+                const subjectsWithTests = subjectsData.map(subject => ({
+                    ...subject,
+                    tests: sortedTests.filter(test => test.subject_id === subject.id)
+                })); // Allow subjects even if they have no tests for debugging
+
+                console.log("Dashboard Debug - Subjects with counts:", subjectsWithTests.map(s => `${s.name}: ${s.tests.length}`));
+
+                setSubjects(subjectsWithTests);
+
+                // Set first subject as default
+                if (subjectsWithTests.length > 0 && !selectedSubject) {
+                    setSelectedSubject(subjectsWithTests[0].id);
+                }
+
+                // Fetch User Attempts
+                const { data: attemptData, error: attemptError } = await supabase
+                    .from('attempts')
+                    .select('test_id')
+                    .eq('user_id', userId);
+
+                if (attemptError) throw attemptError;
+
+                const attemptMap = {};
+                attemptData.forEach(attempt => {
+                    attemptMap[attempt.test_id] = (attemptMap[attempt.test_id] || 0) + 1;
+                });
+                setAttempts(attemptMap);
+
+                // --- Fetch User Access (Bundles & Direct Purchases) ---
+                const accessIds = new Set();
+
+                // 1. Get tests from purchased bundles
+                const { data: userBundles, error: bundleError } = await supabase
+                    .from('user_bundles')
+                    .select('bundle_id, bundles(bundle_tests(test_id))')
+                    .eq('user_id', userId);
+
+                if (!bundleError && userBundles) {
+                    userBundles.forEach(ub => {
+                        ub.bundles?.bundle_tests?.forEach(bt => {
+                            if (bt.test_id) accessIds.add(bt.test_id);
+                        });
+                    });
+                }
+
+                // 2. Get directly purchased tests from payments
+                const { data: payments, error: paymentError } = await supabase
+                    .from('payments')
+                    .select('item_id')
+                    .eq('user_id', userId)
+                    .eq('status', 'success')
+                    .eq('type', 'test');
+
+                if (!paymentError && payments) {
+                    payments.forEach(p => {
+                        if (p.item_id) accessIds.add(p.item_id);
+                    });
+                }
+
+                setAccessedTestIds(accessIds);
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                setLoading(false);
             }
-
-            // 2. Fetch Bundles
-            const { data: bundlesData, error: bundlesError } = await supabase
-                .from('bundles')
-                .select('*, bundle_tests(test_id)');
-
-            if (bundlesError) throw bundlesError;
-
-            const formattedBundles = bundlesData.map(b => ({
-                ...b,
-                testIds: (b.bundle_tests || []).map(bt => bt.test_id)
-            }));
-
-            setBundles(formattedBundles);
-            setLoading(false);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchInitialData();
-
-        // Real-time Subscriptions
-        const subjectChannel = supabase.channel('public:subjects')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'subjects' }, fetchInitialData)
-            .subscribe();
-
-        const testChannel = supabase.channel('public:tests')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'tests' }, fetchInitialData)
-            .subscribe();
-
-        const bundleChannel = supabase.channel('public:bundles')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'bundles' }, fetchInitialData)
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(subjectChannel);
-            supabase.removeChannel(testChannel);
-            supabase.removeChannel(bundleChannel);
-        };
-    }, []);
-
-    // Auth & User Data
-    useEffect(() => {
-        const fetchUserData = async (userId) => {
-            // Attempts
-            const { data: attemptsData } = await supabase
-                .from('attempts')
-                .select('test_id')
-                .eq('user_id', userId);
-
-            const attemptMap = {};
-            attemptsData?.forEach(a => attemptMap[a.test_id] = (attemptMap[a.test_id] || 0) + 1);
-            setAttempts(attemptMap);
-
-            // Bundles
-            const { data: bundleData } = await supabase
-                .from('user_bundles')
-                .select('bundle_id')
-                .eq('user_id', userId);
-
-            setUserBundles(bundleData?.map(d => d.bundle_id) || []);
         };
 
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            if (currentUser) fetchUserData(currentUser.uid);
-            else {
-                setAttempts({});
-                setUserBundles([]);
+        const checkAuthAndFetch = async () => {
+            const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+            if (!currentUser) {
+                navigate('/student/signin', { state: { from: location } });
+            } else {
+                setUser(currentUser);
+                fetchData(currentUser.id);
+            }
+        };
+
+        checkAuthAndFetch();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                setUser(session.user);
+                // Only fetch if we haven't already or if user changed (simple check)
+                // For now, simpler to just ensure we have a user
+            } else {
+                navigate('/student/signin', { state: { from: location } });
             }
         });
 
-        return () => unsubscribe();
-    }, []);
+        return () => subscription.unsubscribe();
+    }, [navigate, location]);
 
-    const hasBundleAccess = (testId) => {
-        return bundles.some(bundle =>
-            userBundles.includes(bundle.id) && bundle.testIds.includes(testId)
-        );
-    };
+    const handleStartTest = (subjectId, testId, price) => {
+        // Check if user has access
+        const hasAccess = accessedTestIds.has(testId) || price === 0;
 
-    // --- Filtering Logic ---
-    const allTests = subjects.flatMap(s => s.tests || []);
-    const selectedBundles = bundles.filter(b => selectedBundleIds.includes(b.id));
-
-    // Filter Bundles
-    const filteredBundles = bundles.filter(b =>
-        b.name.toLowerCase().includes(searchQuery.toLowerCase())
-    ).sort((a, b) => {
-        if (sortBy === 'price-low') return a.price - b.price;
-        if (sortBy === 'price-high') return b.price - a.price;
-        return a.name.localeCompare(b.name);
-    });
-
-    const filteredTests = allTests.filter(test => {
-        const matchesSearch = test.name.toLowerCase().includes(searchQuery.toLowerCase());
-        if (!matchesSearch) return false;
-        if (activeTab === 'tests') return true;
-        if (activeTab === 'bundles') return false;
-        if (selectedBundleIds.length > 0) {
-            return selectedBundles.some(b => b.testIds?.includes(test.id));
-        }
-        return true;
-    }).sort((a, b) => {
-        const ownedA = hasBundleAccess(a.id);
-        const ownedB = hasBundleAccess(b.id);
-        const attemptsA = attempts[a.id] || 0;
-        const attemptsB = attempts[b.id] || 0;
-
-        const isFreeTrialA = a.free || ownedA || (attemptsA === 0);
-        const isFreeTrialB = b.free || ownedB || (attemptsB === 0);
-
-        if (isFreeTrialA === isFreeTrialB) return 0;
-        return isFreeTrialA ? -1 : 1;
-    });
-
-    // --- Handlers ---
-    const handleStartTest = (subjectId, testId, price, testName) => {
-        if (!user) {
-            const testAttempts = attempts[testId] || 0;
-            if (price > 0 && testAttempts > 0) {
-                navigate('/student/signin', { state: { from: location } });
-            } else {
-                navigate('/student/signin', { state: { from: location } });
-            }
-            return;
-        }
-
-        if (hasBundleAccess(testId)) {
+        if (hasAccess) {
             navigate(`/academic/mocktest/${subjectId}/${testId}/rules`);
-            return;
-        }
-
-        const testAttempts = attempts[testId] || 0;
-        if (price > 0 && testAttempts > 0) {
-            setPendingTestData({ subjectId, testId, price, testName });
-            setPendingBundleData(null);
-            setPaymentDialogOpen(true);
         } else {
-            navigate(`/academic/mocktest/${subjectId}/${testId}/rules`);
+            // Placeholder for payment integration
+            alert(`Please purchase this test for ₹${price} to access it.`);
+            // initiateRazorpayPayment(...) // TODO: Integrate logic
         }
     };
 
-    const handleBuyBundle = (bundle) => {
-        if (!user) {
-            navigate('/student/signin', { state: { from: location } });
-            return;
-        }
-        setPendingBundleData(bundle);
-        setPendingTestData(null);
-        setPaymentDialogOpen(true);
-    };
+    const currentSubject = subjects.find(s => s.id === selectedSubject);
 
-    const handleUnlockTest = async (paymentData) => {
-        setPaymentDialogOpen(false);
-        if (!user) return;
+    // Extract unique years from tests
+    const years = ['All', ...new Set(currentSubject?.tests?.map(t => t.year).filter(Boolean).sort((a, b) => b - a))];
 
-        try {
-            // Record Payment
-            const { error: paymentError } = await supabase
-                .from('payments')
-                .insert({
-                    user_id: user.uid,
-                    amount: paymentData.amount,
-                    payment_id: paymentData.paymentId,
-                    type: pendingBundleData ? 'bundle' : 'test',
-                    item_id: pendingBundleData ? pendingBundleData.id : pendingTestData?.testId,
-                    item_name: pendingBundleData ? pendingBundleData.name : pendingTestData?.testName,
-                    status: 'success'
-                });
-
-            if (paymentError) throw paymentError;
-
-            // Grant Access
-            if (pendingBundleData) {
-                await supabase.from('user_bundles').insert({
-                    user_id: user.uid,
-                    bundle_id: pendingBundleData.id
-                });
-                setUserBundles(prev => [...prev, pendingBundleData.id]);
-                setDialog({
-                    open: true, title: 'Success', type: 'success',
-                    message: `You have successfully purchased ${pendingBundleData.name}!`
-                });
-            } else if (pendingTestData) {
-                navigate(`/academic/mocktest/${pendingTestData.subjectId}/${pendingTestData.testId}/rules`);
-            }
-        } catch (error) {
-            console.error('Payment Error:', error);
-            setDialog({
-                open: true, title: 'Error', type: 'error',
-                message: 'Payment recorded but access update failed. Contact support.'
-            });
-        }
-    };
-
-    // --- Render Helpers ---
-    const renderBundleCard = (bundle) => {
-        const isSelected = selectedBundleIds.includes(bundle.id);
-        const isOwned = userBundles.includes(bundle.id);
-        return (
-            <motion.div
-                whileHover={{ y: -5 }}
-                style={{ height: '100%' }}
-            >
-                <Card
-                    onClick={() => {
-                        if (activeTab === 'all') {
-                            setSelectedBundleIds(prev =>
-                                prev.includes(bundle.id) ? prev.filter(id => id !== bundle.id) : [...prev, bundle.id]
-                            );
-                        }
-                    }}
-                    sx={{
-                        height: '100%',
-                        minHeight: 320, // Uniform height
-                        cursor: activeTab === 'all' ? 'pointer' : 'default',
-                        border: isSelected ? `2px solid ${COLORS.accent}` : `1px solid ${COLORS.border}`,
-                        borderRadius: 3,
-                        boxShadow: isSelected ? '0 8px 24px rgba(52, 152, 219, 0.15)' : 'none',
-                        '&:hover': { boxShadow: '0 12px 24px rgba(0,0,0,0.05)', borderColor: COLORS.accent },
-                        transition: 'all 0.3s',
-                        display: 'flex', flexDirection: 'column',
-                        position: 'relative',
-                        p: 0.5 // Subtle internal padding
-                    }}
-                >
-                    {isSelected && (
-                        <Box sx={{
-                            position: 'absolute', top: -10, right: -10,
-                            bgcolor: COLORS.accent, color: 'white',
-                            borderRadius: '50%', p: 0.5, zIndex: 2
-                        }}>
-                            <CheckCircle size={16} />
-                        </Box>
-                    )}
-
-                    <CardContent sx={{ flexGrow: 1, p: 2.5, position: 'relative', overflow: 'hidden' }}>
-                        <Box sx={{
-                            position: 'absolute', right: -20, bottom: -20, opacity: 0.05,
-                            transform: 'rotate(-15deg)', pointerEvents: 'none'
-                        }}>
-                            <Layers size={120} color={COLORS.primary} />
-                        </Box>
-
-                        <Typography variant="overline" sx={{ color: COLORS.accent, fontWeight: 700, letterSpacing: 1 }}>
-                            PREMIUM TEST BUNDLE
-                        </Typography>
-
-                        <Typography variant="h6" sx={{
-                            fontWeight: 800, mb: 1, lineHeight: 1.3, minHeight: 54, color: COLORS.primary
-                        }}>
-                            {bundle.name}
-                        </Typography>
-
-                        <Typography variant="body2" sx={{ color: COLORS.textLight, mb: 2, minHeight: 40 }}>
-                            {bundle.description}
-                        </Typography>
-
-                        <Stack spacing={1.5} sx={{ mb: 3 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>
-                                    {bundle.testIds?.length || 0} Full Mock Tests
-                                </Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>
-                                    Expert Recommendations
-                                </Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>
-                                    Lifetime Analysis
-                                </Typography>
-                            </Box>
-                        </Stack>
-
-                        <Typography variant="h6" sx={{ fontWeight: 800, color: COLORS.primary, mb: 2 }}>
-                            ₹{bundle.price}
-                        </Typography>
-
-                        {!isOwned ? (
-                            <Button
-                                fullWidth
-                                variant="contained"
-                                size="small"
-                                onClick={(e) => { e.stopPropagation(); handleBuyBundle(bundle); }}
-                                sx={{
-                                    bgcolor: COLORS.primary, color: 'white', fontWeight: 700, borderRadius: 2, textTransform: 'none', py: 1.2,
-                                    '&:hover': { bgcolor: COLORS.secondary }
-                                }}
-                            >
-                                Buy Bundle
-                            </Button>
-                        ) : (
-                            <Chip label="Purchased & Active" size="medium" color="success" variant="filled" sx={{ width: '100%', fontWeight: 700, borderRadius: 2 }} />
-                        )}
-                    </CardContent>
-                </Card>
-            </motion.div>
-        );
-    };
-
-    const renderTestCard = (test) => {
-        const ownedByBundle = hasBundleAccess(test.id);
-        const testAttempts = attempts[test.id] || 0;
-        const isLocked = !test.free && !ownedByBundle && testAttempts > 0 && test.price > 0;
-
-        return (
-            <motion.div
-                whileHover={{ y: -5 }}
-                style={{ height: '100%' }}
-            >
-                <Card sx={{
-                    height: '100%',
-                    minHeight: 320, // Uniform height
-                    borderRadius: 3,
-                    border: `1px solid ${COLORS.border}`,
-                    boxShadow: 'none',
-                    '&:hover': { boxShadow: '0 12px 24px rgba(0,0,0,0.05)', borderColor: COLORS.accent },
-                    transition: 'all 0.3s',
-                    display: 'flex', flexDirection: 'column'
-                }}>
-                    <CardContent sx={{ flexGrow: 1, p: 2.5, position: 'relative', overflow: 'hidden' }}>
-                        <Box sx={{
-                            position: 'absolute',
-                            right: -20,
-                            bottom: -20,
-                            opacity: 0.05,
-                            transform: 'rotate(-15deg)',
-                            pointerEvents: 'none'
-                        }}>
-                            <BookOpen size={120} color={COLORS.primary} />
-                        </Box>
-
-                        <Typography variant="overline" sx={{ color: COLORS.accent, fontWeight: 700, letterSpacing: 1 }}>
-                            UGC-NET PAPER 2 PSYCHOLOGY
-                        </Typography>
-
-                        <Typography variant="h6" sx={{
-                            fontWeight: 800, mb: 1, lineHeight: 1.3, minHeight: 48, color: COLORS.primary, fontSize: '1rem'
-                        }}>
-                            {test.name}
-                        </Typography>
-
-                        <Stack spacing={1.5} sx={{ mb: 3, mt: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>100 Questions</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>3 Hours Duration</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>200 Marks</Typography>
-                            </Box>
-                        </Stack>
-
-                        <Chip
-                            label="Expert Explanation in English"
-                            size="small"
-                            sx={{
-                                bgcolor: alpha(COLORS.accent, 0.1),
-                                color: COLORS.accent,
-                                fontWeight: 700,
-                                borderRadius: 1,
-                                width: '100%',
-                                justifyContent: 'center'
-                            }}
-                        />
-                    </CardContent>
-                    <Box sx={{ p: 2, pt: 0 }}>
-                        <Button
-                            fullWidth
-                            variant={isLocked ? "outlined" : "contained"}
-                            onClick={() => handleStartTest(test.subjectId, test.id, test.price, test.name)}
-                            startIcon={isLocked ? <Lock size={16} /> : <PlayCircle size={16} />}
-                            sx={{
-                                bgcolor: isLocked ? 'transparent' : COLORS.accent,
-                                color: isLocked ? COLORS.textLight : 'white',
-                                borderColor: isLocked ? COLORS.border : 'transparent',
-                                fontWeight: 700,
-                                borderRadius: 2,
-                                textTransform: 'none',
-                                boxShadow: 'none',
-                                py: 1.5,
-                                '&:hover': {
-                                    bgcolor: isLocked ? alpha(COLORS.primary, 0.05) : COLORS.accentHover,
-                                    boxShadow: isLocked ? 'none' : '0 4px 12px rgba(52, 152, 219, 0.3)'
-                                }
-                            }}
-                        >
-                            {ownedByBundle ? 'Start Mock Test' :
-                                (test.free || testAttempts === 0) ? 'Free Trail' :
-                                    `₹${test.price}`}
-                        </Button>
-                    </Box>
-                </Card>
-            </motion.div>
-        );
-    };
-
-    const renderFeatureChip = (icon, label) => (
-        <Chip
-            icon={icon}
-            label={label}
-            sx={{
-                bgcolor: 'white',
-                border: `1px solid ${COLORS.border}`,
-                fontWeight: 600,
-                color: COLORS.secondary,
-                '& .MuiChip-icon': { color: COLORS.accent }
-            }}
-        />
-    );
+    // Filter tests by year and search query
+    const displayTests = currentSubject?.tests?.filter(t => {
+        const matchesYear = selectedYear === 'All' || t.year === selectedYear;
+        const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesYear && matchesSearch;
+    }) || [];
 
     return (
-        <Box sx={{
-            minHeight: '100vh',
-            bgcolor: COLORS.background,
-            fontFamily: FONTS.primary,
-            color: COLORS.primary
-        }}>
+        <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd', fontFamily: FONTS.primary }}>
             <MockTestNavbar />
 
-            {/* --- Dashboard Content --- */}
-            <Container maxWidth="lg" sx={{ py: 6 }}>
-
-                {/* Guest CTA Banner */}
-                {!user && (
-                    <Paper
-                        sx={{
-                            p: { xs: 3, md: 5 },
-                            borderRadius: 6,
-                            background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)`,
-                            color: 'white',
-                            mb: 6,
-                            position: 'relative',
-                            overflow: 'hidden',
-                            boxShadow: '0 20px 40px rgba(30, 41, 59, 0.2)'
-                        }}
+            {/* Sub-Header / Hero area for Dashboard */}
+            <Box sx={{
+                bgcolor: COLORS.primary,
+                color: 'white',
+                pt: { xs: 4, md: 6 },
+                pb: { xs: 10, md: 12 },
+                position: 'relative',
+                overflow: 'hidden'
+            }}>
+                <Container maxWidth="lg">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                     >
-                        <Box sx={{ position: 'relative', zIndex: 1 }}>
-                            <Grid container spacing={4} alignItems="center">
-                                <Grid item xs={12} md={8}>
-                                    <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
-                                        Ready to Ace your Exams?
-                                    </Typography>
-                                    <Typography variant="body1" sx={{ opacity: 0.9, mb: 4, maxWidth: 500, fontSize: '1.1rem' }}>
-                                        Create a free account to track your progress, unlock detailed analytics, and get personalized study recommendations.
-                                    </Typography>
-                                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => navigate('/student/signup')}
-                                            sx={{
-                                                bgcolor: COLORS.accent,
-                                                color: 'white',
-                                                px: 4,
-                                                py: 1.5,
-                                                borderRadius: '50px',
-                                                fontWeight: 800,
-                                                textTransform: 'none',
-                                                fontSize: '1rem',
-                                                '&:hover': { bgcolor: COLORS.accentHover }
-                                            }}
-                                        >
-                                            Get Started Now
-                                        </Button>
-                                        <Button
-                                            variant="outlined"
-                                            onClick={() => navigate('/student/signin')}
-                                            sx={{
-                                                color: 'white',
-                                                borderColor: 'rgba(255,255,255,0.3)',
-                                                px: 4,
-                                                py: 1.5,
-                                                borderRadius: '50px',
-                                                fontWeight: 800,
-                                                textTransform: 'none',
-                                                fontSize: '1rem',
-                                                '&:hover': {
-                                                    borderColor: 'white',
-                                                    bgcolor: 'rgba(255,255,255,0.1)'
-                                                }
-                                            }}
-                                        >
-                                            Login to your account
-                                        </Button>
-                                    </Stack>
-                                </Grid>
-                                {!isMobile && (
-                                    <Grid item md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
-                                        <Box sx={{ position: 'relative' }}>
-                                            <Trophy size={160} color="white" style={{ opacity: 0.2 }} />
-                                            <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-                                                <Zap size={80} color={COLORS.accent} />
-                                            </Box>
-                                        </Box>
-                                    </Grid>
-                                )}
-                            </Grid>
-                        </Box>
-                        {/* Background Decor */}
-                        <Box sx={{
-                            position: 'absolute',
-                            top: -50,
-                            right: -50,
-                            width: 300,
-                            height: 300,
-                            borderRadius: '50%',
-                            background: `radial-gradient(circle, ${COLORS.accent}20 0%, transparent 70%)`
-                        }} />
-                    </Paper>
-                )}
+                        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" spacing={3}>
+                            <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                                <Typography variant="h3" sx={{ fontWeight: 900, mb: 1, letterSpacing: -1 }}>
+                                    Practice <Box component="span" sx={{ color: COLORS.accent }}>Tests</Box>
+                                </Typography>
+                                <Typography variant="h6" sx={{ opacity: 0.8, fontWeight: 500, maxWidth: 600 }}>
+                                    Boost your preparation with our curated test series. Select a subject below to view available mock exams.
+                                </Typography>
+                            </Box>
+                            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                                <Paper className="glass-card" sx={{
+                                    p: 2.5,
+                                    borderRadius: 4,
+                                    bgcolor: 'rgba(255,255,255,0.05)',
+                                    backdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 3
+                                }}>
+                                    <Box sx={{ textAlign: 'center' }}>
+                                        <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.accent }}>{subjects.length}</Typography>
+                                        <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7 }}>SUBJECTS</Typography>
+                                    </Box>
+                                    <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
+                                    <Box sx={{ textAlign: 'center' }}>
+                                        <Typography variant="h4" sx={{ fontWeight: 900, color: '#10b981' }}>{Object.keys(attempts).length}</Typography>
+                                        <Typography variant="caption" sx={{ fontWeight: 700, opacity: 0.7 }}>COMPLETED</Typography>
+                                    </Box>
+                                </Paper>
+                            </Box>
+                        </Stack>
+                    </motion.div>
+                </Container>
 
-                {/* Navigation & Search */}
+                {/* Decorative elements */}
                 <Box sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    justifyContent: 'space-between',
-                    alignItems: { xs: 'stretch', md: 'center' },
-                    gap: 3,
-                    mb: 5
+                    position: 'absolute', right: '-5%', top: '20%', opacity: 0.1, color: COLORS.accent,
+                    display: { xs: 'none', md: 'block' }
                 }}>
-                    <Tabs
-                        value={activeTab}
-                        onChange={(e, v) => setActiveTab(v)}
-                        sx={{
-                            '& .MuiTab-root': {
-                                textTransform: 'none',
-                                fontSize: '1rem',
-                                fontWeight: 600,
-                                minWidth: 100
-                            },
-                            '& .Mui-selected': { color: COLORS.accent },
-                            '& .MuiTabs-indicator': { bgcolor: COLORS.accent }
-                        }}
-                    >
-                        <Tab label="All Resources" value="all" />
-                        <Tab label="Test Bundles" value="bundles" />
-                        <Tab label="Mock Tests" value="tests" />
-                    </Tabs>
-
-                    <TextField
-                        placeholder="Search tests..."
-                        size="small"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        InputProps={{
-                            startAdornment: <Search size={18} color={COLORS.textLight} style={{ marginRight: 10 }} />,
-                            sx: {
-                                borderRadius: 2,
-                                bgcolor: 'white',
-                                width: { xs: '100%', md: 300 },
-                                '& fieldset': { borderColor: COLORS.border },
-                                '&:hover fieldset': { borderColor: COLORS.accent }
-                            }
-                        }}
-                    />
+                    <Target size={300} strokeWidth={1} />
                 </Box>
-                <Divider sx={{ mb: 5 }} />
+            </Box>
 
-                {/* Content Area */}
-                <Grid container spacing={4}>
-
-                    {/* Column: Bundles */}
-                    {(activeTab === 'all' || activeTab === 'bundles') && (
-                        <Grid item xs={12} sx={{ mb: activeTab === 'all' ? 6 : 0 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Layers size={20} color={COLORS.accent} />
-                                    Available Bundles
-                                </Typography>
-
-                                {activeTab === 'all' && filteredBundles.length > 0 && (
-                                    <Box sx={{ display: 'flex', gap: 1 }}>
-                                        <IconButton
-                                            onClick={() => handleScroll(bundleScrollRef, 'left')}
-                                            sx={{ bgcolor: 'white', border: `1px solid ${COLORS.border}`, '&:hover': { bgcolor: alpha(COLORS.accent, 0.05) } }}
-                                            size="small"
-                                        >
-                                            <ChevronLeft size={20} />
+            {/* Main Content */}
+            <Container maxWidth="xl" sx={{ mt: -6, pb: 10, position: 'relative', zIndex: 1 }}>
+                {/* Unified Filter Navbar */}
+                <Paper sx={{
+                    mb: 5,
+                    borderRadius: 4,
+                    p: 2,
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.05)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2
+                }}>
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        gap: 2,
+                        alignItems: { xs: 'stretch', md: 'center' }
+                    }}>
+                        {/* Search Bar */}
+                        <TextField
+                            placeholder="Search tests..."
+                            variant="outlined"
+                            size="small"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Search size={18} color={COLORS.secondary} />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: searchQuery && (
+                                    <InputAdornment position="end">
+                                        <IconButton size="small" onClick={() => setSearchQuery('')}>
+                                            <X size={16} />
                                         </IconButton>
-                                        <IconButton
-                                            onClick={() => handleScroll(bundleScrollRef, 'right')}
-                                            sx={{ bgcolor: 'white', border: `1px solid ${COLORS.border}`, '&:hover': { bgcolor: alpha(COLORS.accent, 0.05) } }}
-                                            size="small"
-                                        >
-                                            <ChevronRight size={20} />
-                                        </IconButton>
-                                    </Box>
-                                )}
-                            </Box>
-                            <Divider sx={{ mb: 3 }} />
+                                    </InputAdornment>
+                                ),
+                                sx: {
+                                    borderRadius: 3,
+                                    bgcolor: '#f8fafc',
+                                    '& fieldset': { borderColor: COLORS.border },
+                                    '&:hover fieldset': { borderColor: COLORS.accent },
+                                    '&.Mui-focused fieldset': { borderColor: COLORS.accent, borderWidth: 2 }
+                                }
+                            }}
+                            sx={{ flexGrow: 1, maxWidth: { md: 300 } }}
+                        />
 
-                            {activeTab === 'all' ? (
-                                <Box
-                                    ref={bundleScrollRef}
-                                    sx={{
-                                        display: 'flex',
-                                        overflowX: 'auto',
-                                        pb: 3,
-                                        gap: 3,
-                                        scrollSnapType: 'x mandatory',
-                                        scrollBehavior: 'smooth',
-                                        msOverflowStyle: 'none',
-                                        scrollbarWidth: 'none',
-                                        '&::-webkit-scrollbar': { display: 'none' }
-                                    }}
-                                >
-                                    {filteredBundles.length > 0 ? (
-                                        filteredBundles.map((bundle) => (
-                                            <Box key={bundle.id} sx={{ minWidth: { xs: '85%', sm: '45%', md: '30%', lg: '22%' }, scrollSnapAlign: 'start' }}>
-                                                {renderBundleCard(bundle)}
-                                            </Box>
-                                        ))
-                                    ) : (
-                                        <Typography variant="body2" sx={{ p: 4, color: COLORS.textLight, fontStyle: 'italic' }}>
-                                            No bundles found.
-                                        </Typography>
-                                    )}
-                                </Box>
+                        <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', md: 'block' }, mx: 1 }} />
+
+                        {/* Subject Selector */}
+                        <Box sx={{
+                            display: 'flex',
+                            gap: 1,
+                            overflowX: 'auto',
+                            pb: { xs: 1, md: 0 },
+                            '&::-webkit-scrollbar': { display: 'none' },
+                            flexGrow: 1
+                        }}>
+                            {loading ? (
+                                [1, 2, 3].map(i => <Skeleton key={i} variant="rounded" width={120} height={40} sx={{ borderRadius: 2 }} />)
                             ) : (
-                                <Grid container spacing={3}>
-                                    {filteredBundles.length > 0 ? (
-                                        filteredBundles.map((bundle) => (
-                                            <Grid item xs={12} sm={6} md={4} lg={3} key={bundle.id}>
-                                                {renderBundleCard(bundle)}
-                                            </Grid>
-                                        ))
-                                    ) : (
-                                        <Grid item xs={12}>
-                                            <Typography variant="body2" sx={{ p: 4, color: COLORS.textLight, fontStyle: 'italic', textAlign: 'center' }}>
-                                                No bundles found.
-                                            </Typography>
-                                        </Grid>
-                                    )}
-                                </Grid>
+                                subjects.map((subject) => (
+                                    <Button
+                                        key={subject.id}
+                                        onClick={() => {
+                                            setSelectedSubject(subject.id);
+                                            setSelectedYear('All'); // Reset year when subject changes
+                                        }}
+                                        variant={selectedSubject === subject.id ? "contained" : "text"}
+                                        sx={{
+                                            px: 2,
+                                            py: 1,
+                                            borderRadius: 2,
+                                            textTransform: 'none',
+                                            fontWeight: 700,
+                                            whiteSpace: 'nowrap',
+                                            bgcolor: selectedSubject === subject.id ? COLORS.accent : 'transparent',
+                                            color: selectedSubject === subject.id ? 'white' : COLORS.secondary,
+                                            '&:hover': {
+                                                bgcolor: selectedSubject === subject.id ? COLORS.accentHover : alpha(COLORS.accent, 0.05),
+                                                color: selectedSubject === subject.id ? 'white' : COLORS.accent
+                                            }
+                                        }}
+                                    >
+                                        {subject.name}
+                                    </Button>
+                                ))
                             )}
-                        </Grid>
-                    )}
+                        </Box>
+                    </Box>
 
-                    {/* Column: Tests */}
-                    {(activeTab === 'all' || activeTab === 'tests') && (
-                        <Grid item xs={12}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                                <Typography variant="h6" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Filter size={20} color={COLORS.accent} />
-                                    {selectedBundleIds.length > 0 ? 'Bundle Tests' : 'All Tests'}
+                    {/* Year Filter Chips */}
+                    {!loading && years.length > 1 && (
+                        <>
+                            <Divider sx={{ my: 0.5 }} />
+                            <Box sx={{
+                                display: 'flex',
+                                gap: 1,
+                                overflowX: 'auto',
+                                pb: 1,
+                                '&::-webkit-scrollbar': { display: 'none' }
+                            }}>
+                                <Typography variant="body2" sx={{ fontWeight: 700, color: COLORS.secondary, mr: 1, alignSelf: 'center' }}>
+                                    Years:
                                 </Typography>
-
-                                {activeTab === 'all' && filteredTests.length > 0 && (
-                                    <Box sx={{ display: 'flex', gap: 1 }}>
-                                        <IconButton
-                                            onClick={() => handleScroll(testScrollRef, 'left')}
-                                            sx={{ bgcolor: 'white', border: `1px solid ${COLORS.border}`, '&:hover': { bgcolor: alpha(COLORS.accent, 0.05) } }}
-                                            size="small"
-                                        >
-                                            <ChevronLeft size={20} />
-                                        </IconButton>
-                                        <IconButton
-                                            onClick={() => handleScroll(testScrollRef, 'right')}
-                                            sx={{ bgcolor: 'white', border: `1px solid ${COLORS.border}`, '&:hover': { bgcolor: alpha(COLORS.accent, 0.05) } }}
-                                            size="small"
-                                        >
-                                            <ChevronRight size={20} />
-                                        </IconButton>
-                                    </Box>
-                                )}
+                                {years.map((year) => (
+                                    <Chip
+                                        key={year}
+                                        label={year === 'All' ? 'All Years' : year}
+                                        onClick={() => setSelectedYear(year)}
+                                        sx={{
+                                            px: 1,
+                                            fontWeight: 700,
+                                            bgcolor: selectedYear === year ? COLORS.accent : 'white',
+                                            color: selectedYear === year ? 'white' : COLORS.secondary,
+                                            border: `1px solid ${selectedYear === year ? COLORS.accent : COLORS.border}`,
+                                            borderRadius: 2,
+                                            height: 32,
+                                            '&:hover': {
+                                                bgcolor: selectedYear === year ? COLORS.accentHover : alpha(COLORS.accent, 0.05),
+                                            },
+                                            transition: 'all 0.2s'
+                                        }}
+                                    />
+                                ))}
                             </Box>
-                            <Divider sx={{ mb: 3 }} />
+                        </>
+                    )}
+                </Paper>
 
-                            {activeTab === 'all' ? (
-                                <Box
-                                    ref={testScrollRef}
-                                    sx={{
-                                        display: 'flex',
-                                        overflowX: 'auto',
-                                        pb: 3,
-                                        gap: 3,
-                                        scrollSnapType: 'x mandatory',
-                                        scrollBehavior: 'smooth',
-                                        msOverflowStyle: 'none',
-                                        scrollbarWidth: 'none',
-                                        '&::-webkit-scrollbar': { display: 'none' }
-                                    }}
-                                >
-                                    {filteredTests.length > 0 ? (
-                                        filteredTests.map((test) => (
-                                            <Box key={test.id} sx={{ minWidth: { xs: '85%', sm: '45%', md: '30%', lg: '22%' }, scrollSnapAlign: 'start' }}>
-                                                {renderTestCard(test)}
-                                            </Box>
-                                        ))
-                                    ) : (
-                                        <Box sx={{ textAlign: 'center', py: 8, opacity: 0.6, width: '100%' }}>
-                                            <Info size={48} color={COLORS.textLight} />
-                                            <Typography variant="h6" sx={{ mt: 2, color: COLORS.secondary }}>
-                                                No tests found.
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                </Box>
-                            ) : (
-                                <Grid container spacing={3}>
-                                    {filteredTests.length > 0 ? (
-                                        filteredTests.map((test) => (
-                                            <Grid item xs={12} sm={6} md={4} lg={3} key={test.id}>
-                                                {renderTestCard(test)}
-                                            </Grid>
-                                        ))
-                                    ) : (
-                                        <Grid item xs={12}>
-                                            <Box sx={{ textAlign: 'center', py: 8, opacity: 0.6 }}>
-                                                <Info size={48} color={COLORS.textLight} />
-                                                <Typography variant="h6" sx={{ mt: 2, color: COLORS.secondary }}>
-                                                    No tests found.
+                {loading ? (
+                    <Grid container spacing={3}>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                            <Grid item xs={12} sm={6} md={3} key={i}>
+                                <Skeleton variant="rounded" sx={{ borderRadius: 3, width: '100%', height: 320 }} />
+                            </Grid>
+                        ))}
+                    </Grid>
+                ) : !currentSubject ? (
+                    <Box sx={{ textAlign: 'center', py: 10 }}>
+                        <Typography variant="h6" sx={{ color: COLORS.textLight }}>No tests available.</Typography>
+                    </Box>
+                ) : displayTests.length === 0 ? (
+                    <Box sx={{
+                        textAlign: 'center',
+                        py: 8,
+                        bgcolor: 'white',
+                        borderRadius: 4,
+                        border: `1px dashed ${COLORS.border}`
+                    }}>
+                        <Box sx={{ mb: 2, opacity: 0.5 }}>
+                            <Search size={48} color={COLORS.secondary} />
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.primary, mb: 1 }}>
+                            {searchQuery ? `No tests found matching "${searchQuery}"` : "No tests found for this selection"}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.secondary, mb: 3 }}>
+                            Try adjusting your search or filters to find what you're looking for.
+                        </Typography>
+                        <Button
+                            variant="outlined"
+                            onClick={() => {
+                                setSearchQuery('');
+                                setSelectedYear('All');
+                            }}
+                            sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                borderColor: COLORS.accent,
+                                color: COLORS.accent,
+                                '&:hover': { borderColor: COLORS.accentHover, bgcolor: alpha(COLORS.accent, 0.05) }
+                            }}
+                        >
+                            Clear all filters
+                        </Button>
+                    </Box>
+                ) : (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', px: { xs: 2, md: 4, lg: 8 } }}>
+                        <AnimatePresence>
+                            {displayTests.map((test, index) => (
+                                <Box key={test.id} sx={{
+                                    width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.333% - 24px)' },
+                                    minWidth: 280,
+                                    maxWidth: { xs: '100%', sm: 'none' }
+                                }}>
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.05 }}
+                                        whileHover={{ y: -8 }}
+                                        style={{ height: '100%', width: '100%' }}
+                                    >
+                                        <Card sx={{
+                                            height: '100%',
+                                            minHeight: 320,
+                                            borderRadius: 3,
+                                            border: `1px solid ${COLORS.border}`,
+                                            boxShadow: 'none',
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            '&:hover': {
+                                                boxShadow: '0 12px 24px rgba(0,0,0,0.05)',
+                                                borderColor: COLORS.accent
+                                            },
+                                            display: 'flex',
+                                            flexDirection: 'column'
+                                        }}>
+                                            <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', overflow: 'hidden' }}>
+                                                {/* Decorative Icon */}
+                                                <Box sx={{
+                                                    position: 'absolute',
+                                                    right: -20,
+                                                    bottom: -20,
+                                                    opacity: 0.05,
+                                                    transform: 'rotate(-15deg)',
+                                                    pointerEvents: 'none'
+                                                }}>
+                                                    <BookOpen size={120} color={COLORS.primary} />
+                                                </Box>
+
+                                                {/* Header Info */}
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                                    <Typography variant="overline" sx={{ color: COLORS.accent, fontWeight: 700, letterSpacing: 1 }}>
+                                                        {currentSubject.name.toUpperCase()}
+                                                    </Typography>
+
+                                                    {attempts[test.id] > 0 && (
+                                                        <Chip
+                                                            icon={<CheckCircle size={14} />}
+                                                            label="Attempted"
+                                                            size="small"
+                                                            sx={{
+                                                                bgcolor: '#dcfce7',
+                                                                color: '#15803d',
+                                                                fontWeight: 700,
+                                                                fontSize: '0.7rem',
+                                                            }}
+                                                        />
+                                                    )}
+                                                </Box>
+
+                                                <Typography variant="h6" sx={{
+                                                    fontWeight: 800,
+                                                    mb: 1,
+                                                    lineHeight: 1.3,
+                                                    minHeight: 48,
+                                                    color: COLORS.primary,
+                                                    fontSize: '1rem',
+                                                    wordWrap: 'break-word',
+                                                    overflowWrap: 'break-word',
+                                                    hyphens: 'auto'
+                                                }}>
+                                                    {test.name}
                                                 </Typography>
+
+                                                <Stack spacing={1.5} sx={{ mb: 3, mt: 2 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>
+                                                            {test.questions?.[0]?.count || 0} Questions
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>
+                                                            {test.duration} mins Duration
+                                                        </Typography>
+                                                    </Box>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent }} />
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary }}>
+                                                            {test.questions?.[0]?.count || 0} Marks
+                                                        </Typography>
+                                                    </Box>
+                                                </Stack>
+
+                                                <Chip
+                                                    label="Expert Explanation in English"
+                                                    size="small"
+                                                    sx={{
+                                                        bgcolor: alpha(COLORS.accent, 0.1),
+                                                        color: COLORS.accent,
+                                                        fontWeight: 700,
+                                                        borderRadius: 1,
+                                                        px: 1
+                                                    }}
+                                                />
+                                            </CardContent>
+
+                                            <Box sx={{ p: 2, pt: 0 }}>
+                                                <Button
+                                                    fullWidth
+                                                    variant="contained"
+                                                    onClick={() => handleStartTest(currentSubject.id, test.id, test.price)}
+                                                    startIcon={accessedTestIds.has(test.id) ? <Play size={16} /> : <Zap size={16} />}
+                                                    sx={{
+                                                        bgcolor: accessedTestIds.has(test.id) ? COLORS.success : COLORS.accent,
+                                                        color: 'white',
+                                                        fontWeight: 800,
+                                                        borderRadius: 2,
+                                                        textTransform: 'none',
+                                                        boxShadow: 'none',
+                                                        py: 1.5,
+                                                        fontSize: '1rem',
+                                                        '&:hover': {
+                                                            bgcolor: accessedTestIds.has(test.id) ? '#059669' : COLORS.accentHover,
+                                                            transform: 'translateY(-2px)',
+                                                            boxShadow: '0 8px 20px rgba(0,0,0,0.1)'
+                                                        },
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                >
+                                                    {accessedTestIds.has(test.id)
+                                                        ? (attempts[test.id] > 0 ? 'Retake Test' : 'Start Mock Test')
+                                                        : (test.price > 0 ? `₹${test.price}` : 'Free')}
+                                                </Button>
                                             </Box>
-                                        </Grid>
-                                    )}
-                                </Grid>
-                            )}
-                        </Grid>
-                    )}
-                </Grid>
-            </Container>
+                                        </Card>
+                                    </motion.div>
+                                </Box>
+                            ))}
+                        </AnimatePresence>
+                    </Box>
+                )
+                }
+            </Container >
 
-            {/* --- Dialogs --- */}
-            <PaymentDialog
-                open={paymentDialogOpen}
-                onClose={() => setPaymentDialogOpen(false)}
-                data={pendingBundleData ? {
-                    type: 'bundle',
-                    ...pendingBundleData
-                } : pendingTestData ? {
-                    type: 'test',
-                    ...pendingTestData
-                } : null}
-                onSuccess={handleUnlockTest}
-            />
-
-            <ModernDialog
-                open={dialog.open}
-                title={dialog.title}
-                message={dialog.message}
-                type={dialog.type}
-                onClose={() => setDialog({ ...dialog, open: false })}
-                onConfirm={dialog.onConfirm}
-            />
+            <Footer />
         </Box >
     );
 };

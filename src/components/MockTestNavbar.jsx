@@ -4,8 +4,7 @@ import {
     IconButton, Drawer, List, ListItem, ListItemText, useMediaQuery, useTheme
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { auth, db } from '../lib/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { supabase } from '../lib/supabaseClient';
 import {
     User, LogOut, Settings, CreditCard as PaymentIcon,
     LogIn, UserPlus
@@ -29,10 +28,17 @@ const MockTestNavbar = () => {
     const [anchorEl, setAnchorEl] = useState(null);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
+        // Initial session check
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUser(session?.user ?? null);
         });
-        return () => unsubscribe();
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
     const handleProfileMenuOpen = (event) => setAnchorEl(event.currentTarget);
@@ -40,8 +46,9 @@ const MockTestNavbar = () => {
 
     const handleLogout = async () => {
         try {
-            await signOut(auth);
+            await supabase.auth.signOut();
             handleProfileMenuClose();
+            setUser(null);
             navigate('/academic/mocktest');
         } catch (error) {
             console.error("Logout failed:", error);
@@ -51,7 +58,8 @@ const MockTestNavbar = () => {
     const navItems = [
         { label: 'Home', path: '/academic/mocktest' },
         { label: 'Tests', path: '/academic/mocktest/tests' },
-        { label: 'Features', path: '/academic/mocktest/features' }
+        { label: 'Features', path: '/academic/mocktest/features' },
+        { label: 'Contact', path: '/academic/mocktest/contact' }
     ];
 
     const handleNavigate = (path) => {
