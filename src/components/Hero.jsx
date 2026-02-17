@@ -15,8 +15,8 @@ const Hero = () => {
   const [direction, setDirection] = useState(0);
 
   const images = [
-    '/images/carousel2.jpeg',
-    '/images/crousel1.jpeg',
+    '/images/carousel2.webp',
+    '/images/crousel1.webp',
     '/images/hero-2.webp',
   ];
 
