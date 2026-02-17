@@ -89,11 +89,7 @@ const AdminDashboard = () => {
             label: 'Content Management',
             icon: FileText
         },
-        {
-            path: '/admin/tests',
-            label: 'Test Builder',
-            icon: ClipboardList
-        },
+
         {
             path: '/admin/contacts',
             label: 'Contact Submissions',
@@ -340,7 +336,7 @@ const AdminDashboard = () => {
                     <Route path="/bundles" element={<BundleManagement />} />
                     <Route path="/content" element={<ContentManagement />} />
                     <Route path="/questions" element={<QuestionBank />} />
-                    <Route path="/tests" element={<TestBuilder />} />
+
                     <Route path="/contacts" element={<ContactSubmissions />} />
                 </Routes>
             </Box>
