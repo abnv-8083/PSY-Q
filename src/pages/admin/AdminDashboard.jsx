@@ -29,14 +29,20 @@ import {
     LogOut,
     Menu,
     User,
-    ChevronRight
+    ChevronRight,
+    Bell,
+    BarChart2,
+    Users
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BundleManagement from './BundleManagement';
 import ContactSubmissions from './ContactSubmissions';
 import ContentManagement from './ContentManagement';
 import QuestionBank from './QuestionBank';
-import TestBuilder from './TestBuilder';
+import NotificationManagement from './NotificationManagement';
+import Analytics from './Analytics';
+import AdminManagement from './AdminManagement';
+import { useSession } from '../../contexts/SessionContext';
 
 // Premium Color Theme
 const COLORS = {
@@ -58,18 +64,11 @@ const FONTS = {
 const AdminDashboard = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const [user, setUser] = useState(null);
+    const { user, profile, logout } = useSession();
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    useEffect(() => {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-            setUser(user);
-        });
-    }, []);
-
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        navigate('/signin');
+        await logout();
     };
 
     const menuItems = [
@@ -89,12 +88,26 @@ const AdminDashboard = () => {
             label: 'Content Management',
             icon: FileText
         },
-
+        {
+            path: '/admin/notifications',
+            label: 'Notification Management',
+            icon: Bell
+        },
         {
             path: '/admin/contacts',
             label: 'Contact Submissions',
             icon: Mail
-        }
+        },
+        {
+            path: '/admin/analytics',
+            label: 'Analytics',
+            icon: BarChart2
+        },
+        ...(profile?.role === 'superadmin' || profile?.role === 'super_admin' || profile?.role === 'admin' || user?.email === 'abhinavv601@gmail.com' || user?.email === 'admin@psyq.com' ? [{
+            path: '/admin/management',
+            label: 'Admin Management',
+            icon: Users
+        }] : [])
     ];
 
     const isActive = (path, exact = false) => {
@@ -336,8 +349,10 @@ const AdminDashboard = () => {
                     <Route path="/bundles" element={<BundleManagement />} />
                     <Route path="/content" element={<ContentManagement />} />
                     <Route path="/questions" element={<QuestionBank />} />
-
+                    <Route path="/notifications" element={<NotificationManagement />} />
                     <Route path="/contacts" element={<ContactSubmissions />} />
+                    <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/management" element={<AdminManagement />} />
                 </Routes>
             </Box>
         </Box>

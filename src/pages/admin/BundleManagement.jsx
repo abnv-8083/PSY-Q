@@ -300,6 +300,7 @@ const BundleManagement = () => {
                                                         <motion.div
                                                             initial={{ opacity: 0, y: 20 }}
                                                             animate={{ opacity: 1, y: 0, scale: snapshot.isDragging ? 1.02 : 1 }}
+                                                            style={{ height: '100%' }}
                                                             transition={{ delay: index * 0.1 }}
                                                         >
                                                             <Paper sx={{
@@ -310,6 +311,9 @@ const BundleManagement = () => {
                                                                 transition: 'all 0.3s',
                                                                 boxShadow: snapshot.isDragging ? `0 20px 60px ${alpha(bundleColor, 0.3)}` : '0 4px 12px rgba(0,0,0,0.05)',
                                                                 bgcolor: '#fff',
+                                                                height: '100%',
+                                                                display: 'flex',
+                                                                flexDirection: 'column',
                                                                 '&:hover': {
                                                                     transform: 'translateY(-8px)',
                                                                     borderColor: bundleColor,
@@ -421,7 +425,7 @@ const BundleManagement = () => {
                                                                 <Divider sx={{ mb: 4, borderColor: alpha(COLORS.border, 0.5) }} />
 
                                                                 {/* Features Section */}
-                                                                <Box sx={{ mb: 4 }}>
+                                                                <Box sx={{ mb: 4, flexGrow: 1 }}>
                                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                                                         <Typography variant="overline" sx={{
                                                                             fontWeight: 900,
@@ -439,7 +443,7 @@ const BundleManagement = () => {
                                                                         </IconButton>
                                                                     </Box>
                                                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                                                        {bundle.features?.slice(0, 4).map((feature, idx) => (
+                                                                        {bundle.features?.slice(0, 5).map((feature, idx) => (
                                                                             <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                                                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0.5, borderRadius: '50%', bgcolor: alpha(bundleColor, 0.1) }}>
                                                                                     <CheckCircle size={14} color={bundleColor} />
@@ -496,7 +500,15 @@ const BundleManagement = () => {
                                                                                     fontWeight: 700,
                                                                                     bgcolor: '#f1f5f9',
                                                                                     color: COLORS.secondary,
-                                                                                    borderRadius: 2
+                                                                                    borderRadius: 2,
+                                                                                    height: 'auto',
+                                                                                    '& .MuiChip-label': {
+                                                                                        display: 'block',
+                                                                                        whiteSpace: 'normal',
+                                                                                        py: 0.5,
+                                                                                        px: 1,
+                                                                                        textAlign: 'center'
+                                                                                    }
                                                                                 }}
                                                                             />
                                                                         ))}

@@ -84,8 +84,11 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
         return <Navigate to="/signin" state={{ from: location }} replace />;
     }
 
-    if (adminOnly && role !== 'admin' && role !== 'sub-admin') {
-        // If they are logged in but not an admin, show Access Denied instead of silent redirect
+    // Check for allowed roles
+    const adminRoles = ['admin', 'sub-admin', 'superadmin', 'super_admin'];
+    const isAllowed = !adminOnly || adminRoles.includes(role);
+
+    if (adminOnly && !isAllowed) {
         console.log("🛡️ ProtectedRoute: Access Denied (role:", role, ")");
         return (
             <Box sx={{
@@ -127,7 +130,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
                             Role: {role || 'none'}
                         </Typography>
                     </Box>
-                    <Button variant="contained" onClick={() => navigate('/')} sx={{ bgcolor: '#E91E63' }}>
+                    <Button variant="contained" onClick={() => navigate('/')} sx={{ bgcolor: '#ca0056' }}>
                         Back to Home
                     </Button>
                 </Box>

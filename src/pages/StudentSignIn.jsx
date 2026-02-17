@@ -74,14 +74,14 @@ const StudentSignIn = () => {
                 return;
             }
 
-            // Check if user exists in students table
-            const { data: student } = await supabase
-                .from('students')
-                .select('id')
+            // Check if user has a student role in the profiles table
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
                 .eq('id', data.user.id)
                 .single();
 
-            if (student) {
+            if (profile && profile.role === 'student') {
                 // Redirect to mock test dashboard or previous page
                 const redirectTo = sessionStorage.getItem('redirectAfterLogin') || '/academic/mocktest/tests';
                 sessionStorage.removeItem('redirectAfterLogin');

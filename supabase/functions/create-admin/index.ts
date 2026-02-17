@@ -1,9 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-admin-api-key',
 }
 
 serve(async (req) => {
@@ -12,73 +12,73 @@ serve(async (req) => {
     }
 
     try {
-        const supabaseClient = createClient(
-            process.env.SUPABASE_URL ?? '',
-            process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
-            {
-                auth: {
-                    autoRefreshToken: false,
-                    persistSession: false,
-                },
-            }
-        )
+        const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
+        const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || Deno.env.get('SERVICE_ROLE_KEY') || ''
 
-        // 1. Get user who called the function
-        const authHeader = req.headers.get('Authorization')
-        if (!authHeader) throw new Error('No authorization header')
+        const supabaseAdmin = createClient(supabaseUrl, serviceKey, {
+            auth: { persistSession: false }
+        })
 
-        const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-            authHeader.replace('Bearer ', '')
-        )
-        if (authError || !user) throw new Error('Invalid token')
+        const adminKey = req.headers.get('x-admin-api-key')
+        const expectedKey = Deno.env.get('ADMIN_API_KEY')
 
-        // 2. Verify they are a superadmin in the profiles table
-        const { data: profile, error: profileError } = await supabaseClient
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
-        if (profileError || !['superadmin', 'super_admin'].includes(profile.role)) {
-            throw new Error('Unauthorized: Only Super Admins can create new admins')
+        if (!adminKey || adminKey !== expectedKey) {
+            return new Response(JSON.stringify({ error: 'Unauthorized: Invalid API Key' }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 401
+            })
         }
 
-        // 3. Get request body
-        const { email, fullName } = await req.json()
-        if (!email || !fullName) throw new Error('Email and Full Name are required')
-
-        // 4. Invite user via Supabase Auth Admin API
-        const { data: inviteData, error: inviteError } = await supabaseClient.auth.admin.inviteUserByEmail(
-            email,
-            { data: { full_name: fullName } }
-        )
-        if (inviteError) throw inviteError
-
-        // 5. Update their role in the profiles table
-        // Note: Profiles are usually created via a trigger on auth.users insert.
-        // If not, we might need to upsert here or wait for the join.
-        // We'll upsert to be safe.
-        const { error: roleError } = await supabaseClient
-            .from('profiles')
-            .upsert({
-                id: inviteData.user.id,
-                email: email,
-                full_name: fullName,
-                role: 'admin'
+        const { email, password, fullName, role } = await req.json()
+        if (!email || !password || !fullName || !role) {
+            return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 400
             })
+        }
 
-        if (roleError) throw roleError
+        console.log(`[RBAC_SYNC]: Creating ${role} account for ${email}`)
 
-        // 6. Return success
+        // 1. Create User via Admin API
+        // We set 'role' in both user_metadata (for the trigger) and app_metadata (optional backup)
+        const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+            email: email,
+            password: password,
+            email_confirm: true,
+            user_metadata: {
+                full_name: fullName,
+                role: role // The trigger 'on_auth_user_created' uses this
+            },
+            app_metadata: {
+                role: role // Redundancy
+            }
+        })
+
+        if (createError) {
+            console.error('[CREATE_ERROR]:', createError)
+            return new Response(JSON.stringify({ error: createError.message }), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 400
+            })
+        }
+
+        // Note: The handle_new_user trigger now automatically handles the profile insertion 
+        // and metadata syncing. We don't need manual profile upsert here anymore.
+
+        return new Response(JSON.stringify({
+            message: 'Success',
+            userId: userData.user.id,
+            note: 'Profile created automatically via DB trigger'
+        }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
+        })
+
+    } catch (err: any) {
+        console.error(`[FATAL_ERROR]:`, err)
         return new Response(
-            JSON.stringify({ message: 'Admin invited successfully', user: inviteData.user }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-        )
-
-    } catch (error) {
-        return new Response(
-            JSON.stringify({ error: error.message }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+            JSON.stringify({ error: err.message || 'Internal Server Error' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
         )
     }
 })

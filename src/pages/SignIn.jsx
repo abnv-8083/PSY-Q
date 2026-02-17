@@ -66,17 +66,19 @@ const SignIn = () => {
 
             if (error) throw error;
 
-            // Check if user exists in admins table
-            const { data: admin } = await supabase
-                .from('admins')
-                .select('id')
+            // Check if user has an admin role in the profiles table
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
                 .eq('id', data.user.id)
                 .single();
 
-            if (admin) {
+            const isAdmin = profile && ['admin', 'superadmin', 'super_admin'].includes(profile.role);
+
+            if (isAdmin) {
                 navigate('/admin');
             } else {
-                setError('Access denied. Admin credentials required.');
+                setError('Access denied. Administrator privileges required.');
                 await supabase.auth.signOut();
             }
         } catch (error) {

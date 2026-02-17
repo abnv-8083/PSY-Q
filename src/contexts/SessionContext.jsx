@@ -26,16 +26,23 @@ export const SessionProvider = ({ children }) => {
     // Fetch user profile
     const fetchProfile = async (userId) => {
         try {
+            console.log('🔄 SessionContext: Fetching profile for', userId);
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.warn('⚠️ SessionContext: No profile found for', userId);
+                setProfile(null);
+                return;
+            }
+
+            console.log('✅ SessionContext: Profile loaded:', data.role);
             setProfile(data);
         } catch (error) {
-            console.error('Error fetching profile:', error);
+            console.error('❌ SessionContext: Error fetching profile:', error);
             setProfile(null);
         }
     };
@@ -76,6 +83,7 @@ export const SessionProvider = ({ children }) => {
         // Initial session check
         supabase.auth.getSession().then(({ data: { session } }) => {
             const currentUser = session?.user ?? null;
+            console.log('🛡️ SessionContext: Initial session check', currentUser?.email);
             setUser(currentUser);
             if (currentUser) {
                 fetchProfile(currentUser.id);
@@ -86,6 +94,8 @@ export const SessionProvider = ({ children }) => {
         // Supabase Listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             const currentUser = session?.user ?? null;
+            console.log(`📡 SessionContext: Auth Event [${event}]`, currentUser?.email);
+
             setUser(currentUser);
 
             if (currentUser) {
@@ -96,7 +106,7 @@ export const SessionProvider = ({ children }) => {
 
             setLoading(false);
 
-            if (event === 'SIGNED_IN') {
+            if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
                 updateActivity();
             }
         });

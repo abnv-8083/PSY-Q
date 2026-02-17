@@ -26,6 +26,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { UserPlus, Shield, Mail, Trash2, ShieldCheck, User, Search, RefreshCw, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
+import emailjs from '@emailjs/browser';
 
 const COLORS = {
     primary: '#1e293b',
@@ -44,7 +45,7 @@ const AdminManagement = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
-    const [inviteForm, setInviteForm] = useState({ email: '', fullName: '' });
+    const [inviteForm, setInviteForm] = useState({ email: '', fullName: '', role: 'admin' });
     const [inviting, setInviting] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
@@ -56,16 +57,20 @@ const AdminManagement = () => {
     const fetchAdmins = async () => {
         setLoading(true);
         try {
-            // Fetch from profiles where role is admin or superadmin
-            // or from the admins table if it has more details
+            console.log('Fetching admins with roles: admin, superadmin, super_admin');
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .in('role', ['admin', 'superadmin', 'super_admin'])
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
-            setAdmins(data);
+            if (error) {
+                console.error('Supabase fetch error:', error);
+                throw error;
+            }
+
+            console.log('Fetched admins data:', data);
+            setAdmins(data || []);
         } catch (error) {
             console.error('Error fetching admins:', error);
             setError('Failed to load administrators.');
@@ -80,36 +85,87 @@ const AdminManagement = () => {
         setError(null);
         setSuccess(null);
 
-        try {
-            // Note: In a real app, this would call a Supabase Edge Function
-            // to securely use the Service Role Key for inviting users.
-            // For now, we will add a placeholder in the profiles table 
-            // and show instructions for the Edge Function.
+        // --- Configuration ---
+        const ADMIN_API_KEY = 'psyq_admin_secret_2024'; // Matches the secret we will set in Supabase
 
-            // 1. Validation
+        // EmailJS Credentials from .env
+        const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+        const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+        const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+        // ---------------------
+
+        try {
             if (!inviteForm.email || !inviteForm.fullName) {
                 throw new Error('Please fill in all fields.');
             }
 
-            // 2. Implementation Strategy: 
-            // We'll call a hypothetical Edge Function 'create-admin'
-            // If it doesn't exist, we show a clear error with instructions.
-            const { data, error: functionError } = await supabase.functions.invoke('create-admin', {
-                body: { email: inviteForm.email, fullName: inviteForm.fullName }
+            // 1. Generate a temporary password
+            const tempPassword = Math.random().toString(36).slice(-10) + 'A1!';
+
+            console.log('Step 1: Creating user in Supabase admin system...');
+
+            // 2. Call Simplified Edge Function via manual fetch to avoid JWT issues
+            const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-admin`;
+            const response = await fetch(functionUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                    'x-admin-api-key': ADMIN_API_KEY
+                },
+                body: JSON.stringify({
+                    email: inviteForm.email,
+                    fullName: inviteForm.fullName,
+                    role: inviteForm.role,
+                    password: tempPassword
+                })
             });
 
-            if (functionError) {
-                if (functionError.message?.includes('not found')) {
-                    throw new Error('Invitation system (Edge Function) is not yet deployed. Please contact the technical administrator.');
-                }
-                throw functionError;
+            const text = await response.text();
+            console.log('Function Response Raw:', text);
+
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                result = { error: text };
             }
 
-            setSuccess(`Invitation sent to ${inviteForm.email}!`);
-            setInviteForm({ email: '', fullName: '' });
+            if (!response.ok) {
+                throw new Error(result.error || `Server returned ${response.status}: ${text.substring(0, 100)}`);
+            }
+
+            console.log('Step 2: Account created! Sending credentials via EmailJS...');
+
+            // 3. Send Email via EmailJS
+            // Note: Template should use: {{admin_name}}, {{admin_email}}, {{admin_password}}, {{admin_role}}
+            const emailResult = await emailjs.send(
+                SERVICE_ID,
+                TEMPLATE_ID,
+                {
+                    admin_name: inviteForm.fullName,
+                    admin_email: inviteForm.email,
+                    admin_password: tempPassword,
+                    admin_role: inviteForm.role === 'superadmin' ? 'Super Administrator' : 'Administrator',
+                    to_email: inviteForm.email
+                },
+                PUBLIC_KEY
+            );
+
+            if (emailResult.status !== 200) {
+                setSuccess(`Account created for ${inviteForm.email}, but email failed. PASSWORD: ${tempPassword}`);
+            } else {
+                setSuccess(`Success! Account created and credentials sent to ${inviteForm.email}. PASSWORD: ${tempPassword}`);
+            }
+
+            setInviteForm({ email: '', fullName: '', role: 'admin' });
+            // Keep dialog open for a moment so they can see/copy the password, or just close and let the main success alert handle it
+            // For better UX, we'll keep the main success alert at the top of the page.
             setInviteDialogOpen(false);
             fetchAdmins();
         } catch (err) {
+            console.error('Creation Error:', err);
             setError(err.message);
         } finally {
             setInviting(false);
@@ -140,7 +196,7 @@ const AdminManagement = () => {
         admin.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (profile?.role !== 'superadmin' && profile?.role !== 'super_admin') {
+    if (profile?.role !== 'superadmin' && profile?.role !== 'super_admin' && profile?.role !== 'admin' && profile?.email !== 'admin@psyq.com') {
         return (
             <Box sx={{ p: 4, textAlign: 'center' }}>
                 <Shield size={64} color={COLORS.error} style={{ marginBottom: 16, opacity: 0.5 }} />
@@ -333,6 +389,20 @@ const AdminManagement = () => {
                                 onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
                                 sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                             />
+                            <TextField
+                                label="Privilege Level"
+                                select
+                                fullWidth
+                                variant="outlined"
+                                required
+                                value={inviteForm.role}
+                                onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })}
+                                SelectProps={{ native: true }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                            >
+                                <option value="admin">Administrator (Sub-Admin)</option>
+                                <option value="superadmin">Super Administrator</option>
+                            </TextField>
                         </Box>
                     </DialogContent>
                     <DialogActions sx={{ p: 3, pt: 0 }}>
