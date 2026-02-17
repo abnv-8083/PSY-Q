@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -7,6 +9,19 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 
 const Hero = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const images = [
+    '/images/card_basic.jpeg',
+    '/images/crousel1.jpeg',
+    '/images/hero-2.webp'
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [images.length]);
 
   return (
     <Box
@@ -14,15 +29,10 @@ const Hero = () => {
       sx={{
         position: 'relative',
         minHeight: { xs: 'auto', sm: '600px', md: '700px', lg: '85vh' },
-        backgroundImage: `url('/images/hero-2.webp')`,
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: { xs: 'center center', sm: 'center right', md: 'center right' },
-        backgroundSize: 'cover',
-        backgroundAttachment: { xs: 'scroll', md: 'scroll' },
         display: 'flex',
         alignItems: 'center',
         overflow: 'hidden',
-        willChange: 'background-image',
+        bgcolor: '#f8f4f0', // Fallback background
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -39,21 +49,43 @@ const Hero = () => {
         }
       }}
     >
+      {/* Background Carousel */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundImage: `url(${images[currentIndex]})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            zIndex: 0
+          }}
+        />
+      </AnimatePresence>
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
-        <Box sx={{ 
+        <Box sx={{
           maxWidth: { xs: '100%', sm: '100%', md: '600px', lg: '650px' },
-          display: 'flex', 
-          flexDirection: 'column', 
+          display: 'flex',
+          flexDirection: 'column',
           gap: { xs: 2, sm: 2.5, md: 3 },
           py: { xs: 6, sm: 8, md: 10, lg: 12 },
           px: { xs: 2, sm: 0 }
         }}>
-          <Typography 
-            variant="h1" 
-            component="h1" 
-            sx={{ 
-              fontSize: { xs: '1.75rem', sm: '2.75rem', md: '3.25rem', lg: '3.75rem' }, 
-              fontWeight: 700, 
+          <Typography
+            variant="h1"
+            component="h1"
+            sx={{
+              fontSize: { xs: '1.75rem', sm: '2.75rem', md: '3.25rem', lg: '3.75rem' },
+              fontWeight: 700,
               color: '#ca0056',
               lineHeight: 1.15,
               letterSpacing: '-0.02em',
@@ -62,9 +94,9 @@ const Hero = () => {
           >
             No Mind Left Behind
           </Typography>
-          <Typography 
-            variant="body1" 
-            sx={{ 
+          <Typography
+            variant="body1"
+            sx={{
               fontSize: { xs: '14px', sm: '14px', md: '14px' },
               color: '#000',
               lineHeight: 1.6,
@@ -74,11 +106,11 @@ const Hero = () => {
             Life can be overwhelming sometimes and it is okay to ask for help. We are here to support your mental and emotional well-being
           </Typography>
           <Box sx={{ pt: { xs: 1, md: 2 } }}>
-            <Button 
-              component={RouterLink} 
-              to="/about" 
-              variant="contained" 
-              sx={{ 
+            <Button
+              component={RouterLink}
+              to="/about"
+              variant="contained"
+              sx={{
                 bgcolor: '#ca0056',
                 color: '#ffffff',
                 fontSize: { xs: '14px', sm: '14px' },
@@ -89,7 +121,7 @@ const Hero = () => {
                 textTransform: 'none',
                 boxShadow: '0 4px 14px rgba(202, 0, 86, 0.3)',
                 transition: 'all 0.3s ease',
-                '&:hover': { 
+                '&:hover': {
                   bgcolor: '#b8003f',
                   boxShadow: '0 6px 20px rgba(202, 0, 86, 0.4)',
                   transform: 'translateY(-2px)'
