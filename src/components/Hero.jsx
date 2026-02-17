@@ -7,21 +7,47 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
+import IconButton from '@mui/material/IconButton';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Hero = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+
   const images = [
-    '/images/card_basic.jpeg',
+    '/images/carousel2.jpeg',
     '/images/crousel1.jpeg',
-    '/images/hero-2.webp'
+    '/images/hero-2.webp',
   ];
+
+  const variants = {
+    enter: (direction) => ({
+      x: direction > 0 ? '100%' : '-100%',
+      opacity: 0
+    }),
+    center: {
+      zIndex: 0,
+      x: 0,
+      opacity: 1
+    },
+    exit: (direction) => ({
+      zIndex: 0,
+      x: direction < 0 ? '100%' : '-100%',
+      opacity: 0
+    })
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+      paginate(1);
     }, 5000);
     return () => clearInterval(timer);
-  }, [images.length]);
+  }, [currentIndex]); // Restart timer on index change
+
+  const paginate = (newDirection) => {
+    setDirection(newDirection);
+    setCurrentIndex((prevIndex) => (prevIndex + newDirection + images.length) % images.length);
+  };
 
   return (
     <Box
@@ -50,13 +76,18 @@ const Hero = () => {
       }}
     >
       {/* Background Carousel */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={currentIndex}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: 'easeInOut' }}
+          custom={direction}
+          variants={variants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{
+            x: { type: "tween", stiffness: 300, damping: 30, duration: 0.8 },
+            opacity: { duration: 0.8 }
+          }}
           style={{
             position: 'absolute',
             top: 0,
@@ -71,6 +102,49 @@ const Hero = () => {
           }}
         />
       </AnimatePresence>
+
+      {/* Navigation Arrows */}
+      <Box sx={{
+        position: 'absolute',
+        top: '50%',
+        left: 0,
+        right: 0,
+        transform: 'translateY(-50%)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        px: { xs: 1, md: 3 },
+        zIndex: 10,
+        pointerEvents: 'none'
+      }}>
+        <IconButton
+          onClick={() => paginate(-1)}
+          sx={{
+            pointerEvents: 'auto',
+            bgcolor: 'rgba(255, 255, 255, 0.2)',
+            color: '#ca0056',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.4)' },
+            backdropFilter: 'blur(4px)',
+            width: { xs: 40, md: 50 },
+            height: { xs: 40, md: 50 }
+          }}
+        >
+          <ChevronLeft size={30} />
+        </IconButton>
+        <IconButton
+          onClick={() => paginate(1)}
+          sx={{
+            pointerEvents: 'auto',
+            bgcolor: 'rgba(255, 255, 255, 0.2)',
+            color: '#ca0056',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.4)' },
+            backdropFilter: 'blur(4px)',
+            width: { xs: 40, md: 50 },
+            height: { xs: 40, md: 50 }
+          }}
+        >
+          <ChevronRight size={30} />
+        </IconButton>
+      </Box>
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
         <Box sx={{
           maxWidth: { xs: '100%', sm: '100%', md: '600px', lg: '650px' },
