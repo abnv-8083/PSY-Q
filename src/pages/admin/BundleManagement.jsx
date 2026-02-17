@@ -5,7 +5,7 @@ import ModernDialog from '../../components/ModernDialog';
 import { Package, BookOpen, CheckCircle, Edit, Save, X, Plus, Trash2, TrendingDown, GripVertical, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchBundles, updateBundle, addTestToBundle, removeTestFromBundle, updateBundleFeatures, fetchAvailableTests } from '../../api/bundlesApi';
-import { DragDropContext, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
 
 // Premium Color Theme

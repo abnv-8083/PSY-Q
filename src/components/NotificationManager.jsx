@@ -21,7 +21,7 @@ import {
     Avatar
 } from '@mui/material';
 import { Edit, Trash2, Plus, GripVertical, Image as ImageIcon } from 'lucide-react';
-import { DragDropContext, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from './StrictModeDroppable';
 import {
     fetchAllNotifications,

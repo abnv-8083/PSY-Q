@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabaseClient';
 import ModernDialog from '../../components/ModernDialog';
 import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DragDropContext, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
 
 // Premium Color Theme
