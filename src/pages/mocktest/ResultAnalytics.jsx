@@ -11,7 +11,8 @@ import {
     Sparkles, PartyPopper, Star, ArrowRight, BarChart2
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
-import { auth } from '../../lib/firebase';
+import { useSession } from '../../contexts/SessionContext';
+
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
 
@@ -68,9 +69,16 @@ const ResultAnalytics = () => {
     const [answers, setAnswers] = useState(state?.answers || {});
     const [questions, setQuestions] = useState(state?.questions || []);
     const [loading, setLoading] = useState(!state);
+    const { user, loading: sessionLoading } = useSession();
+
 
     useEffect(() => {
-        if (!state && testId) {
+        if (!state && testId && !sessionLoading) {
+            if (!user) {
+                navigate('/student/signin');
+                return;
+            }
+
             const fetchData = async () => {
                 try {
                     const { data: qData } = await supabase
@@ -92,7 +100,7 @@ const ResultAnalytics = () => {
                             .from('attempts')
                             .select('*')
                             .eq('test_id', testId)
-                            .eq('user_id', auth.currentUser?.uid)
+                            .eq('user_id', user.id)
                             .order('created_at', { ascending: false })
                             .limit(1)
                             .single();
@@ -110,7 +118,8 @@ const ResultAnalytics = () => {
             };
             fetchData();
         }
-    }, [state, testId]);
+    }, [state, testId, user, sessionLoading]);
+
 
     if (loading) return (
         <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: 2, bgcolor: '#fbfcfd' }}>

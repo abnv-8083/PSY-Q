@@ -76,39 +76,60 @@ const AdminDashboard = () => {
             path: '/admin',
             label: 'Dashboard',
             icon: LayoutDashboard,
-            exact: true
+            exact: true,
+            permission: null // Always visible
         },
         {
             path: '/admin/bundles',
             label: 'Bundle Management',
-            icon: Package
+            icon: Package,
+            permission: 'manageBundles'
         },
         {
             path: '/admin/content',
             label: 'Content Management',
-            icon: FileText
+            icon: FileText,
+            permission: 'manageContent'
         },
         {
             path: '/admin/notifications',
             label: 'Notification Management',
-            icon: Bell
+            icon: Bell,
+            permission: 'manageContent' // Grouped with content for now
         },
         {
             path: '/admin/contacts',
             label: 'Contact Submissions',
-            icon: Mail
+            icon: Mail,
+            permission: 'manageContent'
         },
         {
             path: '/admin/analytics',
             label: 'Analytics',
-            icon: BarChart2
+            icon: BarChart2,
+            permission: 'viewAnalytics'
         },
-        ...(profile?.role === 'superadmin' || profile?.role === 'super_admin' || profile?.role === 'admin' || user?.email === 'abhinavv601@gmail.com' || user?.email === 'admin@psyq.com' ? [{
+        {
             path: '/admin/management',
             label: 'Admin Management',
-            icon: Users
-        }] : [])
-    ];
+            icon: Users,
+            permission: 'manageUsers',
+            superOnly: true
+        }
+    ].filter(item => {
+        // Super admin sees everything
+        if (user?.role === 'super_admin' || user?.role === 'superadmin') return true;
+
+        // Hide if super only
+        if (item.superOnly) return false;
+
+        // Check granular permissions
+        if (item.permission && user?.permissions) {
+            return user.permissions[item.permission] === true;
+        }
+
+        return true; // Default visible if no permission defined
+    });
 
     const isActive = (path, exact = false) => {
         if (exact) {
@@ -178,7 +199,7 @@ const AdminDashboard = () => {
                                 <ListItemButton
                                     onClick={() => handleNavigation(item.path)}
                                     sx={{
-                                        borderRadius: 3,
+                                        borderRadius: 2,
                                         py: 1.5,
                                         px: 2,
                                         background: active ? `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)` : 'transparent',
@@ -223,7 +244,7 @@ const AdminDashboard = () => {
                                 background: 'rgba(255,255,255,0.05)',
                                 backdropFilter: 'blur(10px)',
                                 border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: 3
+                                borderRadius: 2
                             }}
                         >
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -240,8 +261,8 @@ const AdminDashboard = () => {
                                     <Typography variant="body2" sx={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {user.email}
                                     </Typography>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem' }}>
-                                        Administrator
+                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'capitalize' }}>
+                                        {user.role?.replace('_', ' ') || 'Administrator'}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -302,7 +323,7 @@ const AdminDashboard = () => {
                                                     onClick={() => handleNavigation(item.path)}
                                                     sx={{
                                                         cursor: 'pointer',
-                                                        borderRadius: 4,
+                                                        borderRadius: 2, // LOWER RADIUS
                                                         border: `2px solid ${COLORS.border}`,
                                                         boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                                                         transition: 'all 0.3s',
@@ -317,7 +338,7 @@ const AdminDashboard = () => {
                                                             <Box
                                                                 sx={{
                                                                     p: 2.5,
-                                                                    borderRadius: 3,
+                                                                    borderRadius: 2,
                                                                     background: `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)`,
                                                                     boxShadow: `0 8px 20px ${alpha(COLORS.accent, 0.3)}`,
                                                                     display: 'flex',

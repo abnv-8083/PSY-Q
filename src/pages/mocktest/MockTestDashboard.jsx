@@ -11,7 +11,10 @@ import {
     User, LogOut, CheckCircle, ArrowRight, Award, Zap, Search, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSession } from '../../contexts/SessionContext';
+
 import MockTestNavbar from '../../components/MockTestNavbar';
+
 import Footer from '../../components/Footer';
 
 // --- Constants (Shared with MockTestHome) ---
@@ -38,7 +41,7 @@ const MockTestDashboard = () => {
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [selectedYear, setSelectedYear] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
-    const [user, setUser] = useState(null);
+    const { user, loading: sessionLoading } = useSession();
     const [accessedTestIds, setAccessedTestIds] = useState(new Set());
     const navigate = useNavigate();
     const location = useLocation();
@@ -65,19 +68,13 @@ const MockTestDashboard = () => {
                 const filteredTests = (testsData || []).filter(t => t.is_published !== false);
                 const sortedTests = [...filteredTests].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
 
-                console.log("Dashboard Debug - Subjects:", subjectsData?.length);
-                console.log("Dashboard Debug - Tests Fetched:", testsData?.length);
-                console.log("Dashboard Debug - Tests Filtered:", sortedTests.length);
-
                 if (testsError) throw testsError;
 
                 // Map tests to subjects
                 const subjectsWithTests = subjectsData.map(subject => ({
                     ...subject,
                     tests: sortedTests.filter(test => test.subject_id === subject.id)
-                })); // Allow subjects even if they have no tests for debugging
-
-                console.log("Dashboard Debug - Subjects with counts:", subjectsWithTests.map(s => `${s.name}: ${s.tests.length}`));
+                }));
 
                 setSubjects(subjectsWithTests);
 
@@ -100,10 +97,8 @@ const MockTestDashboard = () => {
                 });
                 setAttempts(attemptMap);
 
-                // --- Fetch User Access (Bundles & Direct Purchases) ---
+                // --- Fetch User Access ---
                 const accessIds = new Set();
-
-                // 1. Get tests from purchased bundles
                 const { data: userBundles, error: bundleError } = await supabase
                     .from('user_bundles')
                     .select('bundle_id, bundles(bundle_tests(test_id))')
@@ -117,7 +112,6 @@ const MockTestDashboard = () => {
                     });
                 }
 
-                // 2. Get directly purchased tests from payments
                 const { data: payments, error: paymentError } = await supabase
                     .from('payments')
                     .select('item_id')
@@ -132,7 +126,6 @@ const MockTestDashboard = () => {
                 }
 
                 setAccessedTestIds(accessIds);
-
             } catch (error) {
                 console.error("Error fetching data:", error);
             } finally {
@@ -140,31 +133,15 @@ const MockTestDashboard = () => {
             }
         };
 
-        const checkAuthAndFetch = async () => {
-            const { data: { user: currentUser } } = await supabase.auth.getUser();
-
-            if (!currentUser) {
+        if (!sessionLoading) {
+            if (!user) {
                 navigate('/student/signin', { state: { from: location } });
             } else {
-                setUser(currentUser);
-                fetchData(currentUser.id);
+                fetchData(user.id);
             }
-        };
+        }
+    }, [user, sessionLoading, navigate, location]);
 
-        checkAuthAndFetch();
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
-                setUser(session.user);
-                // Only fetch if we haven't already or if user changed (simple check)
-                // For now, simpler to just ensure we have a user
-            } else {
-                navigate('/student/signin', { state: { from: location } });
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, [navigate, location]);
 
     const handleStartTest = (subjectId, testId, price) => {
         // Check if user has access

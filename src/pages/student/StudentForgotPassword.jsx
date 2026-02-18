@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSession } from '../contexts/SessionContext';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useSession } from '../../contexts/SessionContext';
 import {
     Box,
     Container,
@@ -9,65 +9,54 @@ import {
     Typography,
     Paper,
     InputAdornment,
-    IconButton,
     Alert,
+    Link,
     Avatar,
     alpha
 } from '@mui/material';
-import { Mail, Lock, ShieldCheck, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, ArrowRight, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const COLORS = {
     primary: '#1e293b',
     secondary: '#4b5563',
     accent: '#ca0056',
+    accentHover: '#b8003f',
     background: '#fdf2f8',
+    cardBg: '#FFFFFF',
     textLight: '#64748b',
     border: '#e2e8f0',
+    success: '#10b981'
 };
 
 const FONTS = {
     primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
 };
 
-const SignIn = () => {
-    const navigate = useNavigate();
-    const { login } = useSession();
+const StudentForgotPassword = () => {
+    const { forgotPassword } = useSession();
 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    });
-    const [error, setError] = useState('');
+    const [email, setEmail] = useState('');
+    const [status, setStatus] = useState({ type: '', message: '' });
     const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-        setError('');
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
+        setStatus({ type: '', message: '' });
 
         try {
-            // Use custom login function (type='admin')
-            const user = await login(formData.email, formData.password, 'admin');
-
-            if (user.role === 'admin' || user.role === 'super_admin') {
-                navigate('/admin');
-            } else {
-                setError('Access denied. Administrator privileges required.');
-            }
+            await forgotPassword(email);
+            setStatus({
+                type: 'success',
+                message: 'Reset link sent! Please check your email inbox.'
+            });
         } catch (error) {
             // Display exact error message from Edge Function
-            // e.g. "Admin Not Found", "Incorrect Password"
-            setError(error.message || 'Failed to sign in');
+            setStatus({
+                type: 'error',
+                message: error.message || 'Failed to send reset link'
+            });
         } finally {
             setLoading(false);
         }
@@ -87,9 +76,9 @@ const SignIn = () => {
         >
             <Container maxWidth="sm">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4 }}
                 >
                     <Paper
                         elevation={0}
@@ -107,23 +96,26 @@ const SignIn = () => {
                                     width: 80,
                                     height: 80,
                                     margin: '0 auto 20px',
-                                    background: `linear-gradient(135deg, ${alpha(COLORS.primary, 0.9)} 0%, ${COLORS.primary} 100%)`,
-                                    boxShadow: `0 8px 16px ${alpha(COLORS.primary, 0.2)}`
+                                    background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${COLORS.accentHover} 100%)`,
+                                    boxShadow: `0 8px 16px ${alpha(COLORS.accent, 0.3)}`
                                 }}
                             >
-                                <ShieldCheck size={40} color="white" />
+                                <KeyRound size={40} color="white" />
                             </Avatar>
                             <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>
-                                Admin Portal
+                                Forgot Password?
                             </Typography>
                             <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 500 }}>
-                                Unauthorized access is strictly prohibited.
+                                Enter your email address to reset your password.
                             </Typography>
                         </Box>
 
-                        {error && (
-                            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-                                {error}
+                        {status.message && (
+                            <Alert
+                                severity={status.type}
+                                sx={{ mb: 3, borderRadius: 2 }}
+                            >
+                                {status.message}
                             </Alert>
                         )}
 
@@ -134,8 +126,8 @@ const SignIn = () => {
                                     label="Email Address"
                                     name="email"
                                     type="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
                                     variant="outlined"
                                     InputProps={{
@@ -147,59 +139,49 @@ const SignIn = () => {
                                     }}
                                 />
 
-                                <TextField
-                                    fullWidth
-                                    label="Password"
-                                    name="password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                    variant="outlined"
-                                    InputProps={{
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <Lock size={20} color={COLORS.textLight} />
-                                            </InputAdornment>
-                                        ),
-                                        endAdornment: (
-                                            <InputAdornment position="end">
-                                                <IconButton
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    edge="end"
-                                                >
-                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                </IconButton>
-                                            </InputAdornment>
-                                        ),
-                                    }}
-                                />
-
                                 <Button
                                     fullWidth
                                     type="submit"
                                     variant="contained"
                                     size="large"
                                     disabled={loading}
+                                    endIcon={!loading && <ArrowRight size={20} />}
                                     sx={{
-                                        mt: 1,
                                         py: 1.8,
                                         borderRadius: 3,
-                                        bgcolor: COLORS.primary,
+                                        bgcolor: COLORS.accent,
                                         fontWeight: 800,
                                         fontSize: '1rem',
                                         textTransform: 'none',
-                                        boxShadow: `0 10px 20px ${alpha(COLORS.primary, 0.2)}`,
+                                        boxShadow: `0 10px 20px ${alpha(COLORS.accent, 0.2)}`,
                                         '&:hover': {
-                                            bgcolor: '#0f172a',
-                                            boxShadow: `0 12px 24px ${alpha(COLORS.primary, 0.3)}`
+                                            bgcolor: COLORS.accentHover,
+                                            boxShadow: `0 12px 24px ${alpha(COLORS.accent, 0.3)}`
                                         }
                                     }}
                                 >
-                                    {loading ? 'Authenticating...' : 'Sign In to Dashboard'}
+                                    {loading ? 'Sending Link...' : 'Send Reset Link'}
                                 </Button>
                             </Box>
                         </form>
+
+                        <Box sx={{ textAlign: 'center', mt: 4 }}>
+                            <Link
+                                component={RouterLink}
+                                to="/student/signin"
+                                sx={{
+                                    color: COLORS.textLight,
+                                    fontWeight: 600,
+                                    textDecoration: 'none',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                    '&:hover': { color: COLORS.primary }
+                                }}
+                            >
+                                ← Back to Sign In
+                            </Link>
+                        </Box>
                     </Paper>
                 </motion.div>
             </Container>
@@ -207,4 +189,4 @@ const SignIn = () => {
     );
 };
 
-export default SignIn;
+export default StudentForgotPassword;

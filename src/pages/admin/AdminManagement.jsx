@@ -23,8 +23,13 @@ import {
     Avatar
 } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
-import { UserPlus, Shield, Mail, Trash2, ShieldCheck, User, Search, RefreshCw, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import {
+    UserPlus, Shield, Mail, Trash2, ShieldCheck, User,
+    Lock,
+    Copy,
+    CheckCheck, Search, X
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
 import emailjs from '@emailjs/browser';
 
@@ -39,16 +44,41 @@ const COLORS = {
     error: '#ef4444'
 };
 
+const ALL_PERMISSION_KEYS = [
+    'manageUsers',
+    'manageContent',
+    'manageBundles',
+    'manageTests',
+    'manageQuestions',
+    'viewAnalytics',
+    'manageSettings'
+];
+
 const AdminManagement = () => {
-    const { profile } = useSession();
+    const {
+        user: currentUser,
+        adminResetPasswordRequest
+    } = useSession();
     const [admins, setAdmins] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [selectedAdmin, setSelectedAdmin] = useState(null);
     const [inviteForm, setInviteForm] = useState({ email: '', fullName: '', role: 'admin' });
+    const [editForm, setEditForm] = useState({ fullName: '', role: '', permissions: {} });
     const [inviting, setInviting] = useState(false);
+    const [updating, setUpdating] = useState(false);
+    const [createdAdmin, setCreatedAdmin] = useState(null);
+    const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+
+    // Config - Matches Edge Function check
+    const ADMIN_API_KEY = 'psyq_admin_secret_2024';
+
+    const isSuperAdmin = currentUser?.role === 'super_admin' || currentUser?.role === 'superadmin';
 
     useEffect(() => {
         fetchAdmins();
@@ -56,24 +86,20 @@ const AdminManagement = () => {
 
     const fetchAdmins = async () => {
         setLoading(true);
+        setError(null);
         try {
-            console.log('Fetching admins with roles: admin, superadmin, super_admin');
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .in('role', ['admin', 'superadmin', 'super_admin'])
-                .order('created_at', { ascending: false });
+            const { data, error } = await supabase.functions.invoke('create-admin', {
+                method: 'GET',
+                headers: {
+                    'x-admin-api-key': ADMIN_API_KEY
+                }
+            });
 
-            if (error) {
-                console.error('Supabase fetch error:', error);
-                throw error;
-            }
-
-            console.log('Fetched admins data:', data);
+            if (error) throw error;
             setAdmins(data || []);
         } catch (error) {
             console.error('Error fetching admins:', error);
-            setError('Failed to load administrators.');
+            setError('Failed to load administrators. Make sure you have applied the database migrations.');
         } finally {
             setLoading(false);
         }
@@ -85,83 +111,72 @@ const AdminManagement = () => {
         setError(null);
         setSuccess(null);
 
-        // --- Configuration ---
-        const ADMIN_API_KEY = 'psyq_admin_secret_2024'; // Matches the secret we will set in Supabase
-
         // EmailJS Credentials from .env
         const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
         const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
         const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-        // ---------------------
 
         try {
-            if (!inviteForm.email || !inviteForm.fullName) {
+            if (!inviteForm.email || !inviteForm.fullName || !inviteForm.role) {
                 throw new Error('Please fill in all fields.');
             }
 
-            // 1. Generate a temporary password
+            // 1. Generate password
             const tempPassword = Math.random().toString(36).slice(-10) + 'A1!';
 
-            console.log('Step 1: Creating user in Supabase admin system...');
-
-            // 2. Call Simplified Edge Function via manual fetch to avoid JWT issues
-            const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-admin`;
-            const response = await fetch(functionUrl, {
+            // 2. Call Edge Function (POST)
+            const { data, error: functionError } = await supabase.functions.invoke('create-admin', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-                    'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
                     'x-admin-api-key': ADMIN_API_KEY
                 },
-                body: JSON.stringify({
+                body: {
                     email: inviteForm.email,
                     fullName: inviteForm.fullName,
                     role: inviteForm.role,
                     password: tempPassword
-                })
+                }
             });
 
-            const text = await response.text();
-            console.log('Function Response Raw:', text);
-
-            let result;
-            try {
-                result = JSON.parse(text);
-            } catch (e) {
-                result = { error: text };
-            }
-
-            if (!response.ok) {
-                throw new Error(result.error || `Server returned ${response.status}: ${text.substring(0, 100)}`);
-            }
-
-            console.log('Step 2: Account created! Sending credentials via EmailJS...');
+            if (functionError) throw functionError;
+            if (data.error) throw new Error(data.error);
 
             // 3. Send Email via EmailJS
-            // Note: Template should use: {{admin_name}}, {{admin_email}}, {{admin_password}}, {{admin_role}}
-            const emailResult = await emailjs.send(
-                SERVICE_ID,
-                TEMPLATE_ID,
-                {
-                    admin_name: inviteForm.fullName,
-                    admin_email: inviteForm.email,
-                    admin_password: tempPassword,
-                    admin_role: inviteForm.role === 'superadmin' ? 'Super Administrator' : 'Administrator',
-                    to_email: inviteForm.email
-                },
-                PUBLIC_KEY
-            );
+            const toEmail = inviteForm.email?.trim();
+            if (!toEmail) throw new Error('Recipient email is missing.');
 
-            if (emailResult.status !== 200) {
-                setSuccess(`Account created for ${inviteForm.email}, but email failed. PASSWORD: ${tempPassword}`);
-            } else {
-                setSuccess(`Success! Account created and credentials sent to ${inviteForm.email}. PASSWORD: ${tempPassword}`);
+            console.log('Sending Invite Email to:', toEmail);
+            try {
+                await emailjs.send(
+                    SERVICE_ID,
+                    TEMPLATE_ID,
+                    {
+                        admin_name: inviteForm.fullName,
+                        email_subject: 'Your PsyQ Administrator Account',
+                        email_content: `Your administrator account has been created. Your temporary password is: ${tempPassword}`,
+                        to_email: toEmail
+                    },
+                    PUBLIC_KEY
+                );
+                setCreatedAdmin({
+                    email: inviteForm.email,
+                    password: tempPassword,
+                    fullName: inviteForm.fullName
+                });
+                setSuccessDialogOpen(true);
+                setSuccess(`Success! Account created and credentials sent to ${inviteForm.email}.`);
+            } catch (emailErr) {
+                console.warn('EmailJS error:', emailErr);
+                setCreatedAdmin({
+                    email: inviteForm.email,
+                    password: tempPassword,
+                    fullName: inviteForm.fullName
+                });
+                setSuccessDialogOpen(true);
+                setSuccess(`Account created for ${inviteForm.email}, but email delivery failed.`);
             }
 
             setInviteForm({ email: '', fullName: '', role: 'admin' });
-            // Keep dialog open for a moment so they can see/copy the password, or just close and let the main success alert handle it
-            // For better UX, we'll keep the main success alert at the top of the page.
             setInviteDialogOpen(false);
             fetchAdmins();
         } catch (err) {
@@ -172,22 +187,142 @@ const AdminManagement = () => {
         }
     };
 
-    const handleDeleteAdmin = async (adminId) => {
-        if (!window.confirm('Are you sure you want to remove this administrator? They will lose all access.')) return;
+    const handleEditAdmin = (admin) => {
+        setSelectedAdmin(admin);
+        setEditForm({
+            fullName: admin.full_name,
+            role: admin.role,
+            permissions: admin.permissions || {}
+        });
+        setEditDialogOpen(true);
+    };
+
+    const handleUpdateAdmin = async (e) => {
+        e.preventDefault();
+        setUpdating(true);
+        setError(null);
+        setSuccess(null);
 
         try {
-            // Again, this should be done via a secure function to handle Auth side
-            const { error: deleteError } = await supabase
-                .from('profiles')
-                .update({ role: 'student' }) // Downgrade to student as a safe alternative to deletion
-                .eq('id', adminId);
+            const { data, error: updateError } = await supabase.functions.invoke('create-admin', {
+                method: 'PATCH',
+                headers: {
+                    'x-admin-api-key': ADMIN_API_KEY
+                },
+                body: {
+                    id: selectedAdmin.id,
+                    full_name: editForm.fullName,
+                    role: editForm.role,
+                    permissions: editForm.permissions
+                }
+            });
+
+            if (updateError) throw updateError;
+            if (data.error) throw new Error(data.error);
+
+            setSuccess('Admin updated successfully.');
+            setEditDialogOpen(false);
+            fetchAdmins();
+        } catch (err) {
+            setError('Failed to update admin.');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleBlockToggle = async (admin) => {
+        const action = admin.is_blocked ? 'unblock' : 'block';
+        if (!window.confirm(`Are you sure you want to ${action} this administrator?`)) return;
+
+        try {
+            const { data, error: updateError } = await supabase.functions.invoke('create-admin', {
+                method: 'PATCH',
+                headers: {
+                    'x-admin-api-key': ADMIN_API_KEY
+                },
+                body: {
+                    id: admin.id,
+                    is_blocked: !admin.is_blocked
+                }
+            });
+
+            console.log('Block Toggle Data:', data);
+            if (updateError) throw updateError;
+            if (data.error) throw new Error(data.error);
+
+            setSuccess(`Admin ${action}ed successfully.`);
+            fetchAdmins();
+        } catch (err) {
+            setError(`Failed to ${action} admin.`);
+        }
+    };
+
+    const handleResendPassword = async (admin) => {
+        if (!window.confirm(`Are you sure you want to send a password reset link to ${admin.email}?`)) return;
+
+        setUpdating(true);
+        setError(null);
+        setSuccess(null);
+
+        try {
+            // 1. Request token from Edge Function
+            const { token } = await adminResetPasswordRequest(admin.email);
+
+            // 2. Generate Reset Link
+            const resetLink = `${window.location.origin}/admin/reset-password?token=${token}&email=${admin.email}`;
+
+            // 3. Send via EmailJS
+            const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+            const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+            const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+            const recipientEmail = admin.email?.trim();
+            if (!recipientEmail) throw new Error('Recipient email address not found for this administrator.');
+
+            console.log('Final Reset Email Data:', {
+                to_email: recipientEmail,
+                admin_name: admin.full_name,
+                reset_link: resetLink
+            });
+
+            await emailjs.send(
+                SERVICE_ID,
+                TEMPLATE_ID,
+                {
+                    admin_name: admin.full_name,
+                    email_subject: 'Password Reset Request',
+                    email_content: `A password reset link has been requested for your administrator account. Please click the link below to set a new password:\n\n${resetLink}\n\nThis link will expire in 1 hour.`,
+                    to_email: recipientEmail
+                },
+                PUBLIC_KEY
+            );
+
+            setSuccess(`Success! A password reset link has been sent to ${admin.email}.`);
+        } catch (err) {
+            console.error('Reset Error:', err);
+            setError(err.message || 'Failed to send reset link.');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleDeleteAdmin = async (adminId) => {
+        if (!window.confirm('Are you sure you want to remove this administrator? They will be permanently deleted.')) return;
+
+        try {
+            const { error: deleteError } = await supabase.functions.invoke(`create-admin?id=${adminId}`, {
+                method: 'DELETE',
+                headers: {
+                    'x-admin-api-key': ADMIN_API_KEY
+                }
+            });
 
             if (deleteError) throw deleteError;
 
             setAdmins(admins.filter(a => a.id !== adminId));
-            setSuccess('Admin access revoked successfully.');
+            setSuccess('Admin deleted successfully.');
         } catch (err) {
-            setError('Failed to revoke admin access.');
+            setError('Failed to delete admin.');
         }
     };
 
@@ -196,7 +331,8 @@ const AdminManagement = () => {
         admin.full_name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (profile?.role !== 'superadmin' && profile?.role !== 'super_admin' && profile?.role !== 'admin' && profile?.email !== 'admin@psyq.com') {
+    // Basic access check using custom session user object
+    if (!currentUser || !isSuperAdmin) {
         return (
             <Box sx={{ p: 4, textAlign: 'center' }}>
                 <Shield size={64} color={COLORS.error} style={{ marginBottom: 16, opacity: 0.5 }} />
@@ -215,11 +351,11 @@ const AdminManagement = () => {
             {/* Header Area */}
             <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { md: 'center' }, gap: 3, mb: 6 }}>
                 <Box>
-                    <Typography variant="h3" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: '-0.02em', mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>
                         Admin Management
                     </Typography>
                     <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 500 }}>
-                        Create and manage privileges for your administrative team.
+                        Manage administrators and their specific privileges.
                     </Typography>
                 </Box>
                 <Button
@@ -228,13 +364,12 @@ const AdminManagement = () => {
                     onClick={() => setInviteDialogOpen(true)}
                     sx={{
                         bgcolor: COLORS.accent,
-                        borderRadius: 3,
+                        borderRadius: 2, // LOWER RADIUS
                         px: 4,
                         py: 1.5,
                         fontWeight: 800,
                         textTransform: 'none',
-                        '&:hover': { bgcolor: COLORS.accentHover, transform: 'translateY(-2px)' },
-                        transition: 'all 0.3s',
+                        '&:hover': { bgcolor: alpha(COLORS.accent, 0.9) },
                         boxShadow: `0 8px 20px ${alpha(COLORS.accent, 0.2)}`
                     }}
                 >
@@ -243,19 +378,11 @@ const AdminManagement = () => {
             </Box>
 
             {/* Alerts */}
-            {error && (
-                <Alert severity="error" sx={{ mb: 4, borderRadius: 3, border: 'none', bgcolor: alpha(COLORS.error, 0.1), color: COLORS.error, fontWeight: 600 }}>
-                    {error}
-                </Alert>
-            )}
-            {success && (
-                <Alert severity="success" sx={{ mb: 4, borderRadius: 3, border: 'none', bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success, fontWeight: 600 }}>
-                    {success}
-                </Alert>
-            )}
+            {error && <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ mb: 4, borderRadius: 2 }}>{success}</Alert>}
 
             {/* Filtering */}
-            <Paper sx={{ mb: 4, p: 2, borderRadius: 4, border: `1px solid ${COLORS.border}`, boxShadow: 'none' }}>
+            <Paper sx={{ mb: 4, p: 2, borderRadius: 2, border: `1px solid ${COLORS.border}` }}>
                 <TextField
                     fullWidth
                     placeholder="Search by name or email..."
@@ -268,87 +395,56 @@ const AdminManagement = () => {
                 />
             </Paper>
 
-            {/* Admins Table */}
-            <TableContainer component={Paper} sx={{ borderRadius: 6, border: `1px solid ${COLORS.border}`, boxShadow: '0 4px 12px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
+            {/* Table */}
+            <TableContainer component={Paper} sx={{ borderRadius: 2, border: `1px solid ${COLORS.border}` }}>
                 <Table>
                     <TableHead sx={{ bgcolor: alpha(COLORS.primary, 0.02) }}>
                         <TableRow>
-                            <TableCell sx={{ fontWeight: 800, color: COLORS.primary }}>Administrator</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: COLORS.primary }}>Role</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: COLORS.primary }}>Status</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: COLORS.primary }}>Added On</TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: COLORS.primary, textAlign: 'right' }}>Actions</TableCell>
+                            <TableCell sx={{ fontWeight: 800 }}>Administrator</TableCell>
+                            <TableCell sx={{ fontWeight: 800 }}>Role</TableCell>
+                            <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
+                            <TableCell sx={{ fontWeight: 800 }}>Created At</TableCell>
+                            <TableCell sx={{ fontWeight: 800, textAlign: 'right' }}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {loading ? (
-                            <TableRow>
-                                <TableCell colSpan={5} sx={{ py: 10, textAlign: 'center' }}>
-                                    <CircularProgress sx={{ color: COLORS.accent }} />
-                                </TableCell>
-                            </TableRow>
+                            <TableRow><TableCell colSpan={5} align="center"><CircularProgress /></TableCell></TableRow>
                         ) : filteredAdmins.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={5} sx={{ py: 10, textAlign: 'center' }}>
-                                    <User size={48} color={COLORS.textLight} style={{ opacity: 0.3, marginBottom: 16 }} />
-                                    <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 600 }}>
-                                        No administrators found.
-                                    </Typography>
-                                </TableCell>
-                            </TableRow>
+                            <TableRow><TableCell colSpan={5} align="center">No admins found</TableCell></TableRow>
                         ) : (
                             filteredAdmins.map((admin) => (
-                                <TableRow key={admin.id} sx={{ '&:hover': { bgcolor: alpha(COLORS.accent, 0.01) }, transition: 'background 0.2s' }}>
+                                <TableRow key={admin.id}>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <Avatar sx={{ bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent }}>
-                                                <User size={20} />
-                                            </Avatar>
+                                            <Avatar sx={{ bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent }}><User size={20} /></Avatar>
                                             <Box>
-                                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: COLORS.primary }}>
-                                                    {admin.full_name || 'Unnamed Admin'}
-                                                </Typography>
-                                                <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 600 }}>
-                                                    {admin.email}
-                                                </Typography>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{admin.full_name}</Typography>
+                                                <Typography variant="caption" sx={{ color: COLORS.textLight }}>{admin.email}</Typography>
                                             </Box>
                                         </Box>
                                     </TableCell>
+                                    <TableCell><Chip label={admin.role} size="small" variant="outlined" color={admin.role === 'super_admin' ? 'secondary' : 'default'} /></TableCell>
                                     <TableCell>
                                         <Chip
-                                            label={admin.role === 'superadmin' || admin.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                                            label={admin.is_blocked ? 'Blocked' : 'Active'}
                                             size="small"
-                                            icon={<Shield size={14} />}
-                                            sx={{
-                                                fontWeight: 800,
-                                                fontSize: '0.75rem',
-                                                bgcolor: admin.role?.includes('super') ? alpha(COLORS.accent, 0.1) : alpha(COLORS.primary, 0.1),
-                                                color: admin.role?.includes('super') ? COLORS.accent : COLORS.primary,
-                                                border: 'none'
-                                            }}
+                                            color={admin.is_blocked ? 'error' : 'success'}
+                                            sx={{ fontWeight: 700 }}
                                         />
                                     </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label="Active"
-                                            size="small"
-                                            sx={{ fontWeight: 800, fontSize: '0.75rem', bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success }}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>
-                                            {new Date(admin.created_at).toLocaleDateString()}
-                                        </Typography>
-                                    </TableCell>
+                                    <TableCell>{new Date(admin.created_at).toLocaleDateString()}</TableCell>
                                     <TableCell sx={{ textAlign: 'right' }}>
-                                        {(admin.role !== 'superadmin' && admin.role !== 'super_admin') && (
-                                            <IconButton
-                                                onClick={() => handleDeleteAdmin(admin.id)}
-                                                sx={{ color: COLORS.error, '&:hover': { bgcolor: alpha(COLORS.error, 0.1) } }}
-                                            >
-                                                <Trash2 size={18} />
+                                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                                            <IconButton onClick={() => handleEditAdmin(admin)} size="small" title="Edit Permissions"><ShieldCheck size={18} /></IconButton>
+                                            <IconButton onClick={() => handleResendPassword(admin)} size="small" color="primary" title="Resend Password"><Mail size={18} /></IconButton>
+                                            <IconButton onClick={() => handleBlockToggle(admin)} size="small" color={admin.is_blocked ? 'success' : 'warning'} title={admin.is_blocked ? 'Unblock' : 'Block'}>
+                                                <User size={18} style={{ opacity: admin.is_blocked ? 1 : 0.5 }} />
                                             </IconButton>
-                                        )}
+                                            {admin.email !== currentUser.email && (
+                                                <IconButton onClick={() => handleDeleteAdmin(admin.id)} color="error" size="small" title="Delete Admin"><Trash2 size={18} /></IconButton>
+                                            )}
+                                        </Box>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -358,77 +454,113 @@ const AdminManagement = () => {
             </TableContainer>
 
             {/* Invite Dialog */}
-            <Dialog
-                open={inviteDialogOpen}
-                onClose={() => setInviteDialogOpen(false)}
-                PaperProps={{ sx: { borderRadius: 6, p: 1, width: '100%', maxWidth: 450 } }}
-            >
+            <Dialog open={inviteDialogOpen} onClose={() => setInviteDialogOpen(false)} PaperProps={{ sx: { borderRadius: 2 } }}>
                 <form onSubmit={handleInvite}>
-                    <DialogTitle sx={{ fontWeight: 900, fontSize: '1.5rem', pb: 1 }}>Add New Administrator</DialogTitle>
+                    <DialogTitle sx={{ fontWeight: 800 }}>Add New Administrator</DialogTitle>
                     <DialogContent>
-                        <Typography variant="body2" sx={{ color: COLORS.textLight, mb: 3 }}>
-                            An invitation link will be sent to the email address provided. They will be granted administrator privileges upon signing up.
-                        </Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                            <TextField
-                                label="Full Name"
-                                fullWidth
-                                variant="outlined"
-                                required
-                                value={inviteForm.fullName}
-                                onChange={(e) => setInviteForm({ ...inviteForm, fullName: e.target.value })}
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                            />
-                            <TextField
-                                label="Email Address"
-                                type="email"
-                                fullWidth
-                                variant="outlined"
-                                required
-                                value={inviteForm.email}
-                                onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                            />
-                            <TextField
-                                label="Privilege Level"
-                                select
-                                fullWidth
-                                variant="outlined"
-                                required
-                                value={inviteForm.role}
-                                onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })}
-                                SelectProps={{ native: true }}
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                            >
-                                <option value="admin">Administrator (Sub-Admin)</option>
-                                <option value="superadmin">Super Administrator</option>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+                            <TextField label="Full Name" fullWidth required value={inviteForm.fullName} onChange={(e) => setInviteForm({ ...inviteForm, fullName: e.target.value })} />
+                            <TextField label="Email Address" fullWidth required type="email" value={inviteForm.email} onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })} />
+                            <TextField label="Role" select fullWidth required value={inviteForm.role} onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value })} SelectProps={{ native: true }}>
+                                <option value="admin">Admin</option>
+                                <option value="super_admin">Super Admin</option>
                             </TextField>
                         </Box>
                     </DialogContent>
-                    <DialogActions sx={{ p: 3, pt: 0 }}>
-                        <Button
-                            onClick={() => setInviteDialogOpen(false)}
-                            sx={{ fontWeight: 700, color: COLORS.textLight }}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            disabled={inviting}
-                            startIcon={inviting ? <CircularProgress size={20} color="inherit" /> : <ShieldCheck size={20} />}
-                            sx={{
-                                bgcolor: COLORS.accent,
-                                borderRadius: 3,
-                                px: 3,
-                                fontWeight: 800,
-                                '&:hover': { bgcolor: COLORS.accentHover }
-                            }}
-                        >
-                            {inviting ? 'Inviting...' : 'Send Invitation'}
-                        </Button>
+                    <DialogActions sx={{ p: 3 }}>
+                        <Button onClick={() => setInviteDialogOpen(false)} sx={{ fontWeight: 700 }}>Cancel</Button>
+                        <Button type="submit" variant="contained" disabled={inviting} sx={{ fontWeight: 800, bgcolor: COLORS.accent }}>{inviting ? 'Creating...' : 'Create Admin'}</Button>
                     </DialogActions>
                 </form>
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} PaperProps={{ sx: { borderRadius: 2, minWidth: 400 } }}>
+                <form onSubmit={handleUpdateAdmin}>
+                    <DialogTitle sx={{ fontWeight: 800 }}>Edit Administrator</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+                            <TextField label="Full Name" fullWidth required value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} />
+                            <TextField label="Role" select fullWidth required value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })} SelectProps={{ native: true }}>
+                                <option value="admin">Admin</option>
+                                <option value="super_admin">Super Admin</option>
+                            </TextField>
+
+                            <Typography variant="subtitle2" sx={{ mt: 2, fontWeight: 800 }}>Permissions</Typography>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
+                                {ALL_PERMISSION_KEYS.map(perm => (
+                                    <Box key={perm} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={editForm.permissions[perm] || false}
+                                            onChange={(e) => setEditForm({
+                                                ...editForm,
+                                                permissions: { ...editForm.permissions, [perm]: e.target.checked }
+                                            })}
+                                        />
+                                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                                            {perm.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                                        </Typography>
+                                    </Box>
+                                ))}
+                            </Box>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions sx={{ p: 3 }}>
+                        <Button onClick={() => setEditDialogOpen(false)} sx={{ fontWeight: 700 }}>Cancel</Button>
+                        <Button type="submit" variant="contained" disabled={updating} sx={{ fontWeight: 800, bgcolor: COLORS.accent }}>{updating ? 'Updating...' : 'Save Changes'}</Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
+            {/* Success Credentials Dialog */}
+            <Dialog open={successDialogOpen} onClose={() => setSuccessDialogOpen(false)} PaperProps={{ sx: { borderRadius: 2, minWidth: 400 } }}>
+                <DialogTitle sx={{ fontWeight: 800, textAlign: 'center', color: COLORS.success }}>
+                    Admin Created Successfully
+                </DialogTitle>
+                <DialogContent>
+                    <Box sx={{ mt: 2, p: 3, bgcolor: alpha(COLORS.success, 0.05), borderRadius: 2, border: `1px solid ${alpha(COLORS.success, 0.2)}` }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2 }}>Credentials for: {createdAdmin?.fullName}</Typography>
+
+                        <Box sx={{ mb: 2 }}>
+                            <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700 }}>EMAIL</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
+                                <Typography variant="body1" sx={{ fontWeight: 700 }}>{createdAdmin?.email}</Typography>
+                            </Box>
+                        </Box>
+
+                        <Box>
+                            <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700 }}>TEMPORARY PASSWORD</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.5 }}>
+                                <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.accent, letterSpacing: 1 }}>{createdAdmin?.password}</Typography>
+                            </Box>
+                        </Box>
+                    </Box>
+                    <Typography variant="caption" sx={{ display: 'block', mt: 2, textAlign: 'center', color: COLORS.textLight }}>
+                        Please share these credentials with the new administrator securely.
+                    </Typography>
+                </DialogContent>
+                <DialogActions sx={{ p: 3, justifyContent: 'center' }}>
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        startIcon={copied ? <CheckCheck size={20} /> : <Copy size={20} />}
+                        onClick={() => {
+                            const text = `Email: ${createdAdmin?.email}\nPassword: ${createdAdmin?.password}`;
+                            navigator.clipboard.writeText(text);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                        }}
+                        sx={{
+                            bgcolor: copied ? COLORS.success : COLORS.primary,
+                            borderRadius: 2,
+                            fontWeight: 800,
+                            py: 1.5,
+                            '&:hover': { bgcolor: copied ? COLORS.success : alpha(COLORS.primary, 0.9) }
+                        }}
+                    >
+                        {copied ? 'Credentials Copied!' : 'Copy Credentials'}
+                    </Button>
+                </DialogActions>
             </Dialog>
         </Box>
     );

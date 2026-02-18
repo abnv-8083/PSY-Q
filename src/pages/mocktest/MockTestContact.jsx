@@ -6,7 +6,10 @@ import {
 import { Send, CheckCircle, Mail, MessageSquare, User, AlertCircle, Upload, X, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
+import { useSession } from '../../contexts/SessionContext'; // Import session hook
+
 import MockTestNavbar from '../../components/MockTestNavbar';
+
 import Footer from '../../components/Footer';
 
 const COLORS = {
@@ -34,7 +37,7 @@ const CONTACT_TYPES = [
 
 const MockTestContact = () => {
     const navigate = useNavigate();
-    const [user, setUser] = useState(null);
+    const { user, loading: sessionLoading } = useSession();
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
@@ -53,34 +56,15 @@ const MockTestContact = () => {
     const [uploadError, setUploadError] = useState('');
 
     useEffect(() => {
-        // Initial check
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            const currentUser = session?.user;
-            setUser(currentUser);
-            if (currentUser) {
-                setFormData(prev => ({
-                    ...prev,
-                    name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '',
-                    email: currentUser.email || ''
-                }));
-            }
-        });
+        if (!sessionLoading && user) {
+            setFormData(prev => ({
+                ...prev,
+                name: user.full_name || '',
+                email: user.email || ''
+            }));
+        }
+    }, [user, sessionLoading]);
 
-        // Listener
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            const currentUser = session?.user;
-            setUser(currentUser);
-            if (currentUser) {
-                setFormData(prev => ({
-                    ...prev,
-                    name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '',
-                    email: currentUser.email || ''
-                }));
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
 
     const validateForm = () => {
         const newErrors = {};

@@ -1,74 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
 import { Box, CircularProgress, Typography, Button } from '@mui/material';
+import { useSession } from '../contexts/SessionContext';
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
-    const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState(null);
-    const [role, setRole] = useState(null);
-    const [isBlocked, setIsBlocked] = useState(false);
+    const { user, loading, isAdmin } = useSession();
     const location = useLocation();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const { data: { user: currentUser } } = await supabase.auth.getUser();
-
-                console.log("🛡️ ProtectedRoute: auth state check", currentUser?.email);
-
-                if (currentUser) {
-                    setUser(currentUser);
-                    // Fetch user profile from Supabase
-                    const { data: profile, error } = await supabase
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', currentUser.id)
-                        .single();
-
-                    if (profile) {
-                        // isBlocked is not in the schema yet, defaulting to false or checking if it exists in metadata
-                        console.log("🛡️ ProtectedRoute: user data found:", profile.role);
-                        setRole(profile.role);
-                        setIsBlocked(false); // Defaulting to false as column likely doesn't exist yet
-                    } else {
-                        console.log("🛡️ ProtectedRoute: user profile not found");
-                        // If no profile, assume student role or handle error
-                        setRole('student');
-                        setIsBlocked(false);
-                    }
-                } else {
-                    console.log("🛡️ ProtectedRoute: no user logged in");
-                    setUser(null);
-                    setRole(null);
-                    setIsBlocked(false);
-                }
-            } catch (error) {
-                console.error("🛡️ ProtectedRoute: Error checking auth:", error);
-                setUser(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkAuth();
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'SIGNED_OUT') {
-                setUser(null);
-                setRole(null);
-            } else if (event === 'SIGNED_IN' && session?.user) {
-                // Re-check profile on sign in
-                checkAuth();
-            }
-        });
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, []);
 
     if (loading) {
         return (
@@ -80,16 +18,14 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
     if (!user) {
         // Redirect to signin, but save the current location they were trying to go to
-        console.log("🛡️ ProtectedRoute: Redirecting to /signin (reason: no user)");
-        return <Navigate to="/signin" state={{ from: location }} replace />;
+        const redirectPath = adminOnly ? "/signin" : "/student/signin";
+        console.log(`🛡️ ProtectedRoute: Redirecting to ${redirectPath} (reason: no user)`);
+        return <Navigate to={redirectPath} state={{ from: location }} replace />;
     }
 
-    // Check for allowed roles
-    const adminRoles = ['admin', 'sub-admin', 'superadmin', 'super_admin'];
-    const isAllowed = !adminOnly || adminRoles.includes(role);
-
-    if (adminOnly && !isAllowed) {
-        console.log("🛡️ ProtectedRoute: Access Denied (role:", role, ")");
+    // Check for allowed roles if adminOnly
+    if (adminOnly && !isAdmin) {
+        console.log("🛡️ ProtectedRoute: Access Denied (role:", user.role, ")");
         return (
             <Box sx={{
                 height: '100vh',
@@ -127,45 +63,10 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#475569', fontFamily: 'monospace' }}>
                             Email: {user.email}<br />
-                            Role: {role || 'none'}
+                            Role: {user.role || 'none'}
                         </Typography>
                     </Box>
                     <Button variant="contained" onClick={() => navigate('/')} sx={{ bgcolor: '#ca0056' }}>
-                        Back to Home
-                    </Button>
-                </Box>
-            </Box>
-        );
-    }
-
-    if (isBlocked) {
-        console.log("🛡️ ProtectedRoute: Account is blocked");
-        return (
-            <Box sx={{
-                height: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                textAlign: 'center',
-                p: 3,
-                bgcolor: '#fff1f2'
-            }}>
-                <Box sx={{
-                    bgcolor: '#fff',
-                    p: 4,
-                    borderRadius: 4,
-                    boxShadow: '0 10px 25px -5px rgba(225,29,72,0.1)',
-                    border: '1px solid #fecdd3',
-                    maxWidth: 400
-                }}>
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#9f1239', mb: 2 }}>
-                        Account Blocked
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: '#be123c', mb: 3 }}>
-                        Your administrative access has been revoked. Please contact the super-admin for more information.
-                    </Typography>
-                    <Button variant="contained" onClick={() => navigate('/')} sx={{ bgcolor: '#be123c' }}>
                         Back to Home
                     </Button>
                 </Box>

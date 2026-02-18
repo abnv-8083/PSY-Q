@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { useSession } from '../contexts/SessionContext';
 import {
     Box,
     Container,
@@ -13,13 +13,12 @@ import {
     Alert,
     Link,
     Avatar,
-    alpha,
-    Grid
+    alpha
 } from '@mui/material';
-import { Mail, Lock, School, Eye, EyeOff, User, Phone, CheckCircle, ArrowRight } from 'lucide-react';
+import { Mail, Lock, School, Eye, EyeOff, User, Phone, CheckCircle, ArrowRight, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
+import emailjs from '@emailjs/browser';
 
-// --- Constants (Matching MockTestHome) ---
 const COLORS = {
     primary: '#1e293b',
     secondary: '#4b5563',
@@ -38,6 +37,9 @@ const FONTS = {
 
 const StudentSignUp = () => {
     const navigate = useNavigate();
+    const { signup, verifyOtp } = useSession();
+
+    const [step, setStep] = useState('register'); // 'register' | 'verify'
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -45,8 +47,11 @@ const StudentSignUp = () => {
         password: '',
         confirmPassword: ''
     });
+    const [generatedOtp, setGeneratedOtp] = useState('');
+    const [otp, setOtp] = useState('');
+
+
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -59,11 +64,10 @@ const StudentSignUp = () => {
         setError('');
     };
 
-    const handleSubmit = async (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
-        setSuccess(false);
 
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
@@ -78,48 +82,77 @@ const StudentSignUp = () => {
         }
 
         try {
-            const { data, error: signUpError } = await supabase.auth.signUp({
-                email: formData.email,
-                password: formData.password,
-                options: {
-                    data: {
-                        full_name: formData.name,
-                        phone: formData.phone,
-                        role: 'student'
-                    },
-                    emailRedirectTo: `${window.location.origin}/student/signin`
-                }
-            });
+            // Generate 6-digit OTP
+            const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            setGeneratedOtp(newOtp);
 
-            if (signUpError) throw signUpError;
+            // Send OTP via EmailJS
+            const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+            const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_OTP_TEMPLATE_ID || import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+            const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-            if (data.user) {
-                const { error: studentError } = await supabase
-                    .from('students')
-                    .insert([
-                        {
-                            id: data.user.id,
-                            full_name: formData.name,
-                            email: formData.email,
-                            phone: formData.phone
-                        }
-                    ]);
 
-                if (studentError && !studentError.message.includes('duplicate')) {
-                    throw studentError;
-                }
+            try {
+                const templateParams = {
+                    to_name: formData.name,
+                    to_email: formData.email,
+                    otp_code: newOtp,
+                    app_name: 'PSY-Q'
+                };
+                console.log('Sending email with params:', templateParams);
+
+                await emailjs.send(
+                    SERVICE_ID,
+                    TEMPLATE_ID,
+                    templateParams,
+                    PUBLIC_KEY
+                );
+
+            } catch (emailErr) {
+                console.error('EmailJS error:', emailErr);
+                const detail = emailErr?.text || emailErr?.message || 'Check your EmailJS configuration.';
+                throw new Error(`Failed to send verification email: ${detail}`);
             }
 
-            setSuccess(true);
-            setFormData({ name: '', email: '', phone: '', password: '', confirmPassword: '' });
+
+            await signup({
+                email: formData.email,
+                password: formData.password,
+                full_name: formData.name,
+                phone: formData.phone,
+                otp: newOtp
+            });
+
+
+            // On success, show verification step
+            setStep('verify');
         } catch (error) {
-            setError(error.message || 'Failed to create student account');
+            setError(error.message || 'Failed to create account');
         } finally {
             setLoading(false);
         }
     };
 
-    if (success) {
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        try {
+            console.log('Verifying OTP for:', formData.email, 'with code:', otp);
+            await verifyOtp(formData.email, otp);
+
+            // On success, redirect
+            navigate('/academic/mocktest');
+
+        } catch (error) {
+            setError(error.message || 'Verification failed');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (step === 'verify') {
         return (
             <Box
                 sx={{
@@ -149,38 +182,56 @@ const StudentSignUp = () => {
                         >
                             <Avatar
                                 sx={{
-                                    width: 100,
-                                    height: 100,
+                                    width: 80,
+                                    height: 80,
                                     margin: '0 auto 24px',
-                                    bgcolor: alpha(COLORS.success, 0.1),
-                                    color: COLORS.success,
-                                    boxShadow: `0 12px 24px ${alpha(COLORS.success, 0.2)}`
+                                    bgcolor: alpha(COLORS.accent, 0.1),
+                                    color: COLORS.accent,
                                 }}
                             >
-                                <CheckCircle size={50} />
+                                <KeyRound size={40} />
                             </Avatar>
-                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 2, letterSpacing: '-0.02em' }}>
-                                Registration Successful!
+                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 2 }}>
+                                Verify Email
                             </Typography>
-                            <Typography variant="body1" sx={{ color: COLORS.textLight, mb: 4, fontWeight: 500, lineHeight: 1.6 }}>
-                                We've sent a verification email to your address. Please confirm your email to start practicing.
+                            <Typography variant="body1" sx={{ color: COLORS.textLight, mb: 4 }}>
+                                We've sent a 6-digit OTP to <b>{formData.email}</b>. Please enter it below.
                             </Typography>
-                            <Button
-                                component={RouterLink}
-                                to="/student/signin"
-                                variant="contained"
-                                size="large"
-                                fullWidth
-                                sx={{
-                                    py: 1.5,
-                                    borderRadius: 3,
-                                    bgcolor: COLORS.accent,
-                                    fontWeight: 800,
-                                    '&:hover': { bgcolor: COLORS.accentHover }
-                                }}
-                            >
-                                Go to Sign In
-                            </Button>
+
+                            {error && (
+                                <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                                    {error}
+                                </Alert>
+                            )}
+
+                            <form onSubmit={handleVerify}>
+                                <TextField
+                                    fullWidth
+                                    label="Enter OTP"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    required
+                                    variant="outlined"
+                                    sx={{ mb: 3 }}
+                                    inputProps={{ style: { textAlign: 'center', letterSpacing: '0.5em', fontSize: '1.5em' } }}
+                                />
+                                <Button
+                                    fullWidth
+                                    type="submit"
+                                    variant="contained"
+                                    size="large"
+                                    disabled={loading}
+                                    sx={{
+                                        py: 1.5,
+                                        borderRadius: 3,
+                                        bgcolor: COLORS.accent,
+                                        fontWeight: 800,
+                                        '&:hover': { bgcolor: COLORS.accentHover }
+                                    }}
+                                >
+                                    {loading ? 'Verifying...' : 'Verify & Login'}
+                                </Button>
+                            </form>
                         </Paper>
                     </motion.div>
                 </Container>
@@ -213,51 +264,36 @@ const StudentSignUp = () => {
                             borderRadius: 6,
                             bgcolor: 'white',
                             border: `1px solid ${COLORS.border}`,
-                            boxShadow: '0 25px 50px rgba(0,0,0,0.08)' // Enhanced shadow
+                            boxShadow: '0 25px 50px rgba(0,0,0,0.08)'
                         }}
                     >
                         <Box sx={{ textAlign: 'center', mb: 4 }}>
-                            <motion.div
-                                initial={{ scale: 0.5, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ delay: 0.2, type: 'spring' }}
+                            <Avatar
+                                sx={{
+                                    width: 80,
+                                    height: 80,
+                                    margin: '0 auto 20px',
+                                    background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${COLORS.accentHover} 100%)`,
+                                    boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.4)}`
+                                }}
                             >
-                                <Avatar
-                                    sx={{
-                                        width: 80,
-                                        height: 80,
-                                        margin: '0 auto 20px',
-                                        background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${COLORS.accentHover} 100%)`,
-                                        boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.4)}`
-                                    }}
-                                >
-                                    <School size={40} color="white" />
-                                </Avatar>
-                            </motion.div>
-                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1, letterSpacing: '-0.02em' }}>
+                                <School size={40} color="white" />
+                            </Avatar>
+                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>
                                 Create Account
                             </Typography>
-                            <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 500, fontSize: '1.05rem' }}>
+                            <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 500 }}>
                                 Join our community and start excelling today.
                             </Typography>
                         </Box>
 
                         {error && (
-                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-                                <Alert
-                                    severity="error"
-                                    sx={{
-                                        mb: 3,
-                                        borderRadius: 2,
-                                        '& .MuiAlert-message': { fontWeight: 500 }
-                                    }}
-                                >
-                                    {error}
-                                </Alert>
-                            </motion.div>
+                            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                                {error}
+                            </Alert>
                         )}
 
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleRegister}>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                 <TextField
                                     fullWidth
@@ -267,17 +303,6 @@ const StudentSignUp = () => {
                                     onChange={handleChange}
                                     required
                                     variant="outlined"
-                                    placeholder="John Doe"
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: 3,
-                                            bgcolor: '#f8fafc',
-                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
-                                            '&:hover fieldset': { borderColor: COLORS.accent },
-                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
-                                        },
-                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
-                                    }}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -296,17 +321,6 @@ const StudentSignUp = () => {
                                     onChange={handleChange}
                                     required
                                     variant="outlined"
-                                    placeholder="you@example.com"
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: 3,
-                                            bgcolor: '#f8fafc',
-                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
-                                            '&:hover fieldset': { borderColor: COLORS.accent },
-                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
-                                        },
-                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
-                                    }}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -324,17 +338,6 @@ const StudentSignUp = () => {
                                     onChange={handleChange}
                                     required
                                     variant="outlined"
-                                    placeholder="+1 (555) 000-0000"
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: 3,
-                                            bgcolor: '#f8fafc',
-                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
-                                            '&:hover fieldset': { borderColor: COLORS.accent },
-                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
-                                        },
-                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
-                                    }}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -353,16 +356,6 @@ const StudentSignUp = () => {
                                     onChange={handleChange}
                                     required
                                     variant="outlined"
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: 3,
-                                            bgcolor: '#f8fafc',
-                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
-                                            '&:hover fieldset': { borderColor: COLORS.accent },
-                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
-                                        },
-                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
-                                    }}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -374,7 +367,6 @@ const StudentSignUp = () => {
                                                 <IconButton
                                                     onClick={() => setShowPassword(!showPassword)}
                                                     edge="end"
-                                                    size="small"
                                                 >
                                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                                 </IconButton>
@@ -392,16 +384,6 @@ const StudentSignUp = () => {
                                     onChange={handleChange}
                                     required
                                     variant="outlined"
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: 3,
-                                            bgcolor: '#f8fafc',
-                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
-                                            '&:hover fieldset': { borderColor: COLORS.accent },
-                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
-                                        },
-                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
-                                    }}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -413,7 +395,6 @@ const StudentSignUp = () => {
                                                 <IconButton
                                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                                     edge="end"
-                                                    size="small"
                                                 >
                                                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                                 </IconButton>
@@ -428,9 +409,7 @@ const StudentSignUp = () => {
                                     variant="contained"
                                     size="large"
                                     disabled={loading}
-                                    endIcon={!loading && <ArrowRight size={20} />}
                                     sx={{
-                                        mt: 1,
                                         py: 1.8,
                                         borderRadius: 3,
                                         background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${COLORS.accentHover} 100%)`,
@@ -439,11 +418,8 @@ const StudentSignUp = () => {
                                         textTransform: 'none',
                                         boxShadow: `0 10px 20px ${alpha(COLORS.accent, 0.25)}`,
                                         '&:hover': {
-                                            background: `linear-gradient(135deg, ${COLORS.accentHover} 0%, #9f0035 100%)`,
-                                            boxShadow: `0 15px 30px ${alpha(COLORS.accent, 0.35)}`,
-                                            transform: 'translateY(-2px)'
-                                        },
-                                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                            background: `linear-gradient(135deg, ${COLORS.accentHover} 0%, #9f0035 100%)`
+                                        }
                                     }}
                                 >
                                     {loading ? 'Creating Account...' : 'Sign Up Now'}
@@ -461,8 +437,7 @@ const StudentSignUp = () => {
                                         color: COLORS.accent,
                                         fontWeight: 800,
                                         textDecoration: 'none',
-                                        ml: 0.5,
-                                        '&:hover': { textDecoration: 'underline' }
+                                        ml: 0.5
                                     }}
                                 >
                                     Sign In

@@ -30,8 +30,9 @@ import {
     LogOut,
     X
 } from 'lucide-react';
-import { auth } from '../../lib/firebase';
 import { supabase } from '../../lib/supabaseClient';
+import { useSession } from '../../contexts/SessionContext';
+
 import ModernDialog from '../../components/ModernDialog';
 
 const MockTestInterface = () => {
@@ -61,8 +62,16 @@ const MockTestInterface = () => {
         onConfirm: null
     });
 
+    const { user, loading: sessionLoading } = useSession();
+
     useEffect(() => {
+        if (!sessionLoading && !user) {
+            navigate('/student/signin');
+            return;
+        }
+
         const fetchTestData = async () => {
+            if (!user) return;
             try {
                 const { data: testData, error: testErr } = await supabase
                     .from('tests')
@@ -89,30 +98,9 @@ const MockTestInterface = () => {
                     correctKey: q.correct_key !== undefined ? q.correct_key : q.correct_answer
                 })));
 
-                // Fetch Student Profile from students table first, then profiles
-                if (auth.currentUser) {
-                    const { data: studentProfile } = await supabase
-                        .from('students')
-                        .select('full_name')
-                        .eq('id', auth.currentUser.uid)
-                        .single();
+                // Set student name from session
+                setStudentName(user.full_name || 'Student');
 
-                    if (studentProfile?.full_name) {
-                        setStudentName(studentProfile.full_name);
-                    } else {
-                        // Fallback to profiles table
-                        const { data: profile } = await supabase
-                            .from('profiles')
-                            .select('full_name')
-                            .eq('id', auth.currentUser.uid)
-                            .single();
-                        if (profile?.full_name) {
-                            setStudentName(profile.full_name);
-                        } else if (auth.currentUser.displayName) {
-                            setStudentName(auth.currentUser.displayName);
-                        }
-                    }
-                }
             } catch (err) {
                 console.error("Error fetching exam data:", err);
                 setError(err.message);
@@ -121,7 +109,8 @@ const MockTestInterface = () => {
             }
         };
         fetchTestData();
-    }, [testId]);
+    }, [testId, user, sessionLoading]);
+
 
     useEffect(() => {
         if (timeLeft <= 0) return;
@@ -193,7 +182,8 @@ const MockTestInterface = () => {
 
                 try {
                     const { error: insertError } = await supabase.from('attempts').insert({
-                        user_id: auth.currentUser?.uid,
+                        user_id: user?.id,
+
                         test_id: testId,
                         score,
                         total_questions: questions.length,

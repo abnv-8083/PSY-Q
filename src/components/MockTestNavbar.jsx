@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { Menu as MenuIcon, X, ChevronDown } from 'lucide-react';
 import { Avatar, Menu, MenuItem, Divider, alpha } from '@mui/material';
+import { useSession } from '../contexts/SessionContext';
+
 
 const COLORS = {
     primary: '#1e293b', // Slate Dark for text/logo
@@ -23,37 +25,22 @@ const MockTestNavbar = () => {
     const location = useLocation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const { user, logout: sessionLogout } = useSession();
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [user, setUser] = useState(null);
     const [anchorEl, setAnchorEl] = useState(null);
-
-    useEffect(() => {
-        // Initial session check
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-        });
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
 
     const handleProfileMenuOpen = (event) => setAnchorEl(event.currentTarget);
     const handleProfileMenuClose = () => setAnchorEl(null);
 
     const handleLogout = async () => {
         try {
-            await supabase.auth.signOut();
+            await sessionLogout();
             handleProfileMenuClose();
-            setUser(null);
-            navigate('/academic/mocktest');
         } catch (error) {
             console.error("Logout failed:", error);
         }
     };
+
 
     const navItems = [
         { label: 'Home', path: '/academic/mocktest' },
@@ -143,11 +130,12 @@ const MockTestNavbar = () => {
                                             src={user.photoURL}
                                             sx={{ width: 32, height: 32, bgcolor: COLORS.accent, fontSize: '0.9rem' }}
                                         >
-                                            {user.displayName?.charAt(0) || user.email?.charAt(0).toUpperCase()}
+                                            {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
                                         </Avatar>
                                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                            {user.displayName?.split(' ')[0] || 'Member'}
+                                            {user.full_name?.split(' ')[0] || 'Member'}
                                         </Typography>
+
                                         <ChevronDown size={16} />
                                     </Button>
                                     <Menu
@@ -166,10 +154,11 @@ const MockTestNavbar = () => {
                                         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                                         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                                     >
-                                        <Box sx={{ px: 2, py: 1.5 }}>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{user.displayName || 'User'}</Typography>
+                                        <Box sx={{ px: 2, py: 1 }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{user.full_name || 'User'}</Typography>
                                             <Typography variant="caption" sx={{ color: 'text.secondary' }}>{user.email}</Typography>
                                         </Box>
+
                                         <Divider />
                                         <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/student/profile'); }} sx={{ py: 1.2, gap: 1.5 }}>
                                             <User size={18} /> Profile

@@ -24,9 +24,11 @@ import GeneralInstructions from './pages/mocktest/GeneralInstructions';
 import MockTestInterface from './pages/mocktest/MockTestInterface';
 import ResultAnalytics from './pages/mocktest/ResultAnalytics';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminResetPassword from './pages/admin/AdminResetPassword';
 import GuestCheckout from './pages/mocktest/GuestCheckout';
 import StudentProfile from './pages/student/StudentProfile';
 import StudentPayment from './pages/student/StudentPayment';
+import StudentForgotPassword from './pages/student/StudentForgotPassword';
 import Policies from './pages/Policies';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -51,6 +53,7 @@ function App() {
           {/* Student auth */}
           <Route path="/student/signin" element={<StudentSignIn />} />
           <Route path="/student/signup" element={<StudentSignUp />} />
+          <Route path="/student/forgot-password" element={<StudentForgotPassword />} />
           <Route path="/soon" element={<Layout><Soon /></Layout>} />
           <Route path="/individual" element={<Layout><Individual /></Layout>} />
           <Route path="/sexual-wellness" element={<Layout><SexualWellness /></Layout>} />
@@ -75,6 +78,7 @@ function App() {
               <AdminDashboard />
             </ProtectedRoute>
           } />
+          <Route path="/admin/reset-password" element={<AdminResetPassword />} />
           <Route path="/academic/mocktest/admin/*" element={
             <ProtectedRoute adminOnly>
               <AdminDashboard />

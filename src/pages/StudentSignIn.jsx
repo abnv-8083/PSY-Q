@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { useSession } from '../contexts/SessionContext';
 import {
     Box,
     Container,
@@ -18,7 +18,6 @@ import {
 import { Mail, Lock, School, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-// --- Constants (Matching MockTestHome) ---
 const COLORS = {
     primary: '#1e293b',
     secondary: '#4b5563',
@@ -37,6 +36,8 @@ const FONTS = {
 
 const StudentSignIn = () => {
     const navigate = useNavigate();
+    const { login } = useSession();
+
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -59,38 +60,17 @@ const StudentSignIn = () => {
         setError('');
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: formData.email,
-                password: formData.password
-            });
+            // Use custom login function from context
+            await login(formData.email, formData.password, 'student');
 
-            if (error) throw error;
+            // Redirect to dashboard
+            const redirectTo = sessionStorage.getItem('redirectAfterLogin') || '/academic/mocktest/tests';
+            sessionStorage.removeItem('redirectAfterLogin');
+            navigate(redirectTo);
 
-            // Check if email is verified
-            if (!data.user.email_confirmed_at) {
-                setError('Please verify your email address before signing in.');
-                await supabase.auth.signOut();
-                setLoading(false);
-                return;
-            }
-
-            // Check if user has a student role in the profiles table
-            const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', data.user.id)
-                .single();
-
-            if (profile && profile.role === 'student') {
-                // Redirect to mock test dashboard or previous page
-                const redirectTo = sessionStorage.getItem('redirectAfterLogin') || '/academic/mocktest/tests';
-                sessionStorage.removeItem('redirectAfterLogin');
-                navigate(redirectTo);
-            } else {
-                setError('Access denied. Student credentials required.');
-                await supabase.auth.signOut();
-            }
         } catch (error) {
+            // Display exact error message from Edge Function
+            // e.g. "Create Account", "Invalid Password", "Email not verified"
             setError(error.message || 'Failed to sign in');
         } finally {
             setLoading(false);
@@ -126,24 +106,17 @@ const StudentSignIn = () => {
                         }}
                     >
                         <Box sx={{ textAlign: 'center', mb: 4 }}>
-                            <motion.div
-                                initial={{ scale: 0.5, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ delay: 0.2, type: 'spring' }}
+                            <Avatar
+                                sx={{
+                                    width: 80,
+                                    height: 80,
+                                    margin: '0 auto 20px',
+                                    background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${COLORS.accentHover} 100%)`,
+                                    boxShadow: `0 8px 16px ${alpha(COLORS.accent, 0.3)}`
+                                }}
                             >
-                                <Avatar
-                                    sx={{
-                                        width: 80,
-                                        height: 80,
-                                        margin: '0 auto 20px',
-                                        background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${COLORS.accentHover} 100%)`,
-                                        boxShadow: `0 8px 16px ${alpha(COLORS.accent, 0.3)}`
-                                    }}
-                                >
-                                    <School size={40} color="white" />
-                                </Avatar>
-                            </motion.div>
-
+                                <School size={40} color="white" />
+                            </Avatar>
                             <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>
                                 Student Login
                             </Typography>
@@ -153,18 +126,12 @@ const StudentSignIn = () => {
                         </Box>
 
                         {error && (
-                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}>
-                                <Alert
-                                    severity="error"
-                                    sx={{
-                                        mb: 3,
-                                        borderRadius: 2,
-                                        '& .MuiAlert-message': { fontWeight: 500 }
-                                    }}
-                                >
-                                    {error}
-                                </Alert>
-                            </motion.div>
+                            <Alert
+                                severity="error"
+                                sx={{ mb: 3, borderRadius: 2 }}
+                            >
+                                {error}
+                            </Alert>
                         )}
 
                         <form onSubmit={handleSubmit}>
@@ -178,16 +145,6 @@ const StudentSignIn = () => {
                                     onChange={handleChange}
                                     required
                                     variant="outlined"
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: 3,
-                                            bgcolor: '#f8fafc',
-                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
-                                            '&:hover fieldset': { borderColor: COLORS.accent },
-                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
-                                        },
-                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
-                                    }}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -206,16 +163,6 @@ const StudentSignIn = () => {
                                     onChange={handleChange}
                                     required
                                     variant="outlined"
-                                    sx={{
-                                        '& .MuiOutlinedInput-root': {
-                                            borderRadius: 3,
-                                            bgcolor: '#f8fafc',
-                                            '& fieldset': { border: `1px solid ${COLORS.border}` },
-                                            '&:hover fieldset': { borderColor: COLORS.accent },
-                                            '&.Mui-focused fieldset': { borderColor: COLORS.accent },
-                                        },
-                                        '& .MuiInputLabel-root.Mui-focused': { color: COLORS.accent }
-                                    }}
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start">
@@ -227,7 +174,6 @@ const StudentSignIn = () => {
                                                 <IconButton
                                                     onClick={() => setShowPassword(!showPassword)}
                                                     edge="end"
-                                                    size="small"
                                                 >
                                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                                 </IconButton>
@@ -239,7 +185,7 @@ const StudentSignIn = () => {
                                 <Box sx={{ textAlign: 'right', mt: -1 }}>
                                     <Link
                                         component={RouterLink}
-                                        to="/forgot-password"
+                                        to="/student/forgot-password"
                                         sx={{
                                             color: COLORS.accent,
                                             fontWeight: 600,
@@ -257,9 +203,7 @@ const StudentSignIn = () => {
                                     variant="contained"
                                     size="large"
                                     disabled={loading}
-                                    endIcon={!loading && <ArrowRight size={20} />}
                                     sx={{
-                                        mt: 1,
                                         py: 1.8,
                                         borderRadius: 3,
                                         bgcolor: COLORS.accent,
@@ -269,10 +213,8 @@ const StudentSignIn = () => {
                                         boxShadow: `0 10px 20px ${alpha(COLORS.accent, 0.2)}`,
                                         '&:hover': {
                                             bgcolor: COLORS.accentHover,
-                                            boxShadow: `0 12px 24px ${alpha(COLORS.accent, 0.3)}`,
-                                            transform: 'translateY(-2px)'
-                                        },
-                                        transition: 'all 0.3s'
+                                            boxShadow: `0 12px 24px ${alpha(COLORS.accent, 0.3)}`
+                                        }
                                     }}
                                 >
                                     {loading ? 'Logging in...' : 'Sign In Now'}
@@ -290,8 +232,7 @@ const StudentSignIn = () => {
                                         color: COLORS.accent,
                                         fontWeight: 800,
                                         textDecoration: 'none',
-                                        ml: 0.5,
-                                        '&:hover': { textDecoration: 'underline' }
+                                        ml: 0.5
                                     }}
                                 >
                                     Create Student Account

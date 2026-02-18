@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
@@ -7,9 +7,15 @@ import Box from '@mui/material/Box';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useSession } from '../contexts/SessionContext';
+import { User, LogOut, LayoutDashboard, Settings } from 'lucide-react';
+import { Avatar, Typography, Divider, alpha } from '@mui/material';
 
 const Header = () => {
+  const { user, logout, isAdmin } = useSession();
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [userMenuAnchor, setUserMenuAnchor] = useState(null);
   const [headerBgColor, setHeaderBgColor] = useState('rgba(255, 255, 255, 0.1)');
 
   useEffect(() => {
@@ -51,6 +57,20 @@ const Header = () => {
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
+  };
+
+  const handleOpenUserMenu = (event) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setUserMenuAnchor(null);
+  };
+
+  const handleLogout = async () => {
+    handleCloseUserMenu();
+    await logout();
+    navigate('/');
   };
 
   // Determine if text should be light based on background
@@ -121,24 +141,100 @@ const Header = () => {
                 <Button component={RouterLink} to="/contact" sx={{ color: isLightText ? 'white' : 'inherit', fontSize: { md: '14px', lg: '14px' } }}>Contact Us</Button>
               </Box>
 
-              {/* Desktop CTAs */}
-              <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-                {/* <Button 
-              component={RouterLink} 
-              to="/signin" 
-              variant="outlined"
-              sx={isLightText ? { borderColor: 'white', color: 'white', '&:hover': { borderColor: 'white', bgcolor: 'rgba(255, 255, 255, 0.1)' } } : {}}
-            >
-              Sign In
-            </Button> */}
-                <Button
-                  component={RouterLink}
-                  to="/therapists"
-                  variant="contained"
-                  sx={isLightText ? { bgcolor: 'white', color: '#E91E63', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' } } : {}}
-                >
-                  Book a Therapy
-                </Button>
+              {/* Desktop CTAs / User Menu */}
+              <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
+                {!user ? (
+                  <>
+                    <Button
+                      component={RouterLink}
+                      to="/student/signin"
+                      variant="outlined"
+                      sx={isLightText ? { borderColor: 'white', color: 'white', '&:hover': { borderColor: 'white', bgcolor: 'rgba(255, 255, 255, 0.1)' } } : { borderColor: '#E91E63', color: '#E91E63' }}
+                    >
+                      Sign In
+                    </Button>
+                    <Button
+                      component={RouterLink}
+                      to="/therapists"
+                      variant="contained"
+                      sx={isLightText ? { bgcolor: 'white', color: '#E91E63', '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' } } : { bgcolor: '#E91E63' }}
+                    >
+                      Book a Therapy
+                    </Button>
+                  </>
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <IconButton
+                      onClick={handleOpenUserMenu}
+                      sx={{
+                        p: 0,
+                        border: '2px solid',
+                        borderColor: isLightText ? 'white' : '#E91E63',
+                        transition: 'transform 0.2s',
+                        '&:hover': { transform: 'scale(1.05)' }
+                      }}
+                    >
+                      <Avatar
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          bgcolor: isLightText ? 'white' : '#E91E63',
+                          color: isLightText ? '#E91E63' : 'white',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {user.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
+                      </Avatar>
+                    </IconButton>
+
+                    <Menu
+                      anchorEl={userMenuAnchor}
+                      open={Boolean(userMenuAnchor)}
+                      onClose={handleCloseUserMenu}
+                      onClick={handleCloseUserMenu}
+                      PaperProps={{
+                        sx: {
+                          mt: 1.5,
+                          width: 220,
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                          border: '1px solid rgba(0,0,0,0.05)'
+                        }
+                      }}
+                      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                      <Box sx={{ px: 2, py: 1.5 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#1a1a1a', lineHeight: 1.2 }}>
+                          {user.full_name || 'User'}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#666', fontSize: '0.75rem', mt: 0.5 }}>
+                          {user.email}
+                        </Typography>
+                      </Box>
+                      <Divider sx={{ my: 0.5 }} />
+                      {isAdmin && (
+                        <MenuItem onClick={() => navigate('/admin/dashboard')}>
+                          <LayoutDashboard size={18} style={{ marginRight: 12 }} />
+                          Admin Panel
+                        </MenuItem>
+                      )}
+                      <MenuItem onClick={() => navigate('/student/dashboard')}>
+                        <User size={18} style={{ marginRight: 12 }} />
+                        My Dashboard
+                      </MenuItem>
+                      <MenuItem onClick={() => navigate('/student/profile')}>
+                        <Settings size={18} style={{ marginRight: 12 }} />
+                        Account Settings
+                      </MenuItem>
+                      <Divider sx={{ my: 0.5 }} />
+                      <MenuItem onClick={handleLogout} sx={{ color: '#d32f2f' }}>
+                        <LogOut size={18} style={{ marginRight: 12 }} />
+                        Logout
+                      </MenuItem>
+                    </Menu>
+                  </Box>
+                )}
               </Box>
 
               {/* Mobile Menu Button */}
@@ -149,14 +245,54 @@ const Header = () => {
               </Box>
 
               {/* Mobile Menu */}
-              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleCloseMenu} keepMounted>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleCloseMenu}
+                keepMounted
+                PaperProps={{
+                  sx: {
+                    mt: 1.5,
+                    width: 240,
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                  }
+                }}
+              >
                 <MenuItem component={RouterLink} to="/" onClick={handleCloseMenu}>Home</MenuItem>
                 <MenuItem component={RouterLink} to="/therapists" onClick={handleCloseMenu}>Therapists</MenuItem>
                 <MenuItem component={RouterLink} to="/academic/mocktest" onClick={handleCloseMenu} sx={{ fontWeight: 700, color: '#db2777' }}>Mock Test</MenuItem>
                 <MenuItem component={RouterLink} to="/about" onClick={handleCloseMenu}>About Us</MenuItem>
                 <MenuItem component={RouterLink} to="/contact" onClick={handleCloseMenu}>Contact Us</MenuItem>
-                <MenuItem component={RouterLink} to="/therapists" onClick={handleCloseMenu}>Book a Therapy</MenuItem>
-                {/* {/* <MenuItem component={RouterLink} to="/signin" onClick={handleCloseMenu}>Sign In</MenuItem> */}
+
+                <Divider sx={{ my: 1 }} />
+
+                {!user ? (
+                  <>
+                    <MenuItem component={RouterLink} to="/student/signin" onClick={handleCloseMenu}>Sign In</MenuItem>
+                    <MenuItem component={RouterLink} to="/therapists" onClick={handleCloseMenu} sx={{ color: '#E91E63', fontWeight: 600 }}>Book a Therapy</MenuItem>
+                  </>
+                ) : (
+                  <>
+                    <Box sx={{ px: 2, py: 1 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{user.full_name || 'User'}</Typography>
+                    </Box>
+                    {isAdmin && (
+                      <MenuItem onClick={() => { handleCloseMenu(); navigate('/admin/dashboard'); }}>
+                        <LayoutDashboard size={16} style={{ marginRight: 10 }} /> Admin Panel
+                      </MenuItem>
+                    )}
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate('/student/dashboard'); }}>
+                      <User size={16} style={{ marginRight: 10 }} /> My Dashboard
+                    </MenuItem>
+                    <MenuItem onClick={() => { handleCloseMenu(); navigate('/student/profile'); }}>
+                      <Settings size={16} style={{ marginRight: 10 }} /> Account
+                    </MenuItem>
+                    <MenuItem onClick={handleLogout} sx={{ color: '#d32f2f' }}>
+                      <LogOut size={16} style={{ marginRight: 10 }} /> Logout
+                    </MenuItem>
+                  </>
+                )}
               </Menu>
             </Box>
           </Box>
