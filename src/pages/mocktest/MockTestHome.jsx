@@ -26,7 +26,7 @@ const COLORS = {
     cardBg: '#FFFFFF',
     textLight: '#64748b',
     border: '#e2e8f0',
-    success: '#10b981'
+    success: '#6366f1'
 };
 
 const FONTS = {
@@ -570,7 +570,7 @@ const MockTestHome = () => {
                         >
                             {test.price > 0
                                 ? ((attempts[test.id] > 0) ? `₹${test.price}` : 'Free Trial')
-                                : 'Free'}
+                                : 'Free Trial'}
                         </Button>
                     </Box>
                 </Card>

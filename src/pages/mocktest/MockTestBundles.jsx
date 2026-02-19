@@ -26,7 +26,7 @@ const COLORS = {
     cardBg: '#FFFFFF',
     textLight: '#64748b',
     border: '#e2e8f0',
-    success: '#10b981'
+    success: '#6366f1'
 };
 
 const FONTS = {
