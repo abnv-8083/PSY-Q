@@ -8,7 +8,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useSession } from '../contexts/SessionContext';
-import { User, LogOut, LayoutDashboard, Settings } from 'lucide-react';
+import { User, LogOut, LayoutDashboard, Settings, ChevronLeft } from 'lucide-react';
 import { Avatar, Typography, Divider, alpha } from '@mui/material';
 
 const Header = () => {
@@ -105,6 +105,19 @@ const Header = () => {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: { xs: 48, sm: 56, md: 64 }, gap: { xs: 1, sm: 2 } }}>
+              {/* Mobile Back Button */}
+              <IconButton
+                onClick={() => navigate(-1)}
+                sx={{
+                  display: { xs: 'flex', md: 'none' },
+                  color: isLightText ? 'white' : 'inherit',
+                  mr: 0.5,
+                  p: 0.5
+                }}
+              >
+                <ChevronLeft size={24} />
+              </IconButton>
+
               {/* Logo */}
               <Box
                 component={RouterLink}

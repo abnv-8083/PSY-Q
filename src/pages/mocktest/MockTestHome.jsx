@@ -14,6 +14,7 @@ import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
 import NotificationsCarousel from '../../components/NotificationsCarousel';
 import { fetchBundles } from '../../api/bundlesApi';
+import { useSession } from '../../contexts/SessionContext';
 
 // --- Constants ---
 const COLORS = {
@@ -431,8 +432,11 @@ const Carousel = ({ title, items, renderItem, type = 'default' }) => {
 
 const MockTestHome = () => {
     const navigate = useNavigate();
+    const { user } = useSession();
     const [tests, setTests] = useState([]);
     const [bundles, setBundles] = useState([]);
+    const [attempts, setAttempts] = useState({});
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -447,11 +451,31 @@ const MockTestHome = () => {
                 // Fetch Bundles using the API for calculated fields
                 const bundlesData = await fetchBundles();
                 setBundles(bundlesData || []);
+                // Fetch User Attempts if logged in
+                if (user) {
+                    const { data: attemptData } = await supabase
+                        .from('attempts')
+                        .select('test_id')
+                        .eq('user_id', user.id);
+
+                    if (attemptData) {
+                        const attemptMap = {};
+                        attemptData.forEach(attempt => {
+                            attemptMap[attempt.test_id] = (attemptMap[attempt.test_id] || 0) + 1;
+                        });
+                        setAttempts(attemptMap);
+                    }
+                }
             } catch (error) {
                 console.error("Error fetching home data:", error);
             }
         };
         fetchData();
+    }, [user]);
+
+    // Scroll to top only on mount
+    useEffect(() => {
+        window.scrollTo(0, 0);
     }, []);
 
     const renderTestCard = (test) => {
@@ -528,9 +552,9 @@ const MockTestHome = () => {
                             fullWidth
                             variant="contained"
                             onClick={() => navigate('/academic/mocktest/tests')}
-                            startIcon={test.price === 0 ? <Play size={16} /> : <Zap size={16} />}
+                            startIcon={(test.price === 0 || (!attempts[test.id] || attempts[test.id] === 0)) ? <Play size={16} /> : <Zap size={16} />}
                             sx={{
-                                bgcolor: test.price === 0 ? COLORS.success : COLORS.accent,
+                                bgcolor: (test.price === 0 || (!attempts[test.id] || attempts[test.id] === 0)) ? COLORS.success : COLORS.accent,
                                 color: 'white',
                                 fontWeight: 800,
                                 borderRadius: 2,
@@ -539,12 +563,14 @@ const MockTestHome = () => {
                                 py: 1.5,
                                 fontSize: '1rem',
                                 '&:hover': {
-                                    bgcolor: test.price === 0 ? '#059669' : COLORS.accentHover,
+                                    bgcolor: (test.price === 0 || (!attempts[test.id] || attempts[test.id] === 0)) ? '#059669' : COLORS.accentHover,
                                     boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)'
                                 }
                             }}
                         >
-                            {test.price > 0 ? `₹${test.price}` : 'Free'}
+                            {test.price > 0
+                                ? ((attempts[test.id] > 0) ? `₹${test.price}` : 'Free Trial')
+                                : 'Free'}
                         </Button>
                     </Box>
                 </Card>

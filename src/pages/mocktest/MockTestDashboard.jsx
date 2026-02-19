@@ -84,48 +84,53 @@ const MockTestDashboard = () => {
                 }
 
                 // Fetch User Attempts
-                const { data: attemptData, error: attemptError } = await supabase
-                    .from('attempts')
-                    .select('test_id')
-                    .eq('user_id', userId);
+                if (userId) {
+                    const { data: attemptData, error: attemptError } = await supabase
+                        .from('attempts')
+                        .select('test_id')
+                        .eq('user_id', userId);
 
-                if (attemptError) throw attemptError;
+                    if (attemptError) throw attemptError;
 
-                const attemptMap = {};
-                attemptData.forEach(attempt => {
-                    attemptMap[attempt.test_id] = (attemptMap[attempt.test_id] || 0) + 1;
-                });
-                setAttempts(attemptMap);
+                    const attemptMap = {};
+                    attemptData?.forEach(attempt => {
+                        attemptMap[attempt.test_id] = (attemptMap[attempt.test_id] || 0) + 1;
+                    });
+                    setAttempts(attemptMap);
+                }
 
                 // --- Fetch User Access ---
-                const accessIds = new Set();
-                const { data: userBundles, error: bundleError } = await supabase
-                    .from('user_bundles')
-                    .select('bundle_id, bundles(bundle_tests(test_id))')
-                    .eq('user_id', userId);
+                if (userId) {
+                    const accessIds = new Set();
+                    const { data: userBundles, error: bundleError } = await supabase
+                        .from('user_bundles')
+                        .select('bundle_id, bundles(bundle_tests(test_id))')
+                        .eq('user_id', userId);
 
-                if (!bundleError && userBundles) {
-                    userBundles.forEach(ub => {
-                        ub.bundles?.bundle_tests?.forEach(bt => {
-                            if (bt.test_id) accessIds.add(bt.test_id);
+                    if (!bundleError && userBundles) {
+                        userBundles.forEach(ub => {
+                            ub.bundles?.bundle_tests?.forEach(bt => {
+                                if (bt.test_id) accessIds.add(bt.test_id);
+                            });
                         });
-                    });
+                    }
+
+                    const { data: payments, error: paymentError } = await supabase
+                        .from('payments')
+                        .select('item_id')
+                        .eq('user_id', userId)
+                        .eq('status', 'success')
+                        .eq('type', 'test');
+
+                    if (!paymentError && payments) {
+                        payments.forEach(p => {
+                            if (p.item_id) accessIds.add(p.item_id);
+                        });
+                    }
+
+                    setAccessedTestIds(accessIds);
                 }
 
-                const { data: payments, error: paymentError } = await supabase
-                    .from('payments')
-                    .select('item_id')
-                    .eq('user_id', userId)
-                    .eq('status', 'success')
-                    .eq('type', 'test');
-
-                if (!paymentError && payments) {
-                    payments.forEach(p => {
-                        if (p.item_id) accessIds.add(p.item_id);
-                    });
-                }
-
-                setAccessedTestIds(accessIds);
             } catch (error) {
                 console.error("Error fetching data:", error);
             } finally {
@@ -134,18 +139,30 @@ const MockTestDashboard = () => {
         };
 
         if (!sessionLoading) {
-            if (!user) {
-                navigate('/student/signin', { state: { from: location } });
-            } else {
-                fetchData(user.id);
-            }
+            fetchData(user?.id);
         }
-    }, [user, sessionLoading, navigate, location]);
+    }, [user, sessionLoading, navigate]);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
+
 
 
     const handleStartTest = (subjectId, testId, price) => {
+        if (!user) {
+            // Unauthenticated: redirect to login
+            navigate('/student/signin', { state: { from: location } });
+            return;
+        }
+
+        // --- FREE TRIAL POLICY ---
+        // First attempt of any test is free.
+        const isFirstAttempt = !attempts[testId] || attempts[testId] === 0;
+
         // Check if user has access
-        const hasAccess = accessedTestIds.has(testId) || price === 0;
+        const hasAccess = isFirstAttempt || accessedTestIds.has(testId) || price === 0;
+
 
         if (hasAccess) {
             navigate(`/academic/mocktest/${subjectId}/${testId}/rules`);
@@ -526,9 +543,9 @@ const MockTestDashboard = () => {
                                                     fullWidth
                                                     variant="contained"
                                                     onClick={() => handleStartTest(currentSubject.id, test.id, test.price)}
-                                                    startIcon={accessedTestIds.has(test.id) ? <Play size={16} /> : <Zap size={16} />}
+                                                    startIcon={(accessedTestIds.has(test.id) || (!attempts[test.id] || attempts[test.id] === 0)) ? <Play size={16} /> : <Zap size={16} />}
                                                     sx={{
-                                                        bgcolor: accessedTestIds.has(test.id) ? COLORS.success : COLORS.accent,
+                                                        bgcolor: (accessedTestIds.has(test.id) || (!attempts[test.id] || attempts[test.id] === 0)) ? COLORS.success : COLORS.accent,
                                                         color: 'white',
                                                         fontWeight: 800,
                                                         borderRadius: 2,
@@ -537,7 +554,7 @@ const MockTestDashboard = () => {
                                                         py: 1.5,
                                                         fontSize: '1rem',
                                                         '&:hover': {
-                                                            bgcolor: accessedTestIds.has(test.id) ? '#059669' : COLORS.accentHover,
+                                                            bgcolor: (accessedTestIds.has(test.id) || (!attempts[test.id] || attempts[test.id] === 0)) ? '#059669' : COLORS.accentHover,
                                                             transform: 'translateY(-2px)',
                                                             boxShadow: '0 8px 20px rgba(0,0,0,0.1)'
                                                         },
@@ -546,7 +563,9 @@ const MockTestDashboard = () => {
                                                 >
                                                     {accessedTestIds.has(test.id)
                                                         ? (attempts[test.id] > 0 ? 'Retake Test' : 'Start Mock Test')
-                                                        : (test.price > 0 ? `₹${test.price}` : 'Free')}
+                                                        : (test.price > 0
+                                                            ? ((attempts[test.id] > 0) ? `₹${test.price}` : 'Free Trial')
+                                                            : 'Free')}
                                                 </Button>
                                             </Box>
                                         </Card>

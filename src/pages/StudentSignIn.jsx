@@ -15,7 +15,7 @@ import {
     Avatar,
     alpha
 } from '@mui/material';
-import { Mail, Lock, School, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, School, Eye, EyeOff, ArrowRight, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const COLORS = {
@@ -89,6 +89,25 @@ const StudentSignIn = () => {
                 py: 4
             }}
         >
+            {/* Mobile Back Button */}
+            <IconButton
+                onClick={() => navigate(-1)}
+                sx={{
+                    position: 'absolute',
+                    top: 20,
+                    left: 20,
+                    display: { xs: 'flex', md: 'none' },
+                    color: COLORS.primary,
+                    bgcolor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(4px)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    zIndex: 10,
+                    '&:hover': { bgcolor: 'white' }
+                }}
+            >
+                <ChevronLeft size={24} />
+            </IconButton>
+
             <Container maxWidth="sm">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -118,7 +137,7 @@ const StudentSignIn = () => {
                                 <School size={40} color="white" />
                             </Avatar>
                             <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>
-                                Student Login
+                                User Login
                             </Typography>
                             <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 500 }}>
                                 Welcome back! Continue your preparation.
@@ -235,7 +254,7 @@ const StudentSignIn = () => {
                                         ml: 0.5
                                     }}
                                 >
-                                    Create Student Account
+                                    Create User Account
                                 </Link>
                             </Typography>
                         </Box>

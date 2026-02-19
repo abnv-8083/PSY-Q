@@ -26,6 +26,7 @@ import ResultAnalytics from './pages/mocktest/ResultAnalytics';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminResetPassword from './pages/admin/AdminResetPassword';
 import GuestCheckout from './pages/mocktest/GuestCheckout';
+import MockTestBundles from './pages/mocktest/MockTestBundles';
 import StudentProfile from './pages/student/StudentProfile';
 import StudentPayment from './pages/student/StudentPayment';
 import StudentForgotPassword from './pages/student/StudentForgotPassword';
@@ -35,11 +36,13 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { SessionProvider } from './contexts/SessionContext';
 import SessionWarning from './components/SessionWarning';
 import ErrorBoundary from './components/ErrorBoundary';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
     <SessionProvider>
       <Router>
+        <ScrollToTop />
         <SessionWarning />
         <Routes>
           <Route path="/" element={<Layout><Home /></Layout>} />
@@ -69,6 +72,7 @@ function App() {
           <Route path="/academic/mocktest/:subjectId/:testId/rules" element={<GeneralInstructions />} />
           <Route path="/academic/mocktest/:subjectId/:testId/exam" element={<MockTestInterface />} />
           <Route path="/academic/mocktest/:subjectId/:testId/results" element={<ResultAnalytics />} />
+          <Route path="/academic/mocktest/bundles" element={<MockTestBundles />} />
           <Route path="/academic/mocktest/checkout" element={<GuestCheckout />} />
           <Route path="/student/profile" element={<StudentProfile />} />
           <Route path="/student/payment" element={<StudentPayment />} />

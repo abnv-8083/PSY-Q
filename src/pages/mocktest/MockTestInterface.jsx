@@ -114,9 +114,15 @@ const MockTestInterface = () => {
 
     useEffect(() => {
         if (timeLeft <= 0) return;
-        const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+        const timer = setInterval(() => setTimeLeft(prev => {
+            if (prev <= 1) {
+                clearInterval(timer);
+                return 0;
+            }
+            return prev - 1;
+        }), 1000);
         return () => clearInterval(timer);
-    }, [timeLeft]);
+    }, []); // Only run once on mount
 
     const formatTime = (seconds) => {
         const h = Math.floor(seconds / 3600);
@@ -129,12 +135,22 @@ const MockTestInterface = () => {
         setAnswers(prev => ({ ...prev, [currentIdx]: optionIdx }));
     };
 
-    const handleSaveNext = () => {
+    const goToNext = useCallback(() => {
         const nextIdx = currentIdx + 1;
         if (nextIdx < questions.length) {
             setCurrentIdx(nextIdx);
             setVisited(prev => ({ ...prev, [nextIdx]: true }));
         }
+    }, [currentIdx, questions.length]);
+
+    const handleSaveNext = () => {
+        // Clear review flag for the current question when saving
+        setFlags(prev => {
+            const next = { ...prev };
+            delete next[currentIdx];
+            return next;
+        });
+        goToNext();
     };
 
     const handleClear = () => {
@@ -152,7 +168,7 @@ const MockTestInterface = () => {
 
     const handleMarkReview = () => {
         setFlags(prev => ({ ...prev, [currentIdx]: true }));
-        handleSaveNext();
+        goToNext();
     };
 
     const handleQuit = () => {
@@ -224,6 +240,7 @@ const MockTestInterface = () => {
 
     const currentQuestion = questions[currentIdx];
 
+    // Helper component for status shapes
     const StatusShape = ({ status, label }) => {
         if (status === 'not-visited') return <Box sx={{ width: 30, height: 26, bgcolor: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600 }}>{label}</Box>;
         if (status === 'not-answered') return <Box sx={{ width: 32, height: 26, bgcolor: '#ff4d4d', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#fff', clipPath: 'polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%)' }}>{label}</Box>;
@@ -238,7 +255,7 @@ const MockTestInterface = () => {
         return null;
     };
 
-    const SidebarContent = () => (
+    const renderSidebarContent = () => (
         <>
             {/* Status Board */}
             <Box sx={{ p: 2, borderBottom: '1.5px dashed #ccc' }}>
@@ -313,6 +330,10 @@ const MockTestInterface = () => {
             {/* Top Bar */}
             <Box sx={{ bgcolor: '#1e293b', color: '#fff', py: 0.5, px: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, height: 32 }}>
                 <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton size="small" sx={{ color: '#fff', p: 0.5 }} onClick={() => navigate(-1)}>
+                        <ChevronLeft size={14} />
+                        <Typography variant="caption" sx={{ ml: 0.5, fontSize: '0.7rem', display: { xs: 'none', sm: 'inline' } }}>Back</Typography>
+                    </IconButton>
                     <IconButton size="small" sx={{ color: '#fff', p: 0.5 }} onClick={() => navigate('/academic/mocktest')}>
                         <Home size={14} />
                         <Typography variant="caption" sx={{ ml: 0.5, fontSize: '0.7rem', display: { xs: 'none', sm: 'inline' } }}>Home</Typography>
@@ -485,7 +506,7 @@ const MockTestInterface = () => {
                 {/* Right: Sidebar - Desktop */}
                 {!isMobile && (
                     <Box sx={{ width: 340, borderLeft: '1px solid #ddd', display: 'flex', flexDirection: 'column', bgcolor: '#fff' }}>
-                        <SidebarContent />
+                        {renderSidebarContent()}
                     </Box>
                 )}
             </Box>
@@ -527,7 +548,7 @@ const MockTestInterface = () => {
                             <X size={20} />
                         </IconButton>
                     </Box>
-                    <SidebarContent />
+                    {renderSidebarContent()}
                 </Box>
             </Drawer>
 

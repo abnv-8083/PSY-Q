@@ -15,7 +15,7 @@ import {
     Avatar,
     alpha
 } from '@mui/material';
-import { Mail, Lock, School, Eye, EyeOff, User, Phone, CheckCircle, ArrowRight, KeyRound } from 'lucide-react';
+import { Mail, Lock, School, Eye, EyeOff, User, Phone, CheckCircle, ArrowRight, KeyRound, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import emailjs from '@emailjs/browser';
 
@@ -93,12 +93,22 @@ const StudentSignUp = () => {
 
 
             try {
+                const toEmail = formData.email?.trim();
+                if (!toEmail) throw new Error('Recipient email is empty');
+
                 const templateParams = {
                     to_name: formData.name,
-                    to_email: formData.email,
+                    to_email: toEmail,
+                    email: toEmail, // Alias for template compatibility
                     otp_code: newOtp,
                     app_name: 'PSY-Q'
                 };
+
+                if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
+                    console.error('EmailJS Config Missing:', { SERVICE_ID, TEMPLATE_ID, PUBLIC_KEY });
+                    throw new Error('Email verification service is not configured.');
+                }
+
                 console.log('Sending email with params:', templateParams);
 
                 await emailjs.send(
@@ -251,6 +261,25 @@ const StudentSignUp = () => {
                 py: { xs: 4, md: 8 }
             }}
         >
+            {/* Mobile Back Button */}
+            <IconButton
+                onClick={() => navigate(-1)}
+                sx={{
+                    position: 'absolute',
+                    top: 20,
+                    left: 20,
+                    display: { xs: 'flex', md: 'none' },
+                    color: COLORS.primary,
+                    bgcolor: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(4px)',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    zIndex: 10,
+                    '&:hover': { bgcolor: 'white' }
+                }}
+            >
+                <ChevronLeft size={24} />
+            </IconButton>
+
             <Container maxWidth="sm">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

@@ -7,9 +7,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import {
     User, LogOut, Settings, CreditCard as PaymentIcon,
-    LogIn, UserPlus
+    LogIn, UserPlus, Menu as MenuIcon, X, ChevronDown, ChevronLeft
 } from 'lucide-react';
-import { Menu as MenuIcon, X, ChevronDown } from 'lucide-react';
 import { Avatar, Menu, MenuItem, Divider, alpha } from '@mui/material';
 import { useSession } from '../contexts/SessionContext';
 
@@ -44,7 +43,8 @@ const MockTestNavbar = () => {
 
     const navItems = [
         { label: 'Home', path: '/academic/mocktest' },
-        { label: 'Tests', path: '/academic/mocktest/tests' },
+        { label: 'Practice Tests', path: '/academic/mocktest/tests' },
+        { label: 'Bundles', path: '/academic/mocktest/bundles' },
         { label: 'Features', path: '/academic/mocktest/features' },
         { label: 'Contact', path: '/academic/mocktest/contact' }
     ];
@@ -64,7 +64,17 @@ const MockTestNavbar = () => {
         <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'white', borderBottom: `1px solid ${COLORS.primary}20` }}>
             <Container maxWidth={false}>
                 <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-                    {/* Logo */}
+                    {/* Mobile Back Button */}
+                    {isMobile && (
+                        <IconButton
+                            onClick={() => navigate(-1)}
+                            sx={{ color: COLORS.primary, mr: 1 }}
+                        >
+                            <ChevronLeft />
+                        </IconButton>
+                    )}
+
+                    {/* Logo Body */}
                     <Typography
                         variant="h6"
                         component="div"
