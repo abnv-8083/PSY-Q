@@ -130,6 +130,7 @@ serve(async (req) => {
                 return new Response(JSON.stringify({ error: 'Email not verified' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 403 })
             }
 
+
             const match = bcrypt.compareSync(password, student.password_hash);
             if (!match) {
                 return new Response(JSON.stringify({ error: 'Invalid Password' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 })

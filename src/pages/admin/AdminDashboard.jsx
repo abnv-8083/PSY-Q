@@ -42,6 +42,7 @@ import QuestionBank from './QuestionBank';
 import NotificationManagement from './NotificationManagement';
 import Analytics from './Analytics';
 import AdminManagement from './AdminManagement';
+import StudentManagement from './StudentManagement';
 import { useSession } from '../../contexts/SessionContext';
 
 // Premium Color Theme
@@ -115,6 +116,12 @@ const AdminDashboard = () => {
             icon: Users,
             permission: 'manageUsers',
             superOnly: true
+        },
+        {
+            path: '/admin/students',
+            label: 'Student Management',
+            icon: User,
+            permission: 'manageUsers'
         }
     ].filter(item => {
         // Super admin sees everything
@@ -373,6 +380,7 @@ const AdminDashboard = () => {
                     <Route path="/notifications" element={<NotificationManagement />} />
                     <Route path="/contacts" element={<ContactSubmissions />} />
                     <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/students" element={<StudentManagement />} />
                     <Route path="/management" element={<AdminManagement />} />
                 </Routes>
             </Box>

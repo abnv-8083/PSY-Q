@@ -28,8 +28,23 @@ serve(async (req) => {
             })
         }
 
-        // --- GET: List Admins ---
+        // --- GET: List Admins or Students ---
         if (req.method === 'GET') {
+            const url = new URL(req.url);
+            const type = url.searchParams.get('type');
+
+            if (type === 'students') {
+                const { data: students, error } = await supabase
+                    .from('students')
+                    .select('*');
+
+                if (error) throw error;
+                return new Response(JSON.stringify(students), {
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                    status: 200
+                });
+            }
+
             const { data: admins, error } = await supabase
                 .from('admins')
                 .select('id, email, full_name, role, created_at, is_blocked, permissions')
@@ -106,48 +121,52 @@ serve(async (req) => {
             })
         }
 
-        // --- PATCH: Update Admin ---
+        // --- PATCH: Update Admin or Student ---
         if (req.method === 'PATCH') {
-            const { id, ...updates } = await req.json()
-            console.log(`Updating admin ${id} with:`, JSON.stringify(updates));
+            const { id, table, ...updates } = await req.json()
+            const targetTable = table === 'students' ? 'students' : 'admins';
+
+            console.log(`Updating ${targetTable} ${id} with:`, JSON.stringify(updates));
 
             if (!id) {
-                return new Response(JSON.stringify({ error: 'Missing admin ID' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
+                return new Response(JSON.stringify({ error: 'Missing ID' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
             }
 
-            // If updating password, hash it
-            if (updates.password) {
+            // If updating password (for admins), hash it
+            if (updates.password && targetTable === 'admins') {
                 const salt = bcrypt.genSaltSync(10);
                 updates.password_hash = bcrypt.hashSync(updates.password, salt);
                 delete updates.password;
             }
 
             const { error: updateError } = await supabase
-                .from('admins')
+                .from(targetTable)
                 .update(updates)
                 .eq('id', id);
 
             if (updateError) throw updateError;
 
-            return new Response(JSON.stringify({ message: 'Admin updated successfully' }), {
+            return new Response(JSON.stringify({ message: `${targetTable === 'students' ? 'Student' : 'Admin'} updated successfully` }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 200
             })
         }
 
-        // --- DELETE: Remove Admin ---
+        // --- DELETE: Remove Admin or Student ---
         if (req.method === 'DELETE') {
             const url = new URL(req.url);
             const id = url.searchParams.get('id');
+            const table = url.searchParams.get('table');
+            const targetTable = table === 'students' ? 'students' : 'admins';
 
             if (!id) {
-                return new Response(JSON.stringify({ error: 'Missing admin ID' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
+                return new Response(JSON.stringify({ error: `Missing ${targetTable === 'students' ? 'student' : 'admin'} ID` }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 })
             }
 
-            const { error: deleteError } = await supabase.from('admins').delete().eq('id', id);
+            const { error: deleteError } = await supabase.from(targetTable).delete().eq('id', id);
             if (deleteError) throw deleteError;
 
-            return new Response(JSON.stringify({ message: 'Admin deleted' }), {
+            return new Response(JSON.stringify({ message: `${targetTable === 'students' ? 'Student' : 'Admin'} deleted` }), {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                 status: 200
             })
@@ -159,8 +178,12 @@ serve(async (req) => {
         })
 
     } catch (err) {
-        console.error(err)
-        return new Response(JSON.stringify({ error: err.message }), {
+        console.error('Edge Function Error:', err)
+        return new Response(JSON.stringify({
+            error: err.message,
+            details: err,
+            stack: err.stack
+        }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 500
         })

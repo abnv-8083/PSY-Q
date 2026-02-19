@@ -23,7 +23,9 @@ import {
     TableCell,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    Tabs,
+    Tab
 } from '@mui/material';
 import {
     Users,
@@ -38,7 +40,12 @@ import {
     Calendar,
     Award,
     X,
-    ExternalLink
+    ExternalLink,
+    PieChart as PieIcon,
+    BarChart as BarIcon,
+    Target,
+    Zap,
+    LayoutDashboard
 } from 'lucide-react';
 import {
     LineChart,
@@ -54,25 +61,31 @@ import {
     Bar,
     PieChart,
     Pie,
-    Cell
+    Cell,
+    Radar,
+    RadarChart,
+    PolarGrid,
+    PolarAngleAxis,
+    PolarRadiusAxis,
 } from 'recharts';
 import { supabase } from '../../lib/supabaseClient';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const COLORS = {
     primary: '#0f172a',
     secondary: '#4b5563',
     accent: '#ca0056',
-    success: '#10b981',
+    success: '#6366f1', // Using our new premium Indigo
     warning: '#f59e0b',
     error: '#ef4444',
     textLight: '#64748b',
     border: '#e2e8f0',
-    chart: ['#ca0056', '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6']
+    chart: ['#6366f1', '#ca0056', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6']
 };
 
 const Analytics = () => {
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState(0);
     const [stats, setStats] = useState({
         totalUsers: 0,
         totalRevenue: 0,
@@ -81,6 +94,9 @@ const Analytics = () => {
         userGrowth: [],
         revenueTrends: [],
         testPopularity: [],
+        subjectPerformance: [],
+        revenueByBundle: [],
+        dailyActiveUsers: [],
         recentPayments: [],
         recentSignups: []
     });
@@ -108,13 +124,18 @@ const Analytics = () => {
             // 2. Total Revenue & Recent Payments
             const { data: payments } = await supabase
                 .from('payments')
-                .select('*')
+                .select('*, bundles(name)')
                 .eq('status', 'captured')
                 .order('created_at', { ascending: false });
 
             const totalRev = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
 
-            // 3. Total Attempts
+            // 3. Total Attempts & Subjects
+            const { data: allAttempts } = await supabase
+                .from('attempts')
+                .select('*, tests(name, subject_id, subjects(name))')
+                .order('created_at', { ascending: false });
+
             const { count: attemptCount } = await supabase
                 .from('attempts')
                 .select('*', { count: 'exact', head: true });
@@ -140,14 +161,18 @@ const Analytics = () => {
             const revenueData = processRevenueData(payments, 30);
 
             // 7. Test Popularity
-            const { data: attemptsWithTests } = await supabase
-                .from('attempts')
-                .select('test_id, tests(id, name)')
-                .order('created_at', { ascending: false });
+            const popularityData = processPopularityData(allAttempts);
 
-            const popularityData = processPopularityData(attemptsWithTests);
+            // 8. Bundle Revenue Breakdown
+            const bundleRevData = processBundleRevenue(payments);
 
-            // 8. Recent Activities
+            // 9. Subject Performance
+            const subjectPerfData = processSubjectPerformance(allAttempts);
+
+            // 10. Daily Active Users (attempts as proxy)
+            const dauData = processDAU(allAttempts, 30);
+
+            // 11. Recent Activities
             const { data: latestSignups } = await supabase
                 .from('students')
                 .select('*')
@@ -162,6 +187,9 @@ const Analytics = () => {
                 userGrowth: growthData,
                 revenueTrends: revenueData,
                 testPopularity: popularityData,
+                revenueByBundle: bundleRevData,
+                subjectPerformance: subjectPerfData,
+                dailyActiveUsers: dauData,
                 recentPayments: payments?.slice(0, 5) || [],
                 recentSignups: latestSignups || []
             });
@@ -171,6 +199,52 @@ const Analytics = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const processBundleRevenue = (payments) => {
+        const bundles = {};
+        payments?.forEach(p => {
+            const name = p.bundles?.name || 'Individual Tests';
+            bundles[name] = (bundles[name] || 0) + (p.amount || 0);
+        });
+        return Object.entries(bundles)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value);
+    };
+
+    const processSubjectPerformance = (attempts) => {
+        const subjects = {};
+        attempts?.forEach(a => {
+            const name = a.tests?.subjects?.name || 'Uncategorized';
+            if (!subjects[name]) subjects[name] = { totalScore: 0, totalQuestions: 0, count: 0 };
+
+            subjects[name].totalScore += a.score || 0;
+            subjects[name].totalQuestions += a.total_questions || 0;
+            subjects[name].count += 1;
+        });
+
+        return Object.entries(subjects).map(([name, data]) => ({
+            subject: name,
+            A: Math.round((data.totalScore / (data.totalQuestions || 1)) * 100),
+            fullMark: 100
+        }));
+    };
+
+    const processDAU = (attempts, days) => {
+        const data = [];
+        for (let i = days; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            const count = new Set(attempts?.filter(a => {
+                const aDate = new Date(a.created_at);
+                return aDate.toDateString() === date.toDateString();
+            }).map(a => a.user_id)).size;
+
+            data.push({ name: dateStr, active: count });
+        }
+        return data;
     };
 
     const handleUserSearch = async (val) => {
@@ -333,7 +407,7 @@ const Analytics = () => {
     return (
         <Box sx={{ p: { xs: 3, md: 6 } }}>
             {/* Header */}
-            <Box sx={{ mb: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <Box sx={{ mb: 6, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'flex-end' }, gap: 3 }}>
                 <Box>
                     <Typography variant="h3" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -1, mb: 1 }}>
                         Platform <Box component="span" sx={{ color: COLORS.accent }}>Analytics</Box>
@@ -370,160 +444,206 @@ const Analytics = () => {
                 </Stack>
             </Box>
 
-            {/* Stats Overview */}
-            <Grid container spacing={4} sx={{ mb: 6 }}>
-                <Grid item xs={12} sm={6} md={3}>
-                    <StatCard title="Total Users" value={stats.totalUsers} icon={Users} color="#6366f1" trend={12} />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <StatCard title="Total Revenue" value={stats.totalRevenue} icon={CreditCard} color="#10b981" trend={8} />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <StatCard title="Test Attempts" value={stats.totalAttempts} icon={FileText} color="#f59e0b" trend={24} />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <StatCard title="Active Subscriptions" value={stats.activeBundles} icon={Activity} color="#ec4899" trend={5} />
-                </Grid>
-            </Grid>
+            {/* Navigation Tabs */}
+            <Paper sx={{ mb: 6, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(10px)', border: '1px solid #e2e8f0', p: 1 }}>
+                <Tabs
+                    value={activeTab}
+                    onChange={(e, val) => setActiveTab(val)}
+                    sx={{
+                        '& .MuiTabs-indicator': { display: 'none' },
+                        '& .MuiTab-root': {
+                            borderRadius: 3,
+                            fontWeight: 800,
+                            textTransform: 'none',
+                            minHeight: 48,
+                            transition: 'all 0.3s',
+                            '&.Mui-selected': {
+                                bgcolor: COLORS.accent,
+                                color: 'white',
+                                boxShadow: `0 8px 20px ${alpha(COLORS.accent, 0.3)}`
+                            }
+                        }
+                    }}
+                >
+                    <Tab label="Dashboard Overview" icon={<LayoutDashboard size={18} />} iconPosition="start" />
+                    <Tab label="Revenue & Sales" icon={<CreditCard size={18} />} iconPosition="start" />
+                    <Tab label="Student Performance" icon={<Activity size={18} />} iconPosition="start" />
+                </Tabs>
+            </Paper>
 
-            <Grid container spacing={4}>
-                {/* User Growth Chart */}
-                <Grid item xs={12} md={8}>
-                    <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0', minHeight: 550, boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 5 }}>
-                            <Box>
-                                <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary }}>User Signups</Typography>
-                                <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>Daily registration metrics</Typography>
-                            </Box>
-                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent }}>
-                                <TrendingUp size={20} />
-                            </Box>
-                        </Stack>
-                        <Box sx={{ height: 400, width: '100%', mt: 2 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={stats.userGrowth}>
-                                    <defs>
-                                        <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={COLORS.accent} stopOpacity={0.8} />
-                                            <stop offset="95%" stopColor={COLORS.accent} stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="name" fontSize={12} fontWeight={600} tick={{ fill: COLORS.textLight }} axisLine={false} tickLine={false} />
-                                    <YAxis fontSize={12} fontWeight={600} tick={{ fill: COLORS.textLight }} axisLine={false} tickLine={false} />
-                                    <RechartsTooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
-                                    />
-                                    <Area type="monotone" dataKey="users" stroke={COLORS.accent} strokeWidth={3} fillOpacity={1} fill="url(#colorUsers)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </Box>
-                    </Paper>
-                </Grid>
+            <AnimatePresence mode="wait">
+                {activeTab === 0 && (
+                    <motion.div
+                        key="overview"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {/* Highlights Grid */}
+                        <Grid container spacing={4} sx={{ mb: 6 }}>
+                            <Grid item xs={12} sm={6} md={3}>
+                                <StatCard title="Total Students" value={stats.totalUsers} icon={Users} color="#6366f1" trend={12} />
+                            </Grid>
+                            <Grid item xs={12} sm={6} md={3}>
+                                <StatCard title="Total Revenue" value={stats.totalRevenue} icon={CreditCard} color="#10b981" trend={8} />
+                            </Grid>
+                            <Grid item xs={12} sm={6} md={3}>
+                                <StatCard title="Platform Load" value={stats.totalAttempts} icon={Zap} color="#f59e0b" trend={24} />
+                            </Grid>
+                            <Grid item xs={12} sm={6} md={3}>
+                                <StatCard title="Stickiness" value={stats.activeBundles} icon={Target} color="#ec4899" trend={5} />
+                            </Grid>
+                        </Grid>
 
-                {/* Popular Tests Chart */}
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0', minHeight: 550, boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-                        <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>Top Performing Tests</Typography>
-                        <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600, display: 'block', mb: 5 }}>Most attempted mock tests</Typography>
-
-                        <Box sx={{ height: 350, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={stats.testPopularity}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={70}
-                                        outerRadius={110}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                    >
-                                        {stats.testPopularity.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS.chart[index % COLORS.chart.length]} />
-                                        ))}
-                                    </Pie>
-                                    <RechartsTooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
-
-                            <Stack spacing={1.5} sx={{ mt: 3 }}>
-                                {stats.testPopularity.map((test, index) => (
-                                    <Stack key={index} direction="row" justifyContent="space-between" alignItems="center">
-                                        <Stack direction="row" spacing={1.5} alignItems="center">
-                                            <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: COLORS.chart[index % COLORS.chart.length] }} />
-                                            <Typography variant="body2" sx={{ fontWeight: 700, color: COLORS.secondary }}>{test.name}</Typography>
-                                        </Stack>
-                                        <Typography variant="body2" sx={{ fontWeight: 900, color: COLORS.primary }}>{test.value}</Typography>
+                        <Grid container spacing={4}>
+                            <Grid item xs={12} md={8}>
+                                <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0', bgcolor: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(20px)' }}>
+                                    <Stack direction="row" justifyContent="space-between" sx={{ mb: 4 }}>
+                                        <Box>
+                                            <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary }}>Acquisition Trend</Typography>
+                                            <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>Daily student registrations</Typography>
+                                        </Box>
+                                        <TrendingUp color={COLORS.success} />
                                     </Stack>
-                                ))}
-                            </Stack>
-                        </Box>
-                    </Paper>
-                </Grid>
+                                    <Box sx={{ height: 400 }}>
+                                        <ResponsiveContainer>
+                                            <AreaChart data={stats.userGrowth}>
+                                                <defs>
+                                                    <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor={COLORS.accent} stopOpacity={0.1} />
+                                                        <stop offset="95%" stopColor={COLORS.accent} stopOpacity={0} />
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                                <XAxis dataKey="name" fontSize={11} fontWeight={700} axisLine={false} tickLine={false} />
+                                                <YAxis fontSize={11} fontWeight={700} axisLine={false} tickLine={false} />
+                                                <RechartsTooltip contentStyle={{ borderRadius: 16, border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} />
+                                                <Area type="monotone" dataKey="users" stroke={COLORS.accent} strokeWidth={4} fillOpacity={1} fill="url(#colorUsers)" />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </Box>
+                                </Paper>
+                            </Grid>
 
-                {/* Revenue Growth Chart */}
-                <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-                        <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 5 }}>Revenue Trends (₹)</Typography>
-                        <Box sx={{ height: 350 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats.revenueTrends}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="name" fontSize={11} fontWeight={600} tick={{ fill: COLORS.textLight }} axisLine={false} tickLine={false} />
-                                    <YAxis fontSize={11} fontWeight={600} tick={{ fill: COLORS.textLight }} axisLine={false} tickLine={false} />
-                                    <RechartsTooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
-                                        formatter={(value) => `₹${value.toLocaleString()}`}
-                                    />
-                                    <Bar dataKey="amount" fill="#10b981" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </Box>
-                    </Paper>
-                </Grid>
+                            <Grid item xs={12} md={4}>
+                                <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0', height: '100%' }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 4 }}>Latest Registrations</Typography>
+                                    <Stack spacing={3}>
+                                        {stats.recentSignups.map((user) => (
+                                            <Box key={user.id} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                <Avatar sx={{ bgcolor: COLORS.accent, fontWeight: 900 }}>{user.full_name?.charAt(0)}</Avatar>
+                                                <Box sx={{ flexGrow: 1 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 800 }}>{user.full_name}</Typography>
+                                                    <Typography variant="caption" sx={{ color: COLORS.textLight }}>{new Date(user.created_at).toLocaleDateString()}</Typography>
+                                                </Box>
+                                                <Chip label="Student" size="small" sx={{ fontWeight: 800, bgcolor: '#f1f5f9' }} />
+                                            </Box>
+                                        ))}
+                                    </Stack>
+                                </Paper>
+                            </Grid>
+                        </Grid>
+                    </motion.div>
+                )}
 
-                {/* Recent Signups Table */}
-                <Grid item xs={12} md={6}>
-                    <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0', height: '100%', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-                        <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 4 }}>Recent User Registrations</Typography>
-                        <TableContainer>
-                            <Table size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell sx={{ fontWeight: 800, color: COLORS.textLight }}>USER</TableCell>
-                                        <TableCell sx={{ fontWeight: 800, color: COLORS.textLight }}>DATE</TableCell>
-                                        <TableCell sx={{ fontWeight: 800, color: COLORS.textLight }} align="right">SOURCE</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {stats.recentSignups.map((user) => (
-                                        <TableRow key={user.id}>
-                                            <TableCell>
-                                                <Stack direction="row" spacing={1.5} alignItems="center">
-                                                    <Avatar sx={{ width: 32, height: 32, bgcolor: COLORS.accent, fontSize: '0.8rem', fontWeight: 800 }}>
-                                                        {user.full_name?.charAt(0) || 'U'}
-                                                    </Avatar>
-                                                    <Box>
-                                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>{user.full_name || 'Guest User'}</Typography>
-                                                        <Typography variant="caption" sx={{ color: COLORS.textLight }}>{user.email || 'No email'}</Typography>
-                                                    </Box>
-                                                </Stack>
-                                            </TableCell>
-                                            <TableCell sx={{ fontWeight: 600, color: COLORS.secondary, fontSize: '0.8rem' }}>
-                                                {new Date(user.created_at).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Chip label="Member" size="small" sx={{ height: 20, fontSize: '0.65rem', fontWeight: 800, bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success }} />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Paper>
-                </Grid>
-            </Grid>
+                {activeTab === 1 && (
+                    <motion.div
+                        key="revenue"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <Grid container spacing={4}>
+                            <Grid item xs={12} md={7}>
+                                <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0' }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 4 }}>Revenue Velocity (₹)</Typography>
+                                    <Box sx={{ height: 400 }}>
+                                        <ResponsiveContainer>
+                                            <BarChart data={stats.dailyActiveUsers}>
+                                                <XAxis dataKey="name" fontSize={11} fontWeight={700} axisLine={false} tickLine={false} />
+                                                <YAxis fontSize={11} fontWeight={700} axisLine={false} tickLine={false} />
+                                                <RechartsTooltip />
+                                                <Bar dataKey="active" name="Active Users" fill={COLORS.accent} radius={[6, 6, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={12} md={5}>
+                                <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0' }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 4 }}>Bundle Sales Distribution</Typography>
+                                    <Box sx={{ height: 400 }}>
+                                        <ResponsiveContainer>
+                                            <BarChart layout="vertical" data={stats.revenueByBundle}>
+                                                <XAxis type="number" hide />
+                                                <YAxis dataKey="name" type="category" width={100} fontSize={11} fontWeight={700} axisLine={false} tickLine={false} />
+                                                <RechartsTooltip formatter={(v) => `₹${v.toLocaleString()}`} />
+                                                <Bar dataKey="value" name="Revenue" fill={COLORS.success} radius={[0, 6, 6, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+                        </Grid>
+                    </motion.div>
+                )}
+
+                {activeTab === 2 && (
+                    <motion.div
+                        key="performance"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <Grid container spacing={4}>
+                            <Grid item xs={12} md={6}>
+                                <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0' }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 4 }}>Subject Accuracy Index</Typography>
+                                    <Box sx={{ height: 400 }}>
+                                        <ResponsiveContainer>
+                                            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={stats.subjectPerformance}>
+                                                <PolarGrid stroke="#e2e8f0" />
+                                                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fontWeight: 700 }} />
+                                                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10 }} />
+                                                <Radar name="Avg %" dataKey="A" stroke={COLORS.accent} fill={COLORS.accent} fillOpacity={0.6} />
+                                                <RechartsTooltip />
+                                            </RadarChart>
+                                        </ResponsiveContainer>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+
+                            <Grid item xs={12} md={6}>
+                                <Paper sx={{ p: 5, borderRadius: 7, border: '1px solid #e2e8f0' }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 4 }}>Market Share (Top Tests)</Typography>
+                                    <Box sx={{ height: 400 }}>
+                                        <ResponsiveContainer>
+                                            <PieChart>
+                                                <Pie
+                                                    data={stats.testPopularity}
+                                                    innerRadius={80}
+                                                    outerRadius={120}
+                                                    paddingAngle={5}
+                                                    dataKey="value"
+                                                >
+                                                    {stats.testPopularity.map((entry, index) => (
+                                                        <Cell key={`cell-${index}`} fill={COLORS.chart[index % COLORS.chart.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <RechartsTooltip />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+                        </Grid>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* User Detail Modal */}
             <Modal
