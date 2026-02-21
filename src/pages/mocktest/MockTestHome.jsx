@@ -134,7 +134,7 @@ const AnimatedCounter = ({ end, label, suffix = "" }) => {
 
 const HeroSection = ({ navigate }) => {
     const quotes = [
-        "Every topper once made a small decision—to practice seriously.",
+        "Every topper once made a small decision to practice seriously.",
         "Take that step today. We made this for you.",
         "Now its your turn.."
     ];
