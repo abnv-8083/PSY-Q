@@ -1,22 +1,64 @@
+import { useEffect, useRef } from 'react';
+import { motion, useInView, animate } from 'framer-motion';
+
+const CountUp = ({ to, suffix }) => {
+  const nodeRef = useRef();
+  const inView = useInView(nodeRef, { once: true, margin: "-50px" });
+
+  useEffect(() => {
+    if (inView) {
+      const controls = animate(0, to, {
+        duration: 2,
+        ease: "easeOut",
+        onUpdate(value) {
+          if (nodeRef.current) {
+            nodeRef.current.textContent = Math.floor(value) + suffix;
+          }
+        }
+      });
+      return () => controls.stop();
+    }
+  }, [inView, to, suffix]);
+
+  return <span ref={nodeRef}>0{suffix}</span>;
+};
+
 const NumbersSection = () => {
   const stats = [
     {
-      number: "1500+",
+      number: 1500,
+      suffix: "+",
       label: "Happy Clients"
     },
     {
-      number: "15+",
+      number: 15,
+      suffix: "+",
       label: "Expert Therapists"
     },
     {
-      number: "5+",
+      number: 5,
+      suffix: "+",
       label: "Languages"
     },
     {
-      number: "10+",
+      number: 10,
+      suffix: "+",
       label: "Countries Served"
     }
   ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 100 } }
+  };
 
   return (
     <section
@@ -45,11 +87,15 @@ const NumbersSection = () => {
             fontStyle: 'italic',
           }}
         >
-          A Safe Space for Our Psymates
+          A Safe Space for Our Community
         </h2>
 
         {/* Stats Grid */}
-        <div
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -58,22 +104,16 @@ const NumbersSection = () => {
           }}
         >
           {stats.map((stat, index) => (
-            <div
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -6, boxShadow: '0 8px 24px rgba(202, 0, 86, 0.18)' }}
               key={index}
               style={{
                 background: 'linear-gradient(135deg, #ffd7ec 0%, #fad5e9 50%, #ffeef6 100%)',
                 borderRadius: '12px',
                 padding: 'var(--space-5) var(--space-3)',
                 textAlign: 'center',
-                transition: 'box-shadow 0.3s ease, transform 0.25s ease',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(202, 0, 86, 0.18)';
-                e.currentTarget.style.transform = 'translateY(-6px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.transform = 'none';
+                transition: 'box-shadow 0.3s ease',
               }}
             >
               <div
@@ -84,7 +124,7 @@ const NumbersSection = () => {
                   marginBottom: 'var(--space-1)',
                 }}
               >
-                {stat.number}
+                <CountUp to={stat.number} suffix={stat.suffix} />
               </div>
               <p
                 style={{
@@ -96,9 +136,9 @@ const NumbersSection = () => {
               >
                 {stat.label}
               </p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Quote */}
         <div

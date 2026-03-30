@@ -5,6 +5,39 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+      delayChildren: 0.1,
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1, y: 0,
+    transition: { duration: 0.8, ease: "easeOut" }
+  }
+};
+
+const bgVariants = {
+  hidden: { scale: 1 },
+  visible: {
+    scale: 1.05,
+    transition: {
+      duration: 10,
+      ease: "linear",
+      repeat: Infinity,
+      repeatType: "reverse"
+    }
+  }
+};
 
 const Hero = () => {
 
@@ -14,33 +47,46 @@ const Hero = () => {
       sx={{
         position: 'relative',
         minHeight: { xs: 'auto', sm: '600px', md: '700px', lg: '85vh' },
-        backgroundImage: `url('/images/hero-2.webp')`,
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: { xs: 'center center', sm: 'center right', md: 'center right' },
-        backgroundSize: 'cover',
-        backgroundAttachment: { xs: 'scroll', md: 'scroll' },
         display: 'flex',
         alignItems: 'center',
         overflow: 'hidden',
-        willChange: 'background-image',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: {
-            xs: 'linear-gradient(to bottom, rgba(240, 230, 220, 0.8) 0%, rgba(240, 230, 220, 0.75) 30%, transparent 80%)',
-            sm: 'linear-gradient(to bottom, rgba(240, 230, 220, 0.85) 0%, rgba(240, 230, 220, 0.7) 40%, transparent 100%)',
-            md: 'linear-gradient(to right, rgba(240, 230, 220, 0.95) 0%, rgba(240, 230, 220, 0.85) 20%, rgba(240, 230, 220, 0.3) 50%, transparent 60%)'
-          },
-          pointerEvents: 'none',
-        }
       }}
     >
+      <Box
+        component={motion.div}
+        variants={bgVariants}
+        initial="hidden"
+        animate="visible"
+        sx={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundImage: `url('/images/hero-2.webp')`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: { xs: 'center center', sm: 'center right', md: 'center right' },
+          backgroundSize: 'cover',
+          zIndex: 0,
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          zIndex: 0,
+          background: {
+            xs: 'linear-gradient(to bottom, rgba(240, 230, 220, 0.8) 0%, rgba(240, 230, 220, 0.75) 30%, transparent 60%)',
+            sm: 'linear-gradient(to bottom, rgba(240, 230, 220, 0.85) 0%, rgba(240, 230, 220, 0.7) 40%, transparent 80%)',
+            md: 'linear-gradient(to right, rgba(240, 230, 220, 0.95) 0%, rgba(240, 230, 220, 0.85) 40%, rgba(240, 230, 220, 0.3) 60%, transparent 80%)'
+          },
+          pointerEvents: 'none',
+        }}
+      />
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, width: '100%' }}>
-        <Box sx={{ 
+        <Box 
+          component={motion.div}
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          sx={{ 
           maxWidth: { xs: '100%', sm: '100%', md: '600px', lg: '650px' },
           display: 'flex', 
           flexDirection: 'column', 
@@ -49,8 +95,9 @@ const Hero = () => {
           px: { xs: 2, sm: 0 }
         }}>
           <Typography 
+            component={motion.h1}
+            variants={itemVariants}
             variant="h1" 
-            component="h1" 
             sx={{ 
               fontSize: { xs: '1.75rem', sm: '2.75rem', md: '3.25rem', lg: '3.75rem' }, 
               fontWeight: 700, 
@@ -63,6 +110,8 @@ const Hero = () => {
             No Mind Left Behind
           </Typography>
           <Typography 
+            component={motion.p}
+            variants={itemVariants}
             variant="body1" 
             sx={{ 
               fontSize: { xs: '14px', sm: '14px', md: '14px' },
@@ -73,9 +122,11 @@ const Hero = () => {
           >
             Life can be overwhelming sometimes and it is okay to ask for help. We are here to support your mental and emotional well-being
           </Typography>
-          <Box sx={{ pt: { xs: 1, md: 2 } }}>
+          <Box component={motion.div} variants={itemVariants} sx={{ pt: { xs: 1, md: 2 } }}>
             <Button 
-              component={RouterLink} 
+              component={motion.create(RouterLink)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               to="/about" 
               variant="contained" 
               sx={{ 
@@ -88,14 +139,10 @@ const Hero = () => {
                 borderRadius: '50px',
                 textTransform: 'none',
                 boxShadow: '0 4px 14px rgba(202, 0, 86, 0.3)',
-                transition: 'all 0.3s ease',
+                transition: 'box-shadow 0.3s ease, background-color 0.3s ease',
                 '&:hover': { 
                   bgcolor: '#b8003f',
-                  boxShadow: '0 6px 20px rgba(202, 0, 86, 0.4)',
-                  transform: 'translateY(-2px)'
-                },
-                '&:active': {
-                  transform: 'translateY(0)'
+                  boxShadow: '0 6px 20px rgba(202, 0, 86, 0.4)'
                 }
               }}
             >

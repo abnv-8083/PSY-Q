@@ -19,8 +19,9 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const BookingModal = ({ open, onClose, packageDetails }) => {
+const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
   const [step, setStep] = useState(1);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -41,14 +42,26 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
     agreedToTerms: false
   });
 
-  // Available packages
+  //packages based on therapist rate
+  const displayedPrice = therapist?.price ? Number(therapist.price.replace(/\D/g, '')) : 900;
+  const basePrice = Math.round(displayedPrice / 0.90);
+
   const packages = [
+    {
+      id: 'single',
+      name: 'Single Session',
+      sessions: 1,
+      price: basePrice,
+      pricePerSession: basePrice,
+      description: '1 Session',
+      savings: null
+    },
     {
       id: 'basic',
       name: 'Basic Plan',
       sessions: 4,
-      price: 4676,
-      pricePerSession: 1299,
+      price: Math.round(basePrice * 4 * 0.90),
+      pricePerSession: Math.round(basePrice * 0.90),
       description: '4 Sessions Package',
       savings: '10% OFF'
     },
@@ -56,8 +69,8 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
       id: 'standard',
       name: 'Standard Plan',
       sessions: 8,
-      price: 8833,
-      pricePerSession: 1299,
+      price: Math.round(basePrice * 8 * 0.85),
+      pricePerSession: Math.round(basePrice * 0.85),
       description: '8 Sessions Package',
       popular: true,
       savings: '15% OFF'
@@ -66,8 +79,8 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
       id: 'advanced',
       name: 'Advanced Plan',
       sessions: 12,
-      price: 12470,
-      pricePerSession: 1039,
+      price: Math.round(basePrice * 12 * 0.80),
+      pricePerSession: Math.round(basePrice * 0.80),
       description: '12 Sessions Package',
       savings: '20% OFF'
     }
@@ -75,9 +88,8 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
 
   // Available time slots
   const timeSlots = [
-    '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-    '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM',
-    '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM'
+    '10:00 AM - 12:00 PM (FN)',
+    '5:00 PM - 8:00 PM (AN)'
   ];
 
   const getDaysInMonth = (date) => {
@@ -102,6 +114,9 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
   };
 
   const handleDateSelect = (day) => {
+    if (selectedDate !== day) {
+      setSelectedTime(''); // clear time if invalid when switching days
+    }
     setSelectedDate(day);
   };
 
@@ -155,7 +170,8 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
         selectedDate: bookingDate,
         selectedTime: selectedTime,
         packageName: selectedPackage ? packages.find(p => p.id === selectedPackage)?.name : '',
-        packageDetails: selectedPackage ? packages.find(p => p.id === selectedPackage) : null
+        packageDetails: selectedPackage ? packages.find(p => p.id === selectedPackage) : null,
+        therapist: therapist ? therapist.name : 'Not Specified'
       };
 
       // Call the API endpoint
@@ -258,14 +274,60 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
             <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, color: '#1e293b', textAlign: 'center' }}>
               Select the package that works best for your therapy journey
             </Typography>
-            <Grid container spacing={3}>
-              {packages.map((pkg) => (
-                <Grid item xs={12} sm={4} key={pkg.id}>
+            {(() => {
+              const singlePkg = packages.find(p => p.id === 'single');
+              if (!singlePkg) return null;
+              return (
+                <Box
+                  component={motion.div}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSelectedPackage(singlePkg.id)}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    justifyContent: { xs: 'center', sm: 'space-between' },
+                    alignItems: 'center',
+                    gap: { xs: 1, sm: 0 },
+                    p: { xs: 2.5, sm: 3 },
+                    mb: 3,
+                    borderRadius: 2,
+                    border: 2,
+                    borderColor: selectedPackage === singlePkg.id ? '#ca0056' : '#e5e7eb',
+                    bgcolor: selectedPackage === singlePkg.id ? '#fff0f9' : 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      borderColor: '#ca0056',
+                      bgcolor: selectedPackage === singlePkg.id ? '#fff0f9' : '#fef2f2'
+                    }
+                  }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                    {singlePkg.name}
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: '#ca0056', m: 0 }}>
+                    ₹{singlePkg.price.toLocaleString()}
+                  </Typography>
+                </Box>
+              );
+            })()}
+
+            <Grid container spacing={3} sx={{ justifyContent: 'center' }}>
+              {packages.filter(p => p.id !== 'single').map((pkg) => (
+                <Grid item xs={12} md={4} key={pkg.id}>
                   <Box
+                    component={motion.div}
+                    whileHover={{ scale: 1.02, y: -4 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedPackage(pkg.id)}
                     sx={{
                       position: 'relative',
                       p: 3,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
                       borderRadius: 2,
                       border: 2,
                       borderColor: selectedPackage === pkg.id ? '#ca0056' : '#e5e7eb',
@@ -337,7 +399,11 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
               </Typography>
               <Box sx={{ bgcolor: '#f8f9fa', borderRadius: 2, p: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <IconButton onClick={handlePrevMonth} size="small">
+                  <IconButton 
+                    onClick={handlePrevMonth} 
+                    size="small" 
+                    disabled={currentMonth.getFullYear() === new Date().getFullYear() && currentMonth.getMonth() === new Date().getMonth()}
+                  >
                     <ChevronLeftIcon />
                   </IconButton>
                   <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
@@ -360,13 +426,20 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
                   {Array.from({ length: daysInMonth }).map((_, index) => {
                     const day = index + 1;
                     const isSelected = selectedDate === day;
+                    const dayDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const isPast = dayDate < today;
+
                     return (
                       <Button
                         key={`day-${currentMonth.getFullYear()}-${currentMonth.getMonth()}-${day}`}
                         onClick={() => handleDateSelect(day)}
+                        disabled={isPast}
                         sx={{
                           minWidth: 0,
                           aspectRatio: '1',
+                          opacity: isPast ? 0.3 : 1,
                           borderRadius: 1,
                           bgcolor: isSelected ? '#ca0056' : 'transparent',
                           color: isSelected ? 'white' : '#1e293b',
@@ -408,14 +481,29 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
               ) : (
                 <Box sx={{ bgcolor: '#f8f9fa', borderRadius: 2, p: 2, maxHeight: 400, overflowY: 'auto' }}>
                   <Grid container spacing={1.5}>
-                    {timeSlots.map((time) => (
+                    {timeSlots.map((time) => {
+                      const todayInner = new Date();
+                      const isToday = selectedDate === todayInner.getDate() && 
+                                      currentMonth.getMonth() === todayInner.getMonth() && 
+                                      currentMonth.getFullYear() === todayInner.getFullYear();
+                      
+                      let isPastTime = false;
+                      if (isToday) {
+                        const currentHour = todayInner.getHours();
+                        if (time.includes('10:00 AM') && currentHour >= 10) isPastTime = true;
+                        if (time.includes('5:00 PM') && currentHour >= 17) isPastTime = true;
+                      }
+
+                      return (
                       <Grid item xs={6} key={time}>
                         <Button
                           fullWidth
+                          disabled={isPastTime}
                           onClick={() => setSelectedTime(time)}
                           variant={selectedTime === time ? 'contained' : 'outlined'}
                           sx={{
                             py: 1.5,
+                            opacity: isPastTime ? 0.5 : 1,
                             borderRadius: 2,
                             borderColor: selectedTime === time ? '#ca0056' : '#e5e7eb',
                             bgcolor: selectedTime === time ? '#ca0056' : 'white',
@@ -431,7 +519,8 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
                           {time}
                         </Button>
                       </Grid>
-                    ))}
+                      );
+                    })}
                   </Grid>
                 </Box>
               )}
@@ -583,6 +672,9 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
               Cancel
             </Button>
             <Button
+              component={motion.button}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleContinue}
               variant="contained"
               disabled={!selectedPackage}
@@ -601,6 +693,9 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
               Cancel
             </Button>
             <Button
+              component={motion.button}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
               onClick={handleContinue}
               variant="contained"
               disabled={!selectedDate || !selectedTime}
@@ -615,6 +710,9 @@ const BookingModal = ({ open, onClose, packageDetails }) => {
           </>
         ) : (
           <Button
+            component={motion.button}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.95 }}
             onClick={handleBookSession}
             variant="contained"
             disabled={!formData.agreedToTerms || isLoading}

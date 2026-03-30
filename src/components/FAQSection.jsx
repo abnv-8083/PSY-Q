@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState(null);
@@ -31,7 +32,11 @@ const FAQSection = () => {
   };
 
   return (
-    <section 
+    <motion.section 
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.6 }}
       className="bg-gray-50"
       style={{
         backgroundColor: '#f9fafb',
@@ -144,30 +149,40 @@ const FAQSection = () => {
                   </svg>
                 </div>
               </button>
-              {openIndex === index && (
-                <div 
-                  className="px-8 pb-6 border-t border-gray-100"
-                  style={{
-                    padding: '0 var(--space-4) var(--space-3)',
-                    borderTop: '1px solid #f3f4f6',
-                  }}
-                >
-                  <p 
-                    className="text-gray-600 leading-relaxed pt-4"
-                    style={{
-                      color: '#6b7280',
-                      lineHeight: '1.75',
-                      paddingTop: 'var(--space-2)',
-                      fontSize: '14px',
-                    }}
-                  >{faq.answer}</p>
-                </div>
-              )}
+              <AnimatePresence initial={false}>
+                {openIndex === index && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <div 
+                      className="px-8 pb-6 border-t border-gray-100"
+                      style={{
+                        padding: '0 var(--space-4) var(--space-3)',
+                        borderTop: '1px solid #f3f4f6',
+                      }}
+                    >
+                      <p 
+                        className="text-gray-600 leading-relaxed pt-4"
+                        style={{
+                          color: '#6b7280',
+                          lineHeight: '1.75',
+                          paddingTop: 'var(--space-2)',
+                          fontSize: '14px',
+                        }}
+                      >{faq.answer}</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
