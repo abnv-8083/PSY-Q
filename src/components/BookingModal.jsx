@@ -43,8 +43,7 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
   });
 
   //packages based on therapist rate
-  const displayedPrice = therapist?.price ? Number(therapist.price.replace(/\D/g, '')) : 900;
-  const basePrice = Math.round(displayedPrice / 0.90);
+  const basePrice = therapist?.price ? Number(therapist.price.replace(/\D/g, '')) : 900;
 
   const packages = [
     {
@@ -392,16 +391,17 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
             </Grid>
           </Box>
         ) : step === 2 ? (
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+            {/* Calendar */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1e293b' }}>
                 Select a Date
               </Typography>
               <Box sx={{ bgcolor: '#f8f9fa', borderRadius: 2, p: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <IconButton 
-                    onClick={handlePrevMonth} 
-                    size="small" 
+                  <IconButton
+                    onClick={handlePrevMonth}
+                    size="small"
                     disabled={currentMonth.getFullYear() === new Date().getFullYear() && currentMonth.getMonth() === new Date().getMonth()}
                   >
                     <ChevronLeftIcon />
@@ -413,7 +413,7 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
                     <ChevronRightIcon />
                   </IconButton>
                 </Box>
-                
+
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1 }}>
                   {dayNames.map((day) => (
                     <Box key={day} sx={{ textAlign: 'center', fontWeight: 600, fontSize: '14px', color: '#64748b' }}>
@@ -454,9 +454,10 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
                   })}
                 </Box>
               </Box>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            {/* Time slots */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: '#1e293b' }}>
                 Select a date to see available times
               </Typography>
@@ -483,10 +484,10 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
                   <Grid container spacing={1.5}>
                     {timeSlots.map((time) => {
                       const todayInner = new Date();
-                      const isToday = selectedDate === todayInner.getDate() && 
-                                      currentMonth.getMonth() === todayInner.getMonth() && 
+                      const isToday = selectedDate === todayInner.getDate() &&
+                                      currentMonth.getMonth() === todayInner.getMonth() &&
                                       currentMonth.getFullYear() === todayInner.getFullYear();
-                      
+
                       let isPastTime = false;
                       if (isToday) {
                         const currentHour = todayInner.getHours();
@@ -495,37 +496,37 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
                       }
 
                       return (
-                      <Grid item xs={6} key={time}>
-                        <Button
-                          fullWidth
-                          disabled={isPastTime}
-                          onClick={() => setSelectedTime(time)}
-                          variant={selectedTime === time ? 'contained' : 'outlined'}
-                          sx={{
-                            py: 1.5,
-                            opacity: isPastTime ? 0.5 : 1,
-                            borderRadius: 2,
-                            borderColor: selectedTime === time ? '#ca0056' : '#e5e7eb',
-                            bgcolor: selectedTime === time ? '#ca0056' : 'white',
-                            color: selectedTime === time ? 'white' : '#1e293b',
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            '&:hover': {
-                              borderColor: '#ca0056',
-                              bgcolor: selectedTime === time ? '#ca0056' : '#f9e6efff'
-                            }
-                          }}
-                        >
-                          {time}
-                        </Button>
-                      </Grid>
+                        <Grid item xs={6} key={time}>
+                          <Button
+                            fullWidth
+                            disabled={isPastTime}
+                            onClick={() => setSelectedTime(time)}
+                            variant={selectedTime === time ? 'contained' : 'outlined'}
+                            sx={{
+                              py: 1.5,
+                              opacity: isPastTime ? 0.5 : 1,
+                              borderRadius: 2,
+                              borderColor: selectedTime === time ? '#ca0056' : '#e5e7eb',
+                              bgcolor: selectedTime === time ? '#ca0056' : 'white',
+                              color: selectedTime === time ? 'white' : '#1e293b',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              '&:hover': {
+                                borderColor: '#ca0056',
+                                bgcolor: selectedTime === time ? '#ca0056' : '#f9e6efff'
+                              }
+                            }}
+                          >
+                            {time}
+                          </Button>
+                        </Grid>
                       );
                     })}
                   </Grid>
                 </Box>
               )}
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         ) : (
           <Box>
             <Grid container spacing={3}>
