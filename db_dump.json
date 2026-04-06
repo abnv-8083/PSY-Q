@@ -1,0 +1,99 @@
+{
+  "students": [
+    {
+      "id": "248b0b6e-f9e8-4a6b-8122-b305faace20a",
+      "email": "test_user_1771329613545@example.com",
+      "full_name": "Test User"
+    },
+    {
+      "id": "775520d0-bbb8-4adf-b34a-191793b7339a",
+      "email": "test_user_1771329861698_542@example.com",
+      "full_name": "Test User"
+    },
+    {
+      "id": "28a386bd-c273-4b24-8115-ecb366ebcea5",
+      "email": "mhdrafiabu@gmail.com",
+      "full_name": "M Rafi Abu"
+    },
+    {
+      "id": "36c64452-b17e-4f48-a8d9-3223ee8d7a57",
+      "email": "abhinavabhaidev@gmail.com",
+      "full_name": "Abhinav A M"
+    },
+    {
+      "id": "7e783097-dda3-4528-afc7-8ee89be199ee",
+      "email": "abhinav.bck318@gmail.com",
+      "full_name": "Abhinav A M"
+    },
+    {
+      "id": "6c300bf4-5ed1-4aa5-b47f-5339ed68ac9a",
+      "email": "oxterloopz@gmail.com",
+      "full_name": "Bbdhsn"
+    },
+    {
+      "id": "10e735e3-9974-4c86-892f-1826f3eb597f",
+      "email": "eventhub.org@gmail.com",
+      "full_name": "Event"
+    }
+  ],
+  "requests": [
+    {
+      "id": "4c3f9871-ad31-4a75-b717-abc64b9a256c",
+      "user_id": "36c64452-b17e-4f48-a8d9-3223ee8d7a57"
+    },
+    {
+      "id": "7597b01c-95a6-4917-84f5-46ad62053ba4",
+      "user_id": "36c64452-b17e-4f48-a8d9-3223ee8d7a57"
+    },
+    {
+      "id": "a29c0305-b27e-403a-9102-3fcc9bad24a6",
+      "user_id": "10e735e3-9974-4c86-892f-1826f3eb597f"
+    },
+    {
+      "id": "50eb4b59-d813-4d66-8816-d1423858d931",
+      "user_id": "10e735e3-9974-4c86-892f-1826f3eb597f"
+    }
+  ],
+  "authUsers": [
+    {
+      "id": "3d6b781f-00d1-401a-b379-49adb3f8b991",
+      "email": "demo@admin.com"
+    },
+    {
+      "id": "28a386bd-c273-4b24-8115-ecb366ebcea5",
+      "email": "mhdrafiabu@gmail.com"
+    },
+    {
+      "id": "1c76db3b-50f5-4858-8432-9d2f2b157382",
+      "email": "test.student.1771324192646@example.com"
+    },
+    {
+      "id": "675fc23b-0ea6-4b1c-9d6e-4fe67a7477fa",
+      "email": "abhinavabhaidev@gmail.com"
+    },
+    {
+      "id": "03d18f07-4b65-4d63-b66b-89d14bc007dd",
+      "email": "admin@psyq.com"
+    },
+    {
+      "id": "3618d154-f31d-4638-b049-76e7e5b04d5a",
+      "email": "abhinav.bck318@gmail.com"
+    },
+    {
+      "id": "48dd8408-ca46-4e65-8588-867c64ffcb13",
+      "email": "speedatnet328@gmail.com"
+    },
+    {
+      "id": "7f172724-4aa1-4cb6-adba-8ea3af307a8b",
+      "email": "primeheaven.org@gmail.com"
+    },
+    {
+      "id": "bb0c3d88-064c-45e9-9b10-e607e7f169ed",
+      "email": "salishikatvoolj@gmail.com"
+    },
+    {
+      "id": "6c300bf4-5ed1-4aa5-b47f-5339ed68ac9a",
+      "email": "oxterloopz@gmail.com"
+    }
+  ]
+}
