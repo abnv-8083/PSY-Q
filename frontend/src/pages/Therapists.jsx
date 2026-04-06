@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Search } from "lucide-react"
+import { motion } from "framer-motion"
 import BookingModal from "../components/BookingModal.jsx"
 import { therapists } from "../data/therapists"
 
@@ -237,7 +238,14 @@ export default function Therapists() {
           </div>
         </div>
 
-        <div
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+          }}
           className="mobile-grid"
           style={{
             display: "grid",
@@ -246,7 +254,12 @@ export default function Therapists() {
           }}
         >
           {filteredTherapists.map((therapist) => (
-            <div
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, scale: 0.95, y: 20 },
+                visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.4 } }
+              }}
+              whileHover={{ y: -4, boxShadow: "0 8px 16px rgba(0, 0, 0, 0.1)" }}
               key={therapist.id}
               className="mobile-card"
               style={{
@@ -260,7 +273,7 @@ export default function Therapists() {
                 minHeight: "120px",
                 overflow: "hidden",
               }}
-              onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)"}
+              onMouseEnter={(e) => e.currentTarget.style.boxShadow = "0 8px 16px rgba(0, 0, 0, 0.1)"}
               onMouseLeave={(e) => e.currentTarget.style.boxShadow = "0 1px 3px rgba(0, 0, 0, 0.08)"}
             >
               <div
@@ -479,9 +492,9 @@ export default function Therapists() {
                   </Link>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* No results message */}
         {filteredTherapists.length === 0 && (
@@ -504,7 +517,7 @@ export default function Therapists() {
         {/* Booking modal */}
         <BookingModal
           open={!!bookingTherapist}
-          packageDetails={bookingTherapist}
+          therapist={bookingTherapist}
           onClose={() => setBookingTherapist(null)}
         />
       </div>

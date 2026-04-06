@@ -10,33 +10,29 @@ const Academic = () => {
       icon: '/logos/ignou.png'
     },
     {
-      title: 'PSY-Q MOCK TEST SERIES',
-      description: 'Practice with standard mock tests \ndesigned for competitive exams.',
-      link: '/academic/mocktest',
-      icon: '/logos/ignou.png'
+      title: 'PSY-Q CALICUT STUDENTS GUIDE',
+      description: 'Access comprehensive psychology courses, \nexpertly curated for each year of your studies.',
+      link: '/soon',
+      icon: '/logos/calicut.png'
     }
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }} className="mesh-bg">
-      {/* Hero Section */}
-      <Box
-        sx={{
-          bgcolor: '#C2185B',
-          py: { xs: '40px', sm: '80px', md: '100px' },
-          px: { xs: 2, sm: 3, md: '80px' },
-          minHeight: { xs: '40vh', md: '50vh' },
-          display: 'flex',
-          pt: { xs: 8, md: 12 },
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1 }}>
-          <img src="/logos/pattern.png" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
-        </Box>
-        <Container maxWidth="lg">
-          <Typography
+    <Box>
+    {/* Hero Section */}
+        <Box
+          sx={{
+            bgcolor: '#C2185B',
+            py: { xs: '40px', sm: '80px', md: '100px' },
+            px: { xs: 2, sm: 3, md: '80px' },
+            minHeight: { xs: '50vh', md: '60vh' },
+            display: 'flex',
+            // alignItems: 'flex-start',
+            pt: { xs: 8, md: 12 }
+          }}
+        >
+          <Container maxWidth="lg">
+            <Typography
             variant="h1"
             sx={{
               color: 'white',
@@ -46,41 +42,39 @@ const Academic = () => {
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}
-          >
+            >
             ACADEMIC
-          </Typography>
-          <Typography
+            </Typography>
+            <Typography
             sx={{
               color: 'white',
               fontSize: '14px',
               maxWidth: '900px',
               lineHeight: 1.6
             }}
-          >
+            >
             PSY-Q Learning is designed to support learners with focused, flexible, and expertly guided sessions.
-          </Typography>
+            </Typography>
 
-          {/* Cards Section - Inside the pink background */}
+            {/* Cards Section - Inside the pink background */}
           <Grid container spacing={3} sx={{ mt: { xs: 4, md: 6 }, pb: { xs: 4, md: 6 } }}>
             {guides.map((guide, index) => (
               <Grid item xs={12} md={6} key={index}>
                 <Card
-                  className="glass-card"
                   component={Link}
                   to={guide.link}
                   sx={{
-                    borderRadius: 4,
-                    padding: '10px',
+                    bgcolor: '#F2B8C1',
+                    borderRadius: 0,
+                    padding: '40px',
                     height: '100%',
                     display: 'flex',
                     textDecoration: 'none',
-                    transition: 'all 0.3s ease',
-                    border: '1px solid rgba(255, 255, 255, 0.4)',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                    boxShadow: 'none',
                     '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 12px 30px rgba(194, 24, 91, 0.15)',
-                      borderColor: '#C2185B'
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)'
                     }
                   }}
                 >
