@@ -198,7 +198,7 @@ const HeroSection = ({ navigate }) => {
                             <Button
                                 variant="contained"
                                 size="large"
-                                onClick={() => navigate('/academic/mocktest/tests')}
+                                onClick={() => navigate('/academic/mocktest/dashboard')}
                                 sx={{
                                     bgcolor: COLORS.accent, fontSize: '1.1rem', py: 1.5, px: 4, borderRadius: 2, textTransform: 'none', fontWeight: 700,
                                     '&:hover': { bgcolor: COLORS.accentHover }
@@ -209,7 +209,7 @@ const HeroSection = ({ navigate }) => {
                             <Button
                                 variant="outlined"
                                 size="large"
-                                onClick={() => navigate('/academic/mocktest/tests')}
+                                onClick={() => navigate('/academic/mocktest/dashboard')}
                                 sx={{
                                     color: COLORS.primary, borderColor: COLORS.primary, fontSize: '1.1rem', py: 1.5, px: 4, borderRadius: 2, textTransform: 'none', fontWeight: 700
                                 }}
@@ -646,7 +646,7 @@ const MockTestHome = () => {
                         <Button
                             fullWidth
                             variant="contained"
-                            onClick={() => navigate('/academic/mocktest/tests')}
+                            onClick={() => navigate('/academic/mocktest/dashboard')}
                             endIcon={<ArrowRight size={18} />}
                             sx={{
                                 bgcolor: isFree ? '#10b981' : COLORS.accent,

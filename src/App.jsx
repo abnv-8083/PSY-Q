@@ -70,11 +70,7 @@ function AnimatedRoutes() {
         {/* Mock Test Section */}
         <Route path="/academic/mocktest" element={<MockTestHome />} />
         <Route path="/academic/mocktest/bundles" element={<MockTestBundles />} />
-        <Route path="/academic/mocktest/dashboard" element={
-          <ProtectedRoute>
-            <MockTestDashboard />
-          </ProtectedRoute>
-        } />
+        <Route path="/academic/mocktest/dashboard" element={<MockTestDashboard />} />
         <Route path="/academic/mocktest/tests" element={
           <ProtectedRoute>
             <MockTestInterface />

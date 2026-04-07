@@ -42,7 +42,7 @@ const MockTestNavbar = () => {
 
     const navItems = [
         { label: 'Home', path: '/academic/mocktest' },
-        { label: 'Practice Tests', path: '/academic/mocktest/tests' },
+        { label: 'Practice Tests', path: '/academic/mocktest/dashboard' },
         { label: 'Bundles', path: '/academic/mocktest/bundles' },
         { label: 'Features', path: '/academic/mocktest/features' },
         { label: 'Contact', path: '/academic/mocktest/contact' }
