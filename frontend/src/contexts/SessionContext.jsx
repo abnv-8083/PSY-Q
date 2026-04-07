@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import apiClient from '../lib/apiClient';
+import { supabase } from '../lib/supabaseClient';
+import axios from 'axios';
 
 const SessionContext = createContext();
 

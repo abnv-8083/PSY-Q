@@ -11,5 +11,8 @@
     "build:frontend": "npm run build -w frontend",
     "start:backend": "npm start -w backend",
     "create-admin-dev": "npm run create-admin -w backend"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
