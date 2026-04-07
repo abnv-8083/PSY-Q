@@ -40,6 +40,12 @@ const FeatureCards = () => {
       description: "Comprehensive academic support and competitive exam preparation.",
       link: "/academic-support",
       image: "/images/academic.webp"
+    },
+    {
+      title: "Mock Test",
+      description: "Practice with our standard mock tests and personalized analytics.",
+      link: "/academic/mocktest",
+      image: "/images/mocktest_card.png"
     }
   ];
 
@@ -66,7 +72,7 @@ const FeatureCards = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
         >
           {features.map((feature, index) => (
             <motion.div variants={cardVariants} key={index}>
