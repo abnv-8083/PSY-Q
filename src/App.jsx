@@ -32,6 +32,9 @@ import GuestCheckout from './pages/mocktest/GuestCheckout';
 // Student Sections
 import StudentProfile from './pages/student/StudentProfile';
 import StudentPayment from './pages/student/StudentPayment';
+import StudentSignIn from './pages/StudentSignIn';
+import StudentSignUp from './pages/StudentSignUp';
+import StudentForgotPassword from './pages/student/StudentForgotPassword';
 
 // Admin Sections
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -94,6 +97,9 @@ function AnimatedRoutes() {
         } />
 
         {/* Student Section */}
+        <Route path="/student/signin" element={<StudentSignIn />} />
+        <Route path="/student/signup" element={<StudentSignUp />} />
+        <Route path="/student/forgot-password" element={<StudentForgotPassword />} />
         <Route path="/student/profile" element={<Layout><StudentProfile /></Layout>} />
         <Route path="/student/payment" element={<Layout><StudentPayment /></Layout>} />
 
