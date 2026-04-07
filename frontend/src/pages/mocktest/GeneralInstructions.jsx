@@ -69,7 +69,7 @@ const GeneralInstructions = () => {
             <MockTestNavbar />
 
             {/* Header Section */}
-            <Box sx={{ bgcolor: COLORS.primary, color: 'white', py: 4 }}>
+            <Box sx={{ bgcolor: COLORS.primary, color: 'white', pt: { xs: 8, sm: 10, md: 12 }, pb: 4 }}>
                 <Container maxWidth="lg">
                     <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
                         <Box sx={{ bgcolor: alpha(COLORS.accent, 0.2), p: 1, borderRadius: 2 }}>

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, AlertCircle, Clock, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
+import MockTestNavbar from '../../components/MockTestNavbar';
 
 const MockTestRules = () => {
     const { subjectId, testId } = useParams();
@@ -41,6 +42,7 @@ const MockTestRules = () => {
 
     return (
         <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }} className="mesh-bg">
+            <MockTestNavbar />
             {/* Animated Background Blobs */}
             <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }}>
                 <motion.div
@@ -63,7 +65,7 @@ const MockTestRules = () => {
                 />
             </Box>
 
-            <Container maxWidth="md" sx={{ py: 8, position: 'relative', zIndex: 1 }}>
+            <Container maxWidth="md" sx={{ py: { xs: 8, sm: 10, md: 12 }, position: 'relative', zIndex: 1 }}>
                 <Paper className="glass-card" sx={{ p: 5, borderRadius: 4, border: '1px solid rgba(241, 245, 249, 0.4)' }}>
                     <Typography variant="h4" sx={{ mb: 1, fontWeight: 800 }}>Before You Start</Typography>
                     <Typography variant="body1" sx={{ mb: 4, color: '#5f6368' }}> Please read the instructions carefully.</Typography>

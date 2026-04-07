@@ -20,6 +20,28 @@ import SportsMentalHealth from './pages/SportsMentalHealth';
 import Academic from './pages/academic';
 import Policies from './pages/Policies';
 
+// Mock Test Pages
+import MockTestHome from './pages/mocktest/MockTestHome';
+import MockTestBundles from './pages/mocktest/MockTestBundles';
+import MockTestDashboard from './pages/mocktest/MockTestDashboard';
+import MockTestInterface from './pages/mocktest/MockTestInterface';
+import MockTestRules from './pages/mocktest/MockTestRules';
+import ResultAnalytics from './pages/mocktest/ResultAnalytics';
+import GuestCheckout from './pages/mocktest/GuestCheckout';
+
+// Student Sections
+import StudentProfile from './pages/student/StudentProfile';
+import StudentPayment from './pages/student/StudentPayment';
+
+// Admin Sections
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminResetPassword from './pages/admin/AdminResetPassword';
+
+// Components & Contexts
+import ProtectedRoute from './components/ProtectedRoute';
+import { SessionProvider } from './contexts/SessionContext';
+import NotFound from './pages/NotFound';
+
 function AnimatedRoutes() {
   const location = useLocation();
   return (
@@ -41,6 +63,54 @@ function AnimatedRoutes() {
         <Route path="/sports-mental-health" element={<Layout><SportsMentalHealth /></Layout>} />
         <Route path="/academic-support" element={<Layout><Academic /></Layout>} />
         <Route path="/policies" element={<Layout><Policies /></Layout>} />
+
+        {/* Mock Test Section */}
+        <Route path="/academic/mocktest" element={<MockTestHome />} />
+        <Route path="/academic/mocktest/bundles" element={<MockTestBundles />} />
+        <Route path="/academic/mocktest/dashboard" element={
+          <ProtectedRoute>
+            <MockTestDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/academic/mocktest/tests" element={
+          <ProtectedRoute>
+            <MockTestInterface />
+          </ProtectedRoute>
+        } />
+        <Route path="/academic/mocktest/rules/:id" element={
+          <ProtectedRoute>
+            <MockTestRules />
+          </ProtectedRoute>
+        } />
+        <Route path="/academic/mocktest/checkout" element={
+          <ProtectedRoute>
+            <GuestCheckout />
+          </ProtectedRoute>
+        } />
+        <Route path="/academic/mocktest/analytics/:id" element={
+          <ProtectedRoute>
+            <ResultAnalytics />
+          </ProtectedRoute>
+        } />
+
+        {/* Student Section */}
+        <Route path="/student/profile" element={<Layout><StudentProfile /></Layout>} />
+        <Route path="/student/payment" element={<Layout><StudentPayment /></Layout>} />
+
+        {/* Admin Section */}
+        <Route path="/admin/*" element={
+          <ProtectedRoute adminOnly>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/reset-password" element={<AdminResetPassword />} />
+        <Route path="/academic/mocktest/admin/*" element={
+          <ProtectedRoute adminOnly>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+
+        <Route path="*" element={<Layout><NotFound /></Layout>} />
       </Routes>
     </AnimatePresence>
   );
@@ -62,9 +132,11 @@ function App() {
       <AnimatePresence>
         {isLoading && <Preloader />}
       </AnimatePresence>
-      <Router>
-        <AnimatedRoutes />
-      </Router>
+      <SessionProvider>
+        <Router>
+          <AnimatedRoutes />
+        </Router>
+      </SessionProvider>
     </>
   );
 }

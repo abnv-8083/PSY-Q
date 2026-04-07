@@ -124,7 +124,7 @@ const MockTestBundles = () => {
             {/* Hero Section */}
             <Box sx={{
                 bgcolor: COLORS.primary,
-                pt: { xs: 6, md: 10 },
+                pt: { xs: 8, sm: 10, md: 12 }, // Adjusted for single navbar
                 pb: { xs: 12, md: 16 },
                 position: 'relative',
                 overflow: 'hidden',

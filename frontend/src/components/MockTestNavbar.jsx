@@ -61,40 +61,43 @@ const MockTestNavbar = () => {
     };
 
     return (
-        <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'white', borderBottom: `1px solid ${COLORS.primary}20` }}>
-            <Container maxWidth={false}>
-                <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-                    {/* Mobile Back Button */}
-                    {isMobile && (
-                        <IconButton
-                            onClick={() => navigate(-1)}
-                            sx={{ color: COLORS.primary, mr: 1 }}
-                        >
-                            <ChevronLeft />
-                        </IconButton>
-                    )}
-
-                    {/* Logo Body */}
-                    <Typography
-                        variant="h6"
-                        component="div"
+        <AppBar 
+            position="fixed" 
+            elevation={0} 
+            sx={{ 
+                bgcolor: 'white', 
+                borderBottom: `1px solid ${COLORS.primary}20`,
+                top: 0,
+                zIndex: 1100
+            }}
+        >
+            <Container maxWidth="lg">
+                <Toolbar disableGutters sx={{ minHeight: { xs: 64, sm: 70, md: 76 } }}>
+                    {/* Logo for Mock Test Section */}
+                    <Box
+                        onClick={() => navigate('/')}
                         sx={{
-                            color: COLORS.primary,
-                            fontWeight: 800,
-                            cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 1
+                            cursor: 'pointer',
+                            mr: 'auto',
+                            '&:hover': { opacity: 0.8 }
                         }}
-                        onClick={() => navigate('/academic/mocktest')}
                     >
-                        <img src="/logos/psyg-logo-footer.png" alt="Logo" style={{ height: 40, marginRight: '1px' }} />
-                        PSY-Q <Box component="span" sx={{ color: COLORS.accent }}>MOCK TEST</Box>
-                    </Typography>
+                        <Box
+                            component="img"
+                            src="/logos/new-logo.jpeg"
+                            alt="Psy-Q Logo"
+                            sx={{
+                                height: { xs: '35px', sm: '40px', md: '45px' },
+                                width: 'auto'
+                            }}
+                        />
+                    </Box>
 
                     {/* Desktop Actions */}
                     {!isMobile && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 4, ml: 'auto' }}>
                             <Box sx={{ display: 'flex', gap: 1 }}>
                                 {navItems.map((item) => (
                                     <Button
@@ -104,7 +107,8 @@ const MockTestNavbar = () => {
                                             color: isActive(item.path) ? COLORS.accent : COLORS.text,
                                             fontWeight: isActive(item.path) ? 700 : 500,
                                             textTransform: 'none',
-                                            fontSize: '1rem',
+                                            fontSize: '0.9rem',
+                                            px: 1.5,
                                             '&:hover': {
                                                 bgcolor: `${COLORS.accent}10`,
                                                 color: COLORS.accent
@@ -115,177 +119,30 @@ const MockTestNavbar = () => {
                                     </Button>
                                 ))}
                             </Box>
-
-                            <Divider orientation="vertical" flexItem sx={{ height: 24, alignSelf: 'center', mx: 1 }} />
-
-                            {user ? (
-                                <>
-                                    <Button
-                                        onClick={handleProfileMenuOpen}
-                                        sx={{
-                                            textTransform: 'none',
-                                            color: COLORS.primary,
-                                            fontWeight: 600,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 1,
-                                            borderRadius: '50px',
-                                            pl: 0.5,
-                                            pr: 1.5,
-                                            py: 0.5,
-                                            '&:hover': { bgcolor: alpha(COLORS.accent, 0.05) }
-                                        }}
-                                    >
-                                        <Avatar
-                                            src={user.photoURL}
-                                            sx={{ width: 32, height: 32, bgcolor: COLORS.accent, fontSize: '0.9rem' }}
-                                        >
-                                            {user.full_name?.charAt(0) || user.email?.charAt(0).toUpperCase()}
-                                        </Avatar>
-                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                            {user.full_name?.split(' ')[0] || 'Member'}
-                                        </Typography>
-
-                                        <ChevronDown size={16} />
-                                    </Button>
-                                    <Menu
-                                        anchorEl={anchorEl}
-                                        open={Boolean(anchorEl)}
-                                        onClose={handleProfileMenuClose}
-                                        PaperProps={{
-                                            sx: {
-                                                mt: 1.5,
-                                                minWidth: 200,
-                                                borderRadius: 3,
-                                                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                                                border: '1px solid #eee'
-                                            }
-                                        }}
-                                        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                                        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                                    >
-                                        <Box sx={{ px: 2, py: 1 }}>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{user.full_name || 'User'}</Typography>
-                                            <Typography variant="caption" sx={{ color: 'text.secondary' }}>{user.email}</Typography>
-                                        </Box>
-
-                                        <Divider />
-                                        <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/student/profile'); }} sx={{ py: 1.2, gap: 1.5 }}>
-                                            <User size={18} /> Profile
-                                        </MenuItem>
-                                        <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/student/payment'); }} sx={{ py: 1.2, gap: 1.5 }}>
-                                            <PaymentIcon size={18} /> Payments
-                                        </MenuItem>
-                                        <Divider />
-                                        <MenuItem onClick={handleLogout} sx={{ py: 1.2, gap: 1.5, color: '#e11d48' }}>
-                                            <LogOut size={18} /> Logout
-                                        </MenuItem>
-                                    </Menu>
-                                </>
-                            ) : (
-                                <Box sx={{ display: 'flex', gap: 1.5 }}>
-                                    <Button
-                                        onClick={() => navigate('/student/signin')}
-                                        sx={{
-                                            color: COLORS.primary,
-                                            fontWeight: 700,
-                                            textTransform: 'none',
-                                            '&:hover': { bgcolor: alpha(COLORS.primary, 0.05) }
-                                        }}
-                                    >
-                                        Login
-                                    </Button>
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => navigate('/student/signup')}
-                                        sx={{
-                                            bgcolor: COLORS.accent,
-                                            color: 'white',
-                                            fontWeight: 700,
-                                            textTransform: 'none',
-                                            borderRadius: '50px',
-                                            px: 3,
-                                            boxShadow: `0 4px 14px ${alpha(COLORS.accent, 0.3)}`,
-                                            '&:hover': {
-                                                bgcolor: '#b8003f',
-                                                boxShadow: `0 6px 20px ${alpha(COLORS.accent, 0.4)}`
-                                            }
-                                        }}
-                                    >
-                                        Sign Up
-                                    </Button>
-                                </Box>
-                            )}
                         </Box>
                     )}
 
-                    {/* Mobile Menu Button */}
+                    {/* Mobile Menu Button centered */}
                     {isMobile && (
-                        <IconButton onClick={() => setMobileOpen(true)} sx={{ color: COLORS.primary }}>
-                            <MenuIcon />
-                        </IconButton>
-                    )}
-
-                    {/* Mobile Drawer */}
-                    <Drawer
-                        anchor="right"
-                        open={mobileOpen}
-                        onClose={() => setMobileOpen(false)}
-                        PaperProps={{ sx: { width: 250 } }}
-                    >
-                        <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                            <IconButton onClick={() => setMobileOpen(false)}>
-                                <X />
-                            </IconButton>
-                        </Box>
-                        <List>
-                            {navItems.map((item) => (
-                                <ListItem
-                                    button
+                        <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', py: 1, '&::-webkit-scrollbar': { display: 'none' } }}>
+                             {navItems.map((item) => (
+                                <Button
                                     key={item.label}
                                     onClick={() => handleNavigate(item.path)}
+                                    size="small"
                                     sx={{
-                                        bgcolor: isActive(item.path) ? `${COLORS.accent}10` : 'transparent',
-                                        color: isActive(item.path) ? COLORS.accent : COLORS.text
+                                        color: isActive(item.path) ? COLORS.accent : COLORS.text,
+                                        fontWeight: isActive(item.path) ? 700 : 500,
+                                        textTransform: 'none',
+                                        minWidth: 'max-content',
+                                        fontSize: '0.85rem'
                                     }}
                                 >
-                                    <ListItemText
-                                        primary={item.label}
-                                        primaryTypographyProps={{ fontWeight: isActive(item.path) ? 700 : 500 }}
-                                    />
-                                </ListItem>
+                                    {item.label}
+                                </Button>
                             ))}
-                            <Divider sx={{ my: 1 }} />
-                            {!user ? (
-                                <>
-                                    <ListItem button onClick={() => handleNavigate('/student/signin')}>
-                                        <ListItemText primary="Login" primaryTypographyProps={{ fontWeight: 600 }} />
-                                    </ListItem>
-                                    <ListItem button onClick={() => handleNavigate('/student/signup')}>
-                                        <ListItemText
-                                            primary="Sign Up"
-                                            primaryTypographyProps={{
-                                                fontWeight: 800,
-                                                color: COLORS.accent
-                                            }}
-                                        />
-                                    </ListItem>
-                                </>
-                            ) : (
-                                <>
-                                    <ListItem button onClick={() => handleNavigate('/student/profile')}>
-                                        <ListItemText primary="My Profile" primaryTypographyProps={{ fontWeight: 600 }} />
-                                    </ListItem>
-                                    <ListItem button onClick={() => handleNavigate('/student/payment')}>
-                                        <ListItemText primary="Payments" primaryTypographyProps={{ fontWeight: 600 }} />
-                                    </ListItem>
-                                    <ListItem button onClick={handleLogout} sx={{ color: '#e11d48' }}>
-                                        <ListItemText primary="Logout" primaryTypographyProps={{ fontWeight: 600 }} />
-                                    </ListItem>
-                                </>
-                            )}
-                        </List>
-                    </Drawer>
+                        </Box>
+                    )}
                 </Toolbar>
             </Container>
         </AppBar>

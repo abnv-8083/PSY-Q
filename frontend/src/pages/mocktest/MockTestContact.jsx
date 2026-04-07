@@ -9,7 +9,6 @@ import { supabase } from '../../lib/supabaseClient';
 import { useSession } from '../../contexts/SessionContext'; // Import session hook
 
 import MockTestNavbar from '../../components/MockTestNavbar';
-
 import Footer from '../../components/Footer';
 
 const COLORS = {
@@ -256,7 +255,7 @@ const MockTestContact = () => {
             {/* Hero Section */}
             <Box sx={{
                 bgcolor: COLORS.background,
-                pt: { xs: 6, md: 8 },
+                pt: { xs: 8, sm: 10, md: 12 }, // Adjusted for single navbar
                 pb: { xs: 6, md: 8 },
                 borderBottom: `1px solid ${COLORS.border}`
             }}>

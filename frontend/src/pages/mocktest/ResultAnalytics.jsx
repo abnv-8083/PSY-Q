@@ -141,7 +141,7 @@ const ResultAnalytics = () => {
         <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd' }}>
             <MockTestNavbar />
 
-            <Box sx={{ position: 'relative', overflow: 'hidden', pt: 8, pb: 10 }}>
+            <Box sx={{ position: 'relative', overflow: 'hidden', pt: { xs: 8, sm: 10, md: 12 }, pb: 10 }}>
                 {/* Background Blobs */}
                 <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }}>
                     <motion.div

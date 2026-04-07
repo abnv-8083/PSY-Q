@@ -15,7 +15,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
 
 import MockTestNavbar from '../../components/MockTestNavbar';
-
 import Footer from '../../components/Footer';
 
 // --- Constants (Shared with MockTestHome) ---
@@ -270,7 +269,7 @@ const MockTestDashboard = () => {
             <Box sx={{
                 bgcolor: COLORS.primary,
                 color: 'white',
-                pt: { xs: 4, md: 6 },
+                pt: { xs: 8, sm: 10, md: 12 }, // Adjusted for single navbar
                 pb: { xs: 10, md: 12 },
                 position: 'relative',
                 overflow: 'hidden'

@@ -57,7 +57,7 @@ const MockTestFeatures = () => {
         <Box sx={{ minHeight: '100vh', bgcolor: 'white', fontFamily: "'Inter', sans-serif" }}>
             <MockTestNavbar />
 
-            <Box sx={{ bgcolor: COLORS.primary, color: 'white', py: 10, textAlign: 'center' }}>
+            <Box sx={{ bgcolor: COLORS.primary, color: 'white', pt: { xs: 8, sm: 10, md: 12 }, pb: 10, textAlign: 'center' }}>
                 <Container maxWidth="md">
                     <Typography variant="overline" sx={{ color: COLORS.accent, fontWeight: 700, letterSpacing: '0.1em' }}>
                         WHY CHOOSE US

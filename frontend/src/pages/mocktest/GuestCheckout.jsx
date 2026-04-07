@@ -23,6 +23,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
 import { createPurchaseRequest } from '../../api/purchaseRequestsApi';
+import MockTestNavbar from '../../components/MockTestNavbar';
 
 const GuestCheckout = () => {
     const navigate = useNavigate();
@@ -189,7 +190,9 @@ const GuestCheckout = () => {
     );
 
     return (
-        <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fdf2f8 0%, #fef2f2 100%)', pt: 4, pb: 8 }}>
+        <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fdf2f8 0%, #fef2f2 100%)' }}>
+            <MockTestNavbar />
+            <Box sx={{ pt: { xs: 8, sm: 10, md: 12 }, pb: 8 }}>
             <Container maxWidth="md">
                 {/* Header/Breadcrumbs */}
                 <Box sx={{ mb: 4 }}>
@@ -249,7 +252,8 @@ const GuestCheckout = () => {
                 </Grid>
             </Container>
         </Box>
-    );
+    </Box>
+);
 };
 
 export default GuestCheckout;
