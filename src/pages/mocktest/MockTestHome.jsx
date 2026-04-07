@@ -757,146 +757,207 @@ const MockTestHome = () => {
                                             transition={{ duration: 0.3 }}
                                         >
                                             <Card sx={{
-                                                height: 520,
-                                                borderRadius: 4.5,
-                                                overflow: 'hidden',
-                                                background: `rgba(255, 255, 255, 0.8)`,
-                                                backdropFilter: 'blur(10px)',
-                                                border: `1px solid ${alpha('#000000', 0.08)}`,
-                                                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.04)',
-                                                position: 'relative',
+                                                height: '100%',
                                                 display: 'flex',
                                                 flexDirection: 'column',
+                                                borderRadius: '24px',
+                                                background: 'rgba(255, 255, 255, 0.95)',
+                                                backdropFilter: 'blur(10px)',
+                                                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.04)',
+                                                transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                                border: `1px solid ${alpha(COLORS.border, 0.5)}`,
                                                 '&:hover': {
-                                                    boxShadow: `0 20px 60px ${alpha(COLORS.accent, 0.12)}`,
+                                                    boxShadow: '0 25px 60px rgba(202, 0, 86, 0.12)',
                                                     borderColor: alpha(COLORS.accent, 0.3),
-                                                    '& .card-gradient-bg': { transform: 'scale(1.2)', opacity: 0.8 }
-                                                },
-                                                transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                                                    '& .card-icon-bg': {
+                                                        transform: 'scale(1.2) rotate(-15deg)',
+                                                        opacity: 0.08
+                                                    }
+                                                }
                                             }}>
-                                                {/* Animated Background Decor */}
-                                                <Box className="card-gradient-bg" sx={{
-                                                    position: 'absolute',
-                                                    top: -50,
-                                                    right: -50,
-                                                    width: 150,
-                                                    height: 150,
-                                                    background: `radial-gradient(circle, ${alpha(COLORS.accent, 0.15)} 0%, transparent 70%)`,
-                                                    zIndex: 0,
-                                                    transition: 'all 0.6s ease',
-                                                    opacity: 0.5,
-                                                    pointerEvents: 'none'
-                                                }} />
-
                                                 {/* Dynamic Background Icon */}
-                                                <Box sx={{
+                                                <Box className="card-icon-bg" sx={{
                                                     position: 'absolute',
                                                     right: -20,
-                                                    top: 60,
-                                                    opacity: 0.04,
+                                                    top: 40,
+                                                    opacity: 0.03,
                                                     transform: 'rotate(-15deg)',
                                                     pointerEvents: 'none',
-                                                    zIndex: 0
+                                                    zIndex: 0,
+                                                    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                                                 }}>
                                                     {React.createElement(getBundleIcon(bundle.name), {
-                                                        size: 180,
-                                                        color: COLORS.primary,
+                                                        size: 160,
+                                                        color: COLORS.accent,
                                                         strokeWidth: 1
                                                     })}
                                                 </Box>
 
-                                                {/* Bundle Header Color Band */}
-                                                <Box sx={{
-                                                    height: 60,
-                                                    background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.accent})`,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    px: 3,
-                                                    position: 'relative',
-                                                    zIndex: 2
-                                                }}>
-                                                    <Typography variant="overline" sx={{ color: 'white', fontWeight: 900, letterSpacing: 2, fontSize: '0.7rem' }}>
-                                                        {bundle.bundle_type || 'PACKAGE'}
-                                                    </Typography>
-                                                </Box>
+                                                {/* Top Color Accent Bar */}
+                                                <Box sx={{ 
+                                                    height: 6, 
+                                                    background: `linear-gradient(90deg, ${COLORS.accent}, #ff4081)`,
+                                                    width: '100%' 
+                                                }} />
 
-                                                <CardContent sx={{ p: 3, flexGrow: 1, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
-                                                    <Typography variant="h5" sx={{ fontWeight: 900, mb: 1, color: COLORS.primary, fontSize: '1.25rem', lineHeight: 1.2 }}>
-                                                        {bundle.name}
-                                                    </Typography>
+                                                {/* Bundle Badge */}
+                                                {bundle.is_popular && (
+                                                    <Box
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: 24,
+                                                            right: 24,
+                                                            background: `linear-gradient(135deg, ${COLORS.accent} 0%, #ff4081 100%)`,
+                                                            color: 'white',
+                                                            padding: '6px 14px',
+                                                            borderRadius: '20px',
+                                                            fontWeight: 800,
+                                                            fontSize: '0.7rem',
+                                                            zIndex: 20,
+                                                            boxShadow: `0 4px 15px ${alpha(COLORS.accent, 0.3)}`,
+                                                            letterSpacing: '1px',
+                                                            textTransform: 'uppercase'
+                                                        }}
+                                                    >
+                                                        <Stack direction="row" alignItems="center" spacing={0.5}>
+                                                            <Sparkles size={12} />
+                                                            <span>Most Popular</span>
+                                                        </Stack>
+                                                    </Box>
+                                                )}
 
-                                                    <Typography variant="body2" sx={{ color: COLORS.textLight, mb: 3, minHeight: 40 }}>
-                                                        {bundle.description}
-                                                    </Typography>
+                                                <CardContent sx={{ p: { xs: 4, md: 5 }, flexGrow: 1, position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column' }}>
+                                                    <Box sx={{ mb: 3 }}>
+                                                        <Typography variant="h6" sx={{
+                                                            fontWeight: 900,
+                                                            color: COLORS.primary,
+                                                            letterSpacing: -0.5,
+                                                            fontSize: '1.4rem',
+                                                            lineHeight: 1.2,
+                                                            mb: 1
+                                                        }}>
+                                                            {bundle.name}
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{
+                                                            color: COLORS.secondary,
+                                                            lineHeight: 1.5,
+                                                            fontWeight: 500,
+                                                            fontSize: '0.85rem',
+                                                            opacity: 0.8,
+                                                            minHeight: 45
+                                                        }}>
+                                                            {bundle.description}
+                                                        </Typography>
+                                                    </Box>
 
-                                                    <Stack spacing={1.5} sx={{ mb: 4, flexGrow: 1 }}>
-                                                        {(bundle.features || ['5 Mock Tests', '1 Core Subjects', 'Expert Explanation']).slice(0, 4).map((feature, idx) => (
-                                                            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                                <Box sx={{ p: 0.5, bgcolor: alpha(COLORS.accent, 0.1), borderRadius: '50%' }}>
-                                                                    <CheckCircle size={14} color={COLORS.accent} />
+                                                    <Divider sx={{ mb: 3, borderColor: alpha(COLORS.border, 0.6) }} />
+
+                                                    <Stack spacing={2} sx={{ mb: 4 }}>
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                            <Box sx={{ 
+                                                                width: 36, 
+                                                                height: 36, 
+                                                                borderRadius: '10px', 
+                                                                bgcolor: alpha(COLORS.accent, 0.08),
+                                                                display: 'flex', 
+                                                                alignItems: 'center', 
+                                                                justifyContent: 'center',
+                                                                color: COLORS.accent
+                                                            }}>
+                                                                <CheckCircle size={18} strokeWidth={2.5} />
+                                                            </Box>
+                                                            <Box>
+                                                                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: COLORS.primary, lineHeight: 1.1, fontSize: '0.85rem' }}>
+                                                                    {bundle.bundle_tests?.length || 0} Mock Tests
+                                                                </Typography>
+                                                            </Box>
+                                                        </Box>
+
+                                                        {(bundle.features || []).slice(0, 3).map((feature, i) => (
+                                                            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                                <Box sx={{ 
+                                                                    display: 'flex', 
+                                                                    alignItems: 'center', 
+                                                                    justifyContent: 'center',
+                                                                    p: 0.5,
+                                                                    borderRadius: '50%',
+                                                                    bgcolor: alpha(COLORS.accent, 0.1),
+                                                                    color: COLORS.accent
+                                                                }}>
+                                                                    <CheckCircle size={10} strokeWidth={3} />
                                                                 </Box>
-                                                                <Typography sx={{ fontWeight: 600, color: COLORS.secondary, fontSize: '0.85rem' }}>
+                                                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary, fontSize: '0.8rem' }}>
                                                                     {feature}
                                                                 </Typography>
                                                             </Box>
                                                         ))}
                                                     </Stack>
 
-                                                    <Box sx={{ borderTop: `1px solid ${alpha('#000000', 0.05)}`, pt: 3, mt: 'auto' }}>
-                                                        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, mb: 2.5 }}>
-                                                            {bundle.offer_price ? (
-                                                                <>
-                                                                    <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary }}>
-                                                                        ₹{bundle.offer_price}
-                                                                    </Typography>
-                                                                    <Typography variant="body1" sx={{ color: COLORS.textLight, textDecoration: 'line-through', fontWeight: 600 }}>
+                                                    <Box sx={{ mt: 'auto' }}>
+                                                        <Divider sx={{ mb: 2.5, borderColor: alpha(COLORS.border, 0.6) }} />
+                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                            <Box>
+                                                                {bundle.offer_price && bundle.offer_price < bundle.regular_price && (
+                                                                    <Typography variant="caption" sx={{ color: COLORS.textLight, textDecoration: 'line-through', fontWeight: 700, mb: 0.2, display: 'block' }}>
                                                                         ₹{bundle.regular_price}
                                                                     </Typography>
-                                                                    <Chip
-                                                                        label={`${bundle.discount_percentage}% OFF`}
-                                                                        size="small"
-                                                                        sx={{
-                                                                            bgcolor: alpha('#10b981', 0.1),
-                                                                            color: '#10b981',
-                                                                            fontWeight: 800,
-                                                                            fontSize: '0.7rem',
-                                                                            borderRadius: 1.5
-                                                                        }}
-                                                                    />
-                                                                </>
-                                                            ) : (
-                                                                <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary }}>
-                                                                    ₹{bundle.regular_price}
-                                                                </Typography>
+                                                                )}
+                                                                <Stack direction="row" alignItems="baseline" spacing={0.5}>
+                                                                    <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -1, fontSize: '1.8rem' }}>
+                                                                        ₹{bundle.offer_price || bundle.regular_price}
+                                                                    </Typography>
+                                                                    <Typography variant="caption" sx={{ fontWeight: 700, color: COLORS.textLight, ml: 0.5 }}>
+                                                                        / Life
+                                                                    </Typography>
+                                                                </Stack>
+                                                            </Box>
+                                                            {bundle.offer_price && bundle.offer_price < bundle.regular_price && (
+                                                                <Box sx={{ 
+                                                                    bgcolor: alpha('#10b981', 0.1), 
+                                                                    color: '#10b981', 
+                                                                    px: 1, 
+                                                                    py: 0.3, 
+                                                                    borderRadius: '6px', 
+                                                                    fontSize: '0.65rem', 
+                                                                    fontWeight: 800,
+                                                                    border: '1px solid rgba(16, 185, 129, 0.2)'
+                                                                }}>
+                                                                    {bundle.discount_percentage}% OFF
+                                                                </Box>
                                                             )}
                                                         </Box>
-
-                                                        <Button
-                                                            fullWidth
-                                                            variant="contained"
-                                                            onClick={() => navigate('/academic/mocktest/bundles')}
-                                                            endIcon={<ArrowRight size={18} className="btn-arrow" style={{ transition: 'transform 0.3s' }} />}
-                                                            sx={{
-                                                                bgcolor: COLORS.accent,
-                                                                color: 'white',
-                                                                fontWeight: 800,
-                                                                borderRadius: 3,
-                                                                py: 1.8,
-                                                                fontSize: '1rem',
-                                                                textTransform: 'none',
-                                                                boxShadow: `0 10px 25px -5px ${alpha(COLORS.accent, 0.4)}`,
-                                                                '&:hover': {
-                                                                    bgcolor: COLORS.accentHover,
-                                                                    boxShadow: `0 15px 35px -5px ${alpha(COLORS.accent, 0.5)}`,
-                                                                    '& .btn-arrow': { transform: 'translateX(4px)' }
-                                                                },
-                                                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                                                            }}
-                                                        >
-                                                            Get Full Access
-                                                        </Button>
                                                     </Box>
                                                 </CardContent>
+
+                                                <Box sx={{ p: 4, pt: 0, position: 'relative', zIndex: 1 }}>
+                                                    <Button
+                                                        fullWidth
+                                                        variant="contained"
+                                                        onClick={() => navigate('/academic/mocktest/bundles')}
+                                                        sx={{
+                                                            background: `linear-gradient(135deg, ${COLORS.accent} 0%, #ff4081 100%)`,
+                                                            color: 'white',
+                                                            fontWeight: 800,
+                                                            borderRadius: '12px',
+                                                            textTransform: 'none',
+                                                            py: 1.5,
+                                                            fontSize: '0.9rem',
+                                                            boxShadow: `0 8px 16px ${alpha(COLORS.accent, 0.2)}`,
+                                                            '&:hover': {
+                                                                transform: 'translateY(-2px)',
+                                                                boxShadow: `0 12px 24px ${alpha(COLORS.accent, 0.3)}`,
+                                                            },
+                                                            transition: 'all 0.3s ease'
+                                                        }}
+                                                    >
+                                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                                            <span>Get Full Access</span>
+                                                            <ArrowRight size={16} />
+                                                        </Stack>
+                                                    </Button>
+                                                </Box>
                                             </Card>
                                         </motion.div>
                                     </Box>
