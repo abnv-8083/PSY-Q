@@ -530,9 +530,9 @@ const MockTestHome = () => {
             >
                 <Card sx={{
                     height: '100%',
-                    borderRadius: 8,
+                    borderRadius: 6,
                     background: `linear-gradient(135deg, ${COLORS.accent} 0%, #9d174d 100%)`,
-                    boxShadow: `0 20px 40px ${alpha(COLORS.accent, 0.2)}`,
+                    boxShadow: `0 15px 35px ${alpha(COLORS.accent, 0.2)}`,
                     transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                     display: 'flex',
                     flexDirection: 'column',
@@ -541,129 +541,129 @@ const MockTestHome = () => {
                     color: 'white',
                     border: `1px solid ${alpha('#ffffff', 0.2)}`,
                     '&:hover': {
-                        transform: 'translateY(-12px)',
-                        boxShadow: `0 30px 60px ${alpha(COLORS.accent, 0.4)}`,
-                        '& .card-icon-bg': { transform: 'scale(1.4) rotate(-15deg)', opacity: 0.15 }
+                        transform: 'translateY(-8px)',
+                        boxShadow: `0 25px 50px ${alpha(COLORS.accent, 0.4)}`,
+                        '& .card-icon-bg': { transform: 'scale(1.2) rotate(-15deg)', opacity: 0.12 }
                     }
                 }}>
-                    <CardContent sx={{ p: 4, flexGrow: 1, position: 'relative', zIndex: 1 }}>
+                    <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1 }}>
                         {/* Decorative Icon */}
                         <Box className="card-icon-bg" sx={{
                             position: 'absolute',
                             right: -10,
-                            top: 20,
+                            top: 15,
                             opacity: 0.08,
                             transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                             pointerEvents: 'none',
                             zIndex: 0
                         }}>
                             {React.createElement(IconComponent, {
-                                size: 160,
+                                size: 120,
                                 color: 'white',
                                 strokeWidth: 1
                             })}
                         </Box>
 
-                        <Stack spacing={3} sx={{ position: 'relative', zIndex: 1, height: '100%' }}>
+                        <Stack spacing={2} sx={{ position: 'relative', zIndex: 1, height: '100%' }}>
                             <Box>
                                 <Box sx={{ 
                                     display: 'inline-flex',
-                                    px: 1.5, 
-                                    py: 0.5, 
+                                    px: 1.2, 
+                                    py: 0.4, 
                                     bgcolor: alpha('#ffffff', 0.15), 
                                     backdropFilter: 'blur(4px)',
-                                    borderRadius: 2,
-                                    mb: 1.5,
+                                    borderRadius: 1.5,
+                                    mb: 1,
                                     border: `1px solid ${alpha('#ffffff', 0.2)}`
                                 }}>
                                     <Typography variant="overline" sx={{ 
                                         color: 'white', 
                                         fontWeight: 900, 
-                                        letterSpacing: 2,
-                                        fontSize: '0.65rem'
+                                        letterSpacing: 1.5,
+                                        fontSize: '0.6rem'
                                     }}>
                                         UGC-NET PAPER 2 PSYCHOLOGY
                                     </Typography>
                                 </Box>
-                                <Typography variant="h5" sx={{
-                                    fontWeight: 950,
+                                <Typography variant="h6" sx={{
+                                    fontWeight: 900,
                                     color: 'white',
                                     lineHeight: 1.2,
-                                    fontSize: '1.4rem',
+                                    fontSize: '1.2rem',
                                     textShadow: '0 2px 10px rgba(0,0,0,0.1)'
                                 }}>
                                     {test.name}
                                 </Typography>
                             </Box>
 
-                            {/* Glass Metadata Grid */}
-                            <Grid container spacing={1.5} sx={{ mb: 1 }}>
+                            {/* Compact Glass Metadata Grid */}
+                            <Grid container spacing={1} sx={{ mb: 0.5 }}>
                                 <Grid item xs={6}>
                                     <Box sx={{
-                                        p: 2,
-                                        borderRadius: 4,
+                                        p: 1.2,
+                                        borderRadius: 3,
                                         bgcolor: alpha('#000000', 0.15),
                                         backdropFilter: 'blur(10px)',
                                         border: `1px solid ${alpha('#ffffff', 0.1)}`,
                                         textAlign: 'center'
                                     }}>
-                                        <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.7), fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: 1 }}>
+                                        <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.7), fontWeight: 800, display: 'block', mb: 0.2, fontSize: '0.7rem' }}>
                                             QUESTIONS
                                         </Typography>
-                                        <Typography variant="h6" sx={{ fontWeight: 900, color: 'white' }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: 'white', lineHeight: 1 }}>
                                             {test.questions?.length || 0}
                                         </Typography>
                                     </Box>
                                 </Grid>
                                 <Grid item xs={6}>
                                     <Box sx={{
-                                        p: 2,
-                                        borderRadius: 4,
+                                        p: 1.2,
+                                        borderRadius: 3,
                                         bgcolor: alpha('#000000', 0.15),
                                         backdropFilter: 'blur(10px)',
                                         border: `1px solid ${alpha('#ffffff', 0.1)}`,
                                         textAlign: 'center'
                                     }}>
-                                        <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.7), fontWeight: 800, display: 'block', mb: 0.5, letterSpacing: 1 }}>
+                                        <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.7), fontWeight: 800, display: 'block', mb: 0.2, fontSize: '0.7rem' }}>
                                             DURATION
                                         </Typography>
-                                        <Typography variant="h6" sx={{ fontWeight: 900, color: 'white' }}>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: 'white', lineHeight: 1 }}>
                                             {test.duration}m
                                         </Typography>
                                     </Box>
                                 </Grid>
                             </Grid>
 
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 'auto' }}>
-                                <Box sx={{ p: 1, bgcolor: alpha('#ffffff', 0.2), borderRadius: 2, border: `1px solid ${alpha('#ffffff', 0.2)}` }}>
-                                    <Sparkles size={16} color="white" />
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto' }}>
+                                <Box sx={{ p: 0.8, bgcolor: alpha('#ffffff', 0.2), borderRadius: 1.5 }}>
+                                    <Sparkles size={14} color="white" />
                                 </Box>
-                                <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.8rem', opacity: 0.9 }}>
+                                <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem', opacity: 0.9 }}>
                                     Expert Solution in English
                                 </Typography>
                             </Box>
                         </Stack>
                     </CardContent>
 
-                    <Box sx={{ p: 4, pt: 0, position: 'relative', zIndex: 1 }}>
+                    <Box sx={{ p: 2.5, pt: 0, position: 'relative', zIndex: 1 }}>
                         <Button
                             fullWidth
                             variant="contained"
                             onClick={() => navigate('/academic/mocktest/dashboard')}
-                            endIcon={<ArrowRight size={20} />}
+                            endIcon={<ArrowRight size={18} />}
                             sx={{
                                 bgcolor: 'white',
                                 color: COLORS.accent,
-                                fontWeight: 950,
-                                borderRadius: 4,
+                                fontWeight: 900,
+                                borderRadius: 3,
                                 textTransform: 'none',
-                                py: 2.2,
-                                fontSize: '1.05rem',
-                                boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                                py: 1.5,
+                                fontSize: '0.9rem',
+                                boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
                                 '&:hover': {
                                     bgcolor: alpha('#ffffff', 0.9),
-                                    boxShadow: '0 15px 40px rgba(0,0,0,0.25)',
-                                    transform: 'translateY(-4px)'
+                                    boxShadow: '0 12px 28px rgba(0,0,0,0.25)',
+                                    transform: 'translateY(-2px)'
                                 },
                                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
