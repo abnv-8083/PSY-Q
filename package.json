@@ -6,7 +6,7 @@
     "backend"
   ],
   "scripts": {
-    "build": "npm run build -w frontend",
+    "build": "cd frontend && npm install && npm run build",
     "dev:frontend": "npm run dev -w frontend",
     "build:frontend": "npm run build -w frontend",
     "start:backend": "npm start -w backend",
