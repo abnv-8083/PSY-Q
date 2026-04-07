@@ -210,50 +210,36 @@ const MockTestBundles = () => {
                                         display: 'flex',
                                         flexDirection: 'column',
                                         borderRadius: 8,
-                                        border: `1px solid ${alpha('#ffffff', 0.2)}`,
-                                        background: `linear-gradient(135deg, ${alpha('#ffffff', 0.8)} 0%, ${alpha('#ffffff', 0.4)} 100%)`,
-                                        backdropFilter: 'blur(10px)',
-                                        boxShadow: '0 8px 32px rgba(31, 38, 135, 0.07)',
-                                        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                                        '&:hover': {
-                                            boxShadow: '0 25px 50px rgba(0,0,0,0.1)',
-                                            borderColor: alpha(COLORS.accent, 0.4),
-                                            transform: 'translateY(-12px)',
-                                            '& .card-gradient-bg': {
-                                                opacity: 1,
-                                                transform: 'scale(1.1)'
-                                            }
-                                        },
+                                        background: `linear-gradient(135deg, ${COLORS.accent} 0%, #a2124a 100%)`,
+                                        boxShadow: `0 20px 50px ${alpha(COLORS.accent, 0.25)}`,
+                                        transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                                         position: 'relative',
-                                        overflow: 'hidden'
+                                        overflow: 'hidden',
+                                        color: 'white',
+                                        border: `1px solid ${alpha('#ffffff', 0.2)}`,
+                                        '&:hover': {
+                                            transform: 'translateY(-12px)',
+                                            boxShadow: `0 40px 80px ${alpha(COLORS.accent, 0.4)}`,
+                                            '& .card-icon-bg': {
+                                                transform: 'scale(1.4) rotate(-15deg)',
+                                                opacity: 0.15
+                                            }
+                                        }
                                     }}>
-                                        {/* Animated Background Decor */}
-                                        <Box className="card-gradient-bg" sx={{
-                                            position: 'absolute',
-                                            top: -50,
-                                            right: -50,
-                                            width: 150,
-                                            height: 150,
-                                            background: `radial-gradient(circle, ${alpha(COLORS.accent, 0.15)} 0%, transparent 70%)`,
-                                            zIndex: 0,
-                                            transition: 'all 0.6s ease',
-                                            opacity: 0.5,
-                                            pointerEvents: 'none'
-                                        }} />
-
                                         {/* Dynamic Background Icon */}
-                                        <Box sx={{
+                                        <Box className="card-icon-bg" sx={{
                                             position: 'absolute',
                                             right: -20,
-                                            top: 60,
-                                            opacity: 0.04,
+                                            top: 40,
+                                            opacity: 0.06,
                                             transform: 'rotate(-15deg)',
                                             pointerEvents: 'none',
-                                            zIndex: 0
+                                            zIndex: 0,
+                                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                                         }}>
                                             {React.createElement(getBundleIcon(bundle.name), {
-                                                size: 180,
-                                                color: COLORS.primary,
+                                                size: 200,
+                                                color: 'white',
                                                 strokeWidth: 1
                                             })}
                                         </Box>
@@ -270,44 +256,45 @@ const MockTestBundles = () => {
                                                     position: 'absolute',
                                                     top: 24,
                                                     right: -38,
-                                                    background: `linear-gradient(90deg, ${COLORS.accent} 0%, ${COLORS.accentHover} 100%)`,
-                                                    color: 'white',
+                                                    background: `white`,
+                                                    color: COLORS.accent,
                                                     padding: '6px 45px',
                                                     transform: 'rotate(45deg)',
                                                     fontWeight: 900,
                                                     fontSize: '0.7rem',
                                                     zIndex: 20,
-                                                    boxShadow: '0 4px 15px rgba(202, 0, 86, 0.3)',
+                                                    boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                                                     letterSpacing: '1px',
-                                                    textShadow: '0 2px 4px rgba(0,0,0,0.2)'
                                                 }}
                                             >
                                                 BEST VALUE
                                             </motion.div>
                                         )}
 
-                                        <CardContent sx={{ p: { xs: 3, md: 4 }, flexGrow: 1, position: 'relative', zIndex: 1 }}>
+                                        <CardContent sx={{ p: { xs: 3.5, md: 4.5 }, flexGrow: 1, position: 'relative', zIndex: 1 }}>
                                             <Box sx={{
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: 2,
                                                 mb: 3,
-                                                bgcolor: alpha(COLORS.accent, 0.08),
+                                                bgcolor: alpha('#ffffff', 0.15),
+                                                backdropFilter: 'blur(10px)',
                                                 p: 2,
                                                 borderRadius: 4,
                                                 width: 'fit-content',
-                                                boxShadow: `inset 0 0 0 1px ${alpha(COLORS.accent, 0.1)}`
+                                                border: `1px solid ${alpha('#ffffff', 0.2)}`
                                             }}>
-                                                <Package color={COLORS.accent} size={28} />
+                                                <Package color="white" size={28} />
                                             </Box>
 
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5, gap: 2 }}>
-                                                <Typography variant="h5" sx={{
-                                                    fontWeight: 900,
-                                                    color: COLORS.primary,
-                                                    letterSpacing: -0.5,
-                                                    fontSize: '1.4rem',
-                                                    lineHeight: 1.2
+                                                <Typography variant="h4" sx={{
+                                                    fontWeight: 950,
+                                                    color: 'white',
+                                                    letterSpacing: -1,
+                                                    fontSize: '1.75rem',
+                                                    lineHeight: 1.1,
+                                                    textShadow: '0 2px 10px rgba(0,0,0,0.1)'
                                                 }}>
                                                     {bundle.name}
                                                 </Typography>
@@ -316,26 +303,24 @@ const MockTestBundles = () => {
                                                         label="ENROLLED" 
                                                         size="small" 
                                                         sx={{ 
-                                                            bgcolor: alpha('#10b981', 0.1), 
-                                                            color: '#059669', 
+                                                            bgcolor: '#10b981', 
+                                                            color: 'white', 
                                                             fontWeight: 900, 
                                                             fontSize: '0.65rem',
                                                             borderRadius: 2,
-                                                            border: '1px solid currentColor',
-                                                            px: 0.5,
-                                                            height: 24
+                                                            height: 24,
+                                                            boxShadow: '0 4px 10px rgba(16, 185, 129, 0.3)'
                                                         }} 
                                                     />
                                                 )}
                                             </Box>
 
-                                            <Typography variant="body2" sx={{
-                                                color: COLORS.secondary,
-                                                mb: 3,
+                                            <Typography variant="body1" sx={{
+                                                color: alpha('#ffffff', 0.9),
+                                                mb: 4,
                                                 lineHeight: 1.6,
                                                 fontWeight: 500,
-                                                opacity: 0.9,
-                                                fontSize: '0.9rem'
+                                                fontSize: '0.95rem'
                                             }}>
                                                 {bundle.description}
                                             </Typography>
@@ -344,20 +329,21 @@ const MockTestBundles = () => {
                                                 <Box sx={{ 
                                                     display: 'flex', 
                                                     alignItems: 'center', 
-                                                    gap: 2,
-                                                    p: 1.5,
-                                                    borderRadius: 3,
-                                                    bgcolor: alpha('#6366f1', 0.05),
-                                                    border: `1px solid ${alpha('#6366f1', 0.1)}`
+                                                    gap: 2.5,
+                                                    p: 2,
+                                                    borderRadius: 4,
+                                                    bgcolor: alpha('#000000', 0.15),
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: `1px solid ${alpha('#ffffff', 0.1)}`
                                                 }}>
-                                                    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: alpha('#6366f1', 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <CheckCircle size={20} color="#6366f1" />
+                                                    <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: alpha('#ffffff', 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <CheckCircle size={24} color="white" strokeWidth={2.5} />
                                                     </Box>
                                                     <Box>
-                                                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: COLORS.primary, fontSize: '0.9rem' }}>
+                                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: 'white', lineHeight: 1.2 }}>
                                                             {bundle.bundle_tests?.length || 0} Mock Tests
                                                         </Typography>
-                                                        <Typography variant="caption" sx={{ color: alpha(COLORS.primary, 0.6), fontWeight: 600 }}>
+                                                        <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.7), fontWeight: 700 }}>
                                                             Full length practice sessions
                                                         </Typography>
                                                     </Box>
@@ -366,20 +352,21 @@ const MockTestBundles = () => {
                                                 <Box sx={{ 
                                                     display: 'flex', 
                                                     alignItems: 'center', 
-                                                    gap: 2,
-                                                    p: 1.5,
-                                                    borderRadius: 3,
-                                                    bgcolor: alpha(COLORS.accent, 0.05),
-                                                    border: `1px solid ${alpha(COLORS.accent, 0.1)}`
+                                                    gap: 2.5,
+                                                    p: 2,
+                                                    borderRadius: 4,
+                                                    bgcolor: alpha('#000000', 0.15),
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: `1px solid ${alpha('#ffffff', 0.1)}`
                                                 }}>
-                                                    <Box sx={{ width: 36, height: 36, borderRadius: 2, bgcolor: alpha(COLORS.accent, 0.1), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <Layers size={20} color={COLORS.accent} />
+                                                    <Box sx={{ width: 44, height: 44, borderRadius: 3, bgcolor: alpha('#ffffff', 0.15), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Layers size={24} color="white" strokeWidth={2.5} />
                                                     </Box>
                                                     <Box>
-                                                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: COLORS.primary, fontSize: '0.9rem' }}>
+                                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: 'white', lineHeight: 1.2 }}>
                                                             {new Set(bundle.bundle_tests?.map(bt => bt.tests?.subjects?.id || bt.tests?.subject_id)).size || 0} Core Subjects
                                                         </Typography>
-                                                        <Typography variant="caption" sx={{ color: alpha(COLORS.primary, 0.6), fontWeight: 600 }}>
+                                                        <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.7), fontWeight: 700 }}>
                                                             Comprehensive coverage
                                                         </Typography>
                                                     </Box>
@@ -389,14 +376,14 @@ const MockTestBundles = () => {
                                             {/* Features List with enhanced look */}
                                             {bundle.features && bundle.features.length > 0 && (
                                                 <Box sx={{ mb: 4 }}>
-                                                    <Typography variant="caption" sx={{ fontWeight: 800, color: COLORS.accent, letterSpacing: 1.5, mb: 2, display: 'block', opacity: 0.8 }}>
+                                                    <Typography variant="caption" sx={{ fontWeight: 900, color: 'white', letterSpacing: 2, mb: 2, display: 'block', opacity: 0.8 }}>
                                                         BUNDLE PRIVILEGES
                                                     </Typography>
-                                                    <Stack spacing={1.2}>
+                                                    <Stack spacing={1.5}>
                                                         {bundle.features.map((feature, i) => (
-                                                            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: COLORS.accent, flexShrink: 0 }} />
-                                                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary, fontSize: '0.85rem' }}>
+                                                            <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                                <Star size={14} color="white" fill="white" />
+                                                                <Typography variant="body2" sx={{ fontWeight: 700, color: 'white', fontSize: '0.9rem' }}>
                                                                     {feature}
                                                                 </Typography>
                                                             </Box>
@@ -407,66 +394,55 @@ const MockTestBundles = () => {
 
                                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 'auto' }}>
                                                 {bundle.offer_price && bundle.offer_price < bundle.regular_price && (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                        <Typography variant="body2" sx={{ color: alpha(COLORS.primary, 0.4), textDecoration: 'line-through', fontWeight: 700 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                        <Typography variant="body1" sx={{ color: alpha('#ffffff', 0.5), textDecoration: 'line-through', fontWeight: 800 }}>
                                                             ₹{bundle.regular_price}
                                                         </Typography>
-                                                        <Chip
-                                                            label={`${bundle.discount_percentage}% OFF`}
-                                                            size="small"
-                                                            sx={{
-                                                                height: 20,
-                                                                fontSize: '0.65rem',
-                                                                fontWeight: 900,
-                                                                bgcolor: alpha('#10b981', 0.1),
-                                                                color: '#059669',
-                                                                border: '1px solid currentColor',
-                                                                borderRadius: 1
-                                                            }}
-                                                        />
+                                                        <Box sx={{ bgcolor: '#10b981', color: 'white', px: 1, py: 0.5, borderRadius: 1.5, fontSize: '0.7rem', fontWeight: 900 }}>
+                                                            {bundle.discount_percentage}% SAVING
+                                                        </Box>
                                                     </Box>
                                                 )}
-                                                <Stack direction="row" alignItems="baseline" spacing={0.5}>
-                                                    <Typography variant="h3" sx={{ fontWeight: 950, color: COLORS.primary, letterSpacing: -1 }}>
+                                                <Stack direction="row" alignItems="baseline" spacing={1}>
+                                                    <Typography variant="h2" sx={{ fontWeight: 950, color: 'white', letterSpacing: -2 }}>
                                                         ₹{bundle.offer_price || bundle.regular_price}
                                                     </Typography>
-                                                    <Typography variant="caption" sx={{ fontWeight: 700, color: alpha(COLORS.primary, 0.5) }}>
-                                                        / lifetime access
+                                                    <Typography variant="subtitle1" sx={{ fontWeight: 800, color: alpha('#ffffff', 0.7) }}>
+                                                        / lifetime
                                                     </Typography>
                                                 </Stack>
                                             </Box>
                                         </CardContent>
 
-                                        <Box sx={{ p: { xs: 3, md: 4 }, pt: 0 }}>
+                                        <Box sx={{ p: 4.5, pt: 0, position: 'relative', zIndex: 1 }}>
                                             <Button
                                                 fullWidth
                                                 variant="contained"
                                                 onClick={() => purchasedBundleIds.has(bundle.id) ? navigate('/academic/mocktest/tests', { state: { bundleId: bundle.id } }) : handleBuyBundle(bundle)}
                                                 disabled={pendingBundleIds.has(bundle.id)}
-                                                startIcon={purchasedBundleIds.has(bundle.id) ? <Play size={20} fill="currentColor" /> : pendingBundleIds.has(bundle.id) ? <Clock size={20} /> : <ShoppingBag size={20} />}
+                                                startIcon={purchasedBundleIds.has(bundle.id) ? <Play size={24} fill="currentColor" /> : pendingBundleIds.has(bundle.id) ? <Clock size={24} /> : <ShoppingBag size={24} />}
                                                 sx={{
-                                                    bgcolor: purchasedBundleIds.has(bundle.id) ? '#10b981' : pendingBundleIds.has(bundle.id) ? '#f59e0b' : COLORS.accent,
-                                                    color: 'white',
-                                                    fontWeight: 900,
-                                                    borderRadius: 4,
+                                                    bgcolor: 'white',
+                                                    color: COLORS.accent,
+                                                    fontWeight: 950,
+                                                    borderRadius: 5,
                                                     textTransform: 'none',
-                                                    py: 2,
-                                                    fontSize: '1rem',
-                                                    letterSpacing: '0.3px',
-                                                    boxShadow: `0 8px 25px -5px ${alpha(purchasedBundleIds.has(bundle.id) ? '#10b981' : pendingBundleIds.has(bundle.id) ? '#f59e0b' : COLORS.accent, 0.4)}`,
+                                                    py: 2.2,
+                                                    fontSize: '1.1rem',
+                                                    letterSpacing: '0.5px',
+                                                    boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
                                                     '&:hover': {
-                                                        bgcolor: purchasedBundleIds.has(bundle.id) ? '#059669' : pendingBundleIds.has(bundle.id) ? '#d97706' : COLORS.accentHover,
-                                                        transform: 'translateY(-3px)',
-                                                        boxShadow: `0 15px 35px -5px ${alpha(purchasedBundleIds.has(bundle.id) ? '#10b981' : pendingBundleIds.has(bundle.id) ? '#f59e0b' : COLORS.accent, 0.5)}`,
-                                                        '& .btn-arrow': { transform: 'translateX(4px)' }
+                                                        bgcolor: alpha('#ffffff', 0.9),
+                                                        transform: 'translateY(-5px)',
+                                                        boxShadow: '0 25px 50px rgba(0,0,0,0.3)',
                                                     },
-                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                                                 }}
                                             >
-                                                <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    {purchasedBundleIds.has(bundle.id) ? 'Access Library' : pendingBundleIds.has(bundle.id) ? 'Pending Verification' : 'Get Full Access'}
+                                                <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                                    {purchasedBundleIds.has(bundle.id) ? 'Open Library' : pendingBundleIds.has(bundle.id) ? 'Verifying...' : 'Unlock Now'}
                                                     {!purchasedBundleIds.has(bundle.id) && !pendingBundleIds.has(bundle.id) && (
-                                                        <ArrowRight size={18} className="btn-arrow" style={{ transition: 'transform 0.3s' }} />
+                                                        <ArrowRight size={22} className="btn-arrow" style={{ transition: 'transform 0.4s' }} />
                                                     )}
                                                 </Box>
                                             </Button>
