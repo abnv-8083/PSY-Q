@@ -6,10 +6,9 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import {
-    User, LogOut, Settings, CreditCard as PaymentIcon,
-    LogIn, UserPlus, Menu as MenuIcon, X, ChevronDown, ChevronLeft
+    User, LogOut,
+    LogIn, UserPlus, Menu as MenuIcon, X
 } from 'lucide-react';
-import { Avatar, Menu, MenuItem, Divider, alpha } from '@mui/material';
 import { useSession } from '../contexts/SessionContext';
 
 
