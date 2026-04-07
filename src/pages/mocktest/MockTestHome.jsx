@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box, Container, Typography, Grid, Card, CardContent, Button, Chip,
-    Stack, useTheme, useMediaQuery, Paper, Skeleton, alpha
+    Stack, useTheme, useMediaQuery, Paper, Skeleton, alpha, Divider
 } from '@mui/material';
 import {
     BookOpen, CheckCircle, Star, Users, Award, Mail, Phone, MapPin,
