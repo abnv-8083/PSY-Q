@@ -139,7 +139,7 @@ const AdminManagement = () => {
             // 3. Send Invite Email via Backend
             try {
                 const backendUrl = import.meta.env.VITE_API_URL || '';
-                await axios.post(`${backendUrl}/api/admin/send-invite`, {
+                await axios.post(`${backendUrl}/admin/send-invite`, {
                     email: inviteForm.email,
                     name: inviteForm.fullName,
                     password: tempPassword
@@ -260,7 +260,7 @@ const AdminManagement = () => {
 
             // 3. Send via Backend
             const backendUrl = import.meta.env.VITE_API_URL || '';
-            await axios.post(`${backendUrl}/api/send-reset-link`, {
+            await axios.post(`${backendUrl}/send-reset-link`, {
                 email: admin.email,
                 name: admin.full_name,
                 resetLink: resetLink

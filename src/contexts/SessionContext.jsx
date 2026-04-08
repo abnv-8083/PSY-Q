@@ -133,7 +133,7 @@ export const SessionProvider = ({ children }) => {
             try {
                 const resetLink = `${window.location.origin}/student/reset-password?token=${data.token}&email=${email}`;
                 const backendUrl = import.meta.env.VITE_API_URL || '';
-                await axios.post(`${backendUrl}/api/send-reset-link`, {
+                await axios.post(`${backendUrl}/send-reset-link`, {
                     email,
                     name: data.user?.full_name || 'Student',
                     resetLink

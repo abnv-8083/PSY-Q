@@ -220,7 +220,7 @@ const StudentSignUp = () => {
             setGeneratedOtp(newOtp);
 
             const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            await axios.post(`${backendUrl}/api/send-otp`, {
+            await axios.post(`${backendUrl}/send-otp`, {
                 email: formData.email?.trim(),
                 name: formData.name,
                 otp: newOtp

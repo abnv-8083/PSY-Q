@@ -63,7 +63,7 @@ export const fetchUserPurchaseRequests = async (userId) => {
 export const fetchAllPurchaseRequests = async () => {
     const backendUrl = import.meta.env.VITE_API_URL || '';
     try {
-        const response = await fetch(`${backendUrl}/api/admin/purchase-requests`);
+        const response = await fetch(`${backendUrl}/admin/purchase-requests`);
         const json = await response.json();
         
         if (!response.ok || !json.success) {
@@ -88,7 +88,7 @@ export const updatePurchaseRequestStatus = async (requestId, status) => {
     
     if (status === 'approved' || status === 'rejected') {
         const endpoint = status === 'approved' ? 'approve' : 'reject';
-        const response = await fetch(`${backendUrl}/api/admin/purchase-requests/${requestId}/${endpoint}`, {
+        const response = await fetch(`${backendUrl}/admin/purchase-requests/${requestId}/${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
