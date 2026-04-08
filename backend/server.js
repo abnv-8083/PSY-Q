@@ -72,7 +72,8 @@ app.post('/api/auth/student/signup', authController.studentSignup);
 app.post('/api/auth/student/verify', authController.studentVerify);
 app.post('/api/auth/student/login', authController.studentLogin);
 app.post('/api/auth/admin/login', authController.adminLogin);
-
+app.get('/api/student/profile', authController.getStudentProfile);
+app.put('/api/student/profile', authController.updateStudentProfile);
 // API Routes
 app.post('/api/sendBookingEmails', async (req, res) => {
   try {

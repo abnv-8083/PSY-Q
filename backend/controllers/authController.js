@@ -119,3 +119,43 @@ export const adminLogin = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const getStudentProfile = async (req, res) => {
+    try {
+        const { userId } = req.query;
+        if (!userId) return res.status(400).json({ error: 'User ID is required' });
+        
+        const student = await Student.findById(userId).select('-password_hash');
+        if (!student) return res.status(404).json({ error: 'Student not found' });
+        
+        res.json({ success: true, data: student });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const updateStudentProfile = async (req, res) => {
+    try {
+        const { userId, updates, newPassword } = req.body;
+        if (!userId) return res.status(400).json({ error: 'User ID is required' });
+
+        const student = await Student.findById(userId);
+        if (!student) return res.status(404).json({ error: 'Student not found' });
+
+        if (updates) {
+            if (updates.full_name) student.full_name = updates.full_name;
+            if (updates.email) student.email = updates.email;
+            if (updates.phone) student.phone = updates.phone;
+        }
+
+        if (newPassword) {
+            const salt = await bcrypt.genSalt(10);
+            student.password_hash = await bcrypt.hash(newPassword, salt);
+        }
+
+        await student.save();
+        res.json({ success: true, message: 'Profile updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

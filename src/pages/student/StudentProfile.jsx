@@ -58,13 +58,12 @@ const StudentProfile = () => {
             const fetchUserData = async () => {
                 try {
                     setLoading(true);
-                    const { data: profile, error } = await supabase
-                        .from('students')
-                        .select('*')
-                        .eq('id', studentUser.id)
-                        .single();
+                    const backendUrl = import.meta.env.VITE_API_URL || '';
+                    const res = await fetch(`${backendUrl}/student/profile?userId=${studentUser.id}`);
+                    const json = await res.json();
 
-                    if (error) throw error;
+                    if (!res.ok || !json.success) throw new Error(json.error || 'Failed to fetch profile');
+                    const profile = json.data;
 
                     if (profile) {
                         setUserData(profile);
@@ -109,21 +108,24 @@ const StudentProfile = () => {
                 if (formData.newPassword !== formData.confirmPassword) {
                     throw new Error('Passwords do not match');
                 }
-                
-                // Update password via Supabase Auth
-                const { error: authError } = await supabase.auth.updateUser({
-                    password: formData.newPassword
-                });
-                if (authError) throw authError;
             }
 
-            if (Object.keys(updates).length > 0) {
-                const { error: studentError } = await supabase
-                    .from('students')
-                    .update(updates)
-                    .eq('id', studentUser.id);
+            if (Object.keys(updates).length > 0 || formData.newPassword) {
+                const backendUrl = import.meta.env.VITE_API_URL || '';
+                const payload = {
+                    userId: studentUser.id,
+                    updates,
+                    newPassword: formData.newPassword || undefined
+                };
 
-                if (studentError) throw studentError;
+                const res = await fetch(`${backendUrl}/student/profile`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                
+                if (!res.ok || !json.success) throw new Error(json.error || 'Failed to update profile');
             }
 
             setMessage({ type: 'success', text: 'Profile updated successfully!' });
