@@ -846,7 +846,9 @@ const MockTestHome = () => {
                                                         letterSpacing: -1,
                                                         fontSize: '2.2rem',
                                                         lineHeight: 1.1,
-                                                        mb: 1
+                                                        mb: 1,
+                                                        wordBreak: 'break-word',
+                                                        overflowWrap: 'break-word'
                                                     }}>
                                                         {bundle.name}
                                                     </Typography>
@@ -857,7 +859,9 @@ const MockTestHome = () => {
                                                         fontWeight: 600,
                                                         fontSize: '0.95rem',
                                                         mb: 4,
-                                                        minHeight: 40
+                                                        minHeight: 40,
+                                                        wordBreak: 'break-word',
+                                                        overflowWrap: 'break-word'
                                                     }}>
                                                         Full access to premium test materials and expert insights.
                                                     </Typography>

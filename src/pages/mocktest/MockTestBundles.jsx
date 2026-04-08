@@ -198,7 +198,7 @@ const MockTestBundles = () => {
                 ) : (
                     <Grid container spacing={3} alignItems="stretch" justifyContent="center">
                         {bundles.map((bundle, index) => (
-                            <Grid item xs={12} md={4} key={bundle.id} sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Grid item xs={12} md={4} key={bundle.id} sx={{ display: 'flex', justifyContent: 'center' }}>
                                 <motion.div
                                     initial={{ opacity: 0, y: 30 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -206,6 +206,8 @@ const MockTestBundles = () => {
                                     style={{ display: 'flex', flex: 1, flexDirection: 'column', width: '100%', minWidth: 0 }}
                                 >
                                     <Card sx={{
+                                        width: '100%',
+                                        maxWidth: '400px',
                                         flex: 1,
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -288,7 +290,9 @@ const MockTestBundles = () => {
                                                     letterSpacing: -1,
                                                     fontSize: '2.2rem',
                                                     lineHeight: 1.1,
-                                                    mb: 1
+                                                    mb: 1,
+                                                    wordBreak: 'break-word',
+                                                    overflowWrap: 'break-word'
                                                 }}>
                                                     {bundle.name}
                                                 </Typography>
@@ -298,7 +302,9 @@ const MockTestBundles = () => {
                                                     fontWeight: 500,
                                                     fontSize: '0.95rem',
                                                     opacity: 0.9,
-                                                    minHeight: 40
+                                                    minHeight: 40,
+                                                    wordBreak: 'break-word',
+                                                    overflowWrap: 'break-word'
                                                 }}>
                                                     {bundle.description}
                                                 </Typography>
