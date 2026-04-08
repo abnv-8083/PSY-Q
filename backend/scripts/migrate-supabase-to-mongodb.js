@@ -38,18 +38,20 @@ async function migrate() {
             
             let allData = [];
             let from = 0;
-            const step = 1000;
+            const step = 200; // Smaller batches to avoid timeouts
             let fetching = true;
+            let batchCount = 0;
 
             // Fetch in batches to avoid Supabase limits
             while (fetching) {
+                batchCount++;
                 const { data, error } = await supabase
                     .from(table.name)
                     .select('*')
                     .range(from, from + step - 1);
 
                 if (error) {
-                    console.error(`  ❌ Error fetching ${table.name}:`, error.message);
+                    console.error(`  ❌ Error fetching ${table.name} (Batch ${batchCount}):`, error.message);
                     fetching = false;
                     continue;
                 }
@@ -61,7 +63,9 @@ async function migrate() {
 
                 allData = [...allData, ...data];
                 from += step;
-                console.log(`  Fetched ${allData.length} records so far...`);
+                if (allData.length % 1000 === 0 || data.length < step) {
+                    console.log(`  📦 Progress: Fetched ${allData.length} records for ${table.name}...`);
+                }
             }
 
             if (allData.length === 0) {
@@ -69,16 +73,31 @@ async function migrate() {
                 continue;
             }
 
-            // Clear existing data in MongoDB for this collection
-            await table.model.deleteMany({});
-            console.log(`  🗑️ Cleared existing MongoDB collection: ${table.name}`);
+            // Non-destructive: We no longer clear existing data
+            console.log(`  🔍 Checking for new data to add to MongoDB: ${table.name}`);
 
             // Transform data (handling IDs if necessary)
             const docs = allData.map(item => {
                 const doc = { ...item };
-                // If there's an 'id' (UUID/Int) from Supabase, store it as 'supabase_id' if needed
-                // But for now we just let Mongoose handle the _id.
-                // If tables have relations (like test_id), we might need to map them later.
+                
+                // Specific transformation for Questions table
+                if (table.name === 'questions') {
+                    if (Array.isArray(doc.options) && typeof doc.options[0] === 'string') {
+                        // Map flat string array to Mongoose expected format { id: string, text: string }
+                        const transformedOptions = doc.options.map((optText, idx) => ({
+                            id: `opt_${idx}`,
+                            text: optText
+                        }));
+                        
+                        doc.options = transformedOptions;
+                        
+                        // Map 'correct_key' index to 'correct_answer' ID
+                        if (doc.correct_key !== undefined && doc.correct_key !== null) {
+                            doc.correct_answer = `opt_${doc.correct_key}`;
+                        }
+                    }
+                }
+                
                 return doc;
             });
 

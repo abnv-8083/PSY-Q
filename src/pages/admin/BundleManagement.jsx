@@ -261,26 +261,52 @@ const BundleManagement = () => {
         }
     };
 
+    // New functional components for background effects
+    const Blob = ({ style }) => (
+        <Box sx={{
+            position: 'absolute',
+            borderRadius: '50%',
+            filter: 'blur(100px)',
+            opacity: 0.2,
+            pointerEvents: 'none',
+            zIndex: 0,
+            ...style
+        }} />
+    );
+
     return (
-        <Box sx={{ p: { xs: 3, md: 6 } }}>
-            <Box sx={{ mb: 6 }}>
-                <Typography variant="h3" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -1, mb: 1.5 }}>
-                    Bundle Management
-                </Typography>
-                <Typography variant="h6" sx={{ color: COLORS.textLight, fontWeight: 500 }}>
-                    Configure pricing and content for your subscription bundles
-                </Typography>
+        <Box sx={{ p: { xs: 3, md: 6 }, position: 'relative', minHeight: '100%', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', overflow: 'hidden' }}>
+            <Blob style={{ width: 500, height: 500, top: -150, left: -150, bgcolor: COLORS.accent }} />
+            <Blob style={{ width: 600, height: 600, bottom: -200, right: -200, bgcolor: '#3b82f6' }} />
+            <Box sx={{
+                position: 'absolute', inset: 0, zIndex: 0,
+                backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)',
+                backgroundSize: '24px 24px', pointerEvents: 'none'
+            }} />
+
+            <Box sx={{ mb: 6, position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Box sx={{ p: 2, borderRadius: 4, bgcolor: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,0.06)' }}>
+                    <Package size={32} color={COLORS.accent} />
+                </Box>
+                <Box>
+                    <Typography variant="h3" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -1, mb: 0.5 }}>
+                        Bundle Management
+                    </Typography>
+                    <Typography variant="subtitle1" sx={{ color: COLORS.textLight, fontWeight: 500 }}>
+                        Configure pricing and content for your premium subscriptions
+                    </Typography>
+                </Box>
             </Box>
 
             {loading ? (
-                <Box sx={{ textAlign: 'center', py: 12 }}>
-                    <Typography variant="h6" sx={{ color: COLORS.textLight, fontWeight: 600 }}>Loading bundles...</Typography>
+                <Box sx={{ textAlign: 'center', py: 12, position: 'relative', zIndex: 1 }}>
+                    <Typography variant="h6" sx={{ color: COLORS.textLight, fontWeight: 600, animation: 'pulse 2s infinite' }}>Loading your premium packages...</Typography>
                 </Box>
             ) : (
                 <DragDropContext onDragEnd={handleDragEnd}>
                     <StrictModeDroppable droppableId="bundles-list" direction="horizontal">
                         {(provided) => (
-                            <Grid container spacing={4} {...provided.droppableProps} ref={provided.innerRef}>
+                            <Grid container spacing={4} {...provided.droppableProps} ref={provided.innerRef} sx={{ position: 'relative', zIndex: 1 }}>
                                 <AnimatePresence>
                                     {bundles.map((bundle, index) => {
                                         const discount = calculateDiscount(bundle.regular_price, bundle.offer_price);
@@ -298,46 +324,59 @@ const BundleManagement = () => {
                                                         sx={{ ...provided.draggableProps.style }}
                                                     >
                                                         <motion.div
-                                                            initial={{ opacity: 0, y: 20 }}
-                                                            animate={{ opacity: 1, y: 0, scale: snapshot.isDragging ? 1.02 : 1 }}
+                                                            initial={{ opacity: 0, y: 30 }}
+                                                            animate={{ opacity: 1, y: 0, scale: snapshot.isDragging ? 1.03 : 1 }}
                                                             style={{ height: '100%' }}
-                                                            transition={{ delay: index * 0.1 }}
+                                                            transition={{ delay: index * 0.1, duration: 0.5, ease: 'easeOut' }}
                                                         >
                                                             <Paper sx={{
                                                                 p: 4,
-                                                                borderRadius: 6,
+                                                                borderRadius: '28px',
                                                                 position: 'relative',
-                                                                border: snapshot.isDragging ? `3px solid ${bundleColor}` : (bundle.bundle_type === 'PREMIUM' ? `3px solid ${bundleColor}` : `2px solid ${COLORS.border}`),
-                                                                transition: 'all 0.3s',
-                                                                boxShadow: snapshot.isDragging ? `0 20px 60px ${alpha(bundleColor, 0.3)}` : '0 4px 12px rgba(0,0,0,0.05)',
-                                                                bgcolor: '#fff',
+                                                                border: `1px solid rgba(255,255,255,0.7)`,
+                                                                background: snapshot.isDragging 
+                                                                    ? `linear-gradient(135deg, rgba(255,255,255,1), rgba(255,255,255,0.85))` 
+                                                                    : `linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.6))`,
+                                                                backdropFilter: 'blur(20px)',
+                                                                boxShadow: snapshot.isDragging 
+                                                                    ? `0 32px 80px ${alpha(bundleColor, 0.35)}, inset 0 1px 0 rgba(255,255,255,1)` 
+                                                                    : `0 12px 40px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)`,
                                                                 height: '100%',
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
+                                                                transition: 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
                                                                 '&:hover': {
-                                                                    transform: 'translateY(-8px)',
-                                                                    borderColor: bundleColor,
-                                                                    boxShadow: `0 24px 48px ${alpha(bundleColor, 0.15)}`
+                                                                    transform: 'translateY(-12px)',
+                                                                    boxShadow: `0 32px 70px ${alpha(bundleColor, 0.2)}, inset 0 1px 0 rgba(255,255,255,1)`,
+                                                                    borderColor: alpha(bundleColor, 0.3)
                                                                 }
                                                             }}>
+                                                                {/* Decorative Top Glow */}
+                                                                <Box sx={{
+                                                                    position: 'absolute', top: 0, left: '10%', right: '10%', height: '4px',
+                                                                    background: `linear-gradient(90deg, transparent, ${bundleColor}, transparent)`,
+                                                                    opacity: 0.6, borderBottomRadius: 4
+                                                                }} />
+
                                                                 {/* Bundle Type Badge */}
                                                                 <Box sx={{
                                                                     position: 'absolute',
-                                                                    top: -16,
-                                                                    left: 24,
-                                                                    px: 2.5,
-                                                                    py: 1,
-                                                                    bgcolor: bundleColor,
-                                                                    borderRadius: 3,
-                                                                    boxShadow: `0 8px 16px ${alpha(bundleColor, 0.4)}`,
+                                                                    top: -18,
+                                                                    left: 32,
+                                                                    px: 3,
+                                                                    py: 1.2,
+                                                                    background: `linear-gradient(135deg, ${bundleColor}, ${alpha(bundleColor, 0.8)})`,
+                                                                    borderRadius: '12px',
+                                                                    boxShadow: `0 8px 20px ${alpha(bundleColor, 0.4)}`,
                                                                     display: 'flex',
                                                                     alignItems: 'center',
-                                                                    gap: 1.5
+                                                                    gap: 1.5,
+                                                                    backdropFilter: 'blur(10px)'
                                                                 }}>
-                                                                    <Box {...provided.dragHandleProps} sx={{ display: 'flex', alignItems: 'center', cursor: 'grab', opacity: 0.9, color: 'white' }}>
+                                                                    <Box {...provided.dragHandleProps} sx={{ display: 'flex', alignItems: 'center', cursor: 'grab', opacity: 0.9, color: 'white', '&:active': { cursor: 'grabbing' } }}>
                                                                         <GripVertical size={16} />
                                                                     </Box>
-                                                                    <Typography variant="caption" sx={{ color: 'white', fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                                                                    <Typography variant="caption" sx={{ color: 'white', fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', fontSize: '0.75rem' }}>
                                                                         {bundle.bundle_type}
                                                                     </Typography>
                                                                 </Box>
@@ -350,105 +389,102 @@ const BundleManagement = () => {
                                                                         right: 24,
                                                                         px: 2.5,
                                                                         py: 1,
-                                                                        bgcolor: '#10b981',
-                                                                        borderRadius: 3,
-                                                                        boxShadow: '0 8px 16px rgba(16, 185, 129, 0.4)'
+                                                                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                                                                        borderRadius: '10px',
+                                                                        boxShadow: '0 8px 20px rgba(16, 185, 129, 0.4)',
+                                                                        animation: 'pulse 2s infinite'
                                                                     }}>
                                                                         <Typography variant="caption" sx={{ color: 'white', fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-                                                                            BEST VALUE
+                                                                            ★ MOST POPULAR
                                                                         </Typography>
                                                                     </Box>
                                                                 )}
 
-                                                                <Box sx={{ mt: 3, mb: 4 }}>
-                                                                    <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1, fontSize: '1.5rem' }}>
+                                                                <Box sx={{ mt: 3, mb: 4, flexGrow: 0 }}>
+                                                                    <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1, letterSpacing: -0.5 }}>
                                                                         {bundle.name}
                                                                     </Typography>
-                                                                    <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 500, minHeight: 48, lineHeight: 1.6 }}>
+                                                                    <Typography variant="body2" sx={{ color: COLORS.secondary, fontWeight: 500, minHeight: 48, lineHeight: 1.7, opacity: 0.8 }}>
                                                                         {bundle.description}
                                                                     </Typography>
                                                                 </Box>
 
                                                                 {/* Pricing Section */}
-                                                                <Box sx={{ mb: 4 }}>
+                                                                <Box sx={{ mb: 4, bgcolor: alpha(bundleColor, 0.04), p: 3, borderRadius: '20px', border: `1px solid ${alpha(bundleColor, 0.1)}` }}>
                                                                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 2, mb: 1.5 }}>
                                                                         {bundle.offer_price ? (
                                                                             <>
-                                                                                <Typography variant="h3" sx={{ fontWeight: 900, color: bundleColor, fontSize: '2.25rem' }}>
+                                                                                <Typography variant="h3" sx={{ fontWeight: 900, color: bundleColor, fontSize: '2.5rem', letterSpacing: -1 }}>
                                                                                     ₹{bundle.offer_price}
                                                                                 </Typography>
                                                                                 <Typography variant="h6" sx={{
                                                                                     fontWeight: 600,
-                                                                                    color: '#94a3b8',
-                                                                                    textDecoration: 'line-through'
+                                                                                    color: COLORS.textLight,
+                                                                                    textDecoration: 'line-through',
+                                                                                    opacity: 0.6
                                                                                 }}>
                                                                                     ₹{bundle.regular_price}
                                                                                 </Typography>
-                                                                                {discount > 0 && (
-                                                                                    <Chip
-                                                                                        icon={<TrendingDown size={14} />}
-                                                                                        label={`${discount}% OFF`}
-                                                                                        size="small"
-                                                                                        sx={{
-                                                                                            bgcolor: '#dcfce7',
-                                                                                            color: '#059669',
-                                                                                            fontWeight: 900,
-                                                                                            fontSize: '0.8rem',
-                                                                                            borderRadius: 2
-                                                                                        }}
-                                                                                    />
-                                                                                )}
                                                                             </>
                                                                         ) : (
-                                                                            <Typography variant="h3" sx={{ fontWeight: 900, color: bundleColor, fontSize: '2.25rem' }}>
+                                                                            <Typography variant="h3" sx={{ fontWeight: 900, color: bundleColor, fontSize: '2.5rem', letterSpacing: -1 }}>
                                                                                 ₹{bundle.regular_price}
                                                                             </Typography>
                                                                         )}
                                                                     </Box>
-                                                                    <Button
-                                                                        size="medium"
-                                                                        startIcon={<Edit size={16} />}
-                                                                        onClick={() => handleOpenPricingDialog(bundle)}
-                                                                        sx={{
-                                                                            textTransform: 'none',
-                                                                            fontWeight: 800,
-                                                                            color: bundleColor,
-                                                                            borderRadius: 3,
-                                                                            px: 2,
-                                                                            '&:hover': { bgcolor: alpha(bundleColor, 0.1) }
-                                                                        }}
-                                                                    >
-                                                                        Edit Pricing
-                                                                    </Button>
+                                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                                                                        <Button
+                                                                            size="small"
+                                                                            startIcon={<Edit size={16} />}
+                                                                            onClick={() => handleOpenPricingDialog(bundle)}
+                                                                            sx={{
+                                                                                textTransform: 'none',
+                                                                                fontWeight: 800,
+                                                                                color: bundleColor,
+                                                                                borderRadius: '10px',
+                                                                                bgcolor: '#fff',
+                                                                                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                                                                                px: 2,
+                                                                                py: 1,
+                                                                                '&:hover': { bgcolor: bundleColor, color: '#fff', boxShadow: `0 8px 20px ${alpha(bundleColor, 0.3)}` }
+                                                                            }}
+                                                                        >
+                                                                            Edit Price
+                                                                        </Button>
+                                                                        {discount > 0 && (
+                                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, bgcolor: alpha('#10b981', 0.1), color: '#059669', px: 2, py: 0.5, borderRadius: '20px', fontWeight: 800, fontSize: '0.8rem' }}>
+                                                                                <TrendingDown size={14} />
+                                                                                {discount}% OFF
+                                                                            </Box>
+                                                                        )}
+                                                                    </Box>
                                                                 </Box>
-
-                                                                <Divider sx={{ mb: 4, borderColor: alpha(COLORS.border, 0.5) }} />
 
                                                                 {/* Features Section */}
                                                                 <Box sx={{ mb: 4, flexGrow: 1 }}>
-                                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                                                                         <Typography variant="overline" sx={{
                                                                             fontWeight: 900,
-                                                                            color: COLORS.textLight,
+                                                                            color: COLORS.primary,
                                                                             letterSpacing: 2
                                                                         }}>
-                                                                            Features
+                                                                            Features Overview
                                                                         </Typography>
                                                                         <IconButton
                                                                             size="small"
                                                                             onClick={() => handleOpenFeaturesDialog(bundle)}
-                                                                            sx={{ color: bundleColor, bgcolor: alpha(bundleColor, 0.1), '&:hover': { bgcolor: alpha(bundleColor, 0.2) } }}
+                                                                            sx={{ color: bundleColor, bgcolor: alpha(bundleColor, 0.1), '&:hover': { bgcolor: bundleColor, color: '#fff' }, transition: 'all 0.3s' }}
                                                                         >
-                                                                            <Edit size={18} />
+                                                                            <Edit size={16} />
                                                                         </IconButton>
                                                                     </Box>
-                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                                                         {bundle.features?.slice(0, 5).map((feature, idx) => (
-                                                                            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0.5, borderRadius: '50%', bgcolor: alpha(bundleColor, 0.1) }}>
-                                                                                    <CheckCircle size={14} color={bundleColor} />
+                                                                            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0.5, borderRadius: '50%', background: `linear-gradient(135deg, ${alpha(bundleColor, 0.2)}, ${alpha(bundleColor, 0.05)})` }}>
+                                                                                    <CheckCircle size={15} color={bundleColor} strokeWidth={3} />
                                                                                 </Box>
-                                                                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.secondary, fontSize: '0.9rem' }}>
+                                                                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary }}>
                                                                                     {feature}
                                                                                 </Typography>
                                                                             </Box>
@@ -456,34 +492,32 @@ const BundleManagement = () => {
                                                                     </Box>
                                                                 </Box>
 
-                                                                <Divider sx={{ mb: 4, borderColor: alpha(COLORS.border, 0.5) }} />
-
                                                                 {/* Tests Section */}
-                                                                <Box>
+                                                                <Box sx={{ pt: 3, borderTop: `1px dashed ${alpha(COLORS.border, 0.8)}` }}>
                                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                                            <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(bundleColor, 0.1), color: bundleColor }}>
+                                                                            <Box sx={{ p: 1, borderRadius: '10px', bgcolor: alpha(bundleColor, 0.1), color: bundleColor, display: 'flex' }}>
                                                                                 <BookOpen size={18} />
                                                                             </Box>
-                                                                            <Typography variant="overline" sx={{
+                                                                            <Typography variant="subtitle2" sx={{
                                                                                 fontWeight: 900,
-                                                                                color: COLORS.textLight,
-                                                                                letterSpacing: 2
+                                                                                color: COLORS.primary
                                                                             }}>
-                                                                                {bundle.tests?.length || 0} Tests
+                                                                                {bundle.tests?.length || 0} Included Tests
                                                                             </Typography>
                                                                         </Box>
                                                                         <Button
                                                                             size="small"
-                                                                            startIcon={<Plus size={16} />}
                                                                             onClick={() => handleOpenTestsDialog(bundle)}
                                                                             sx={{
                                                                                 textTransform: 'none',
                                                                                 fontWeight: 800,
-                                                                                fontSize: '0.8rem',
+                                                                                fontSize: '0.85rem',
                                                                                 color: bundleColor,
-                                                                                borderRadius: 2.5,
-                                                                                '&:hover': { bgcolor: alpha(bundleColor, 0.1) }
+                                                                                borderRadius: '20px',
+                                                                                bgcolor: alpha(bundleColor, 0.1),
+                                                                                '&:hover': { bgcolor: bundleColor, color: '#fff' },
+                                                                                transition: 'all 0.3s'
                                                                             }}
                                                                         >
                                                                             Manage
@@ -498,17 +532,12 @@ const BundleManagement = () => {
                                                                                 sx={{
                                                                                     fontSize: '0.75rem',
                                                                                     fontWeight: 700,
-                                                                                    bgcolor: '#f1f5f9',
-                                                                                    color: COLORS.secondary,
-                                                                                    borderRadius: 2,
-                                                                                    height: 'auto',
-                                                                                    '& .MuiChip-label': {
-                                                                                        display: 'block',
-                                                                                        whiteSpace: 'normal',
-                                                                                        py: 0.5,
-                                                                                        px: 1,
-                                                                                        textAlign: 'center'
-                                                                                    }
+                                                                                    bgcolor: '#fff',
+                                                                                    color: COLORS.primary,
+                                                                                    border: `1px solid ${COLORS.border}`,
+                                                                                    borderRadius: '8px',
+                                                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                                                                                    '&:hover': { borderColor: bundleColor }
                                                                                 }}
                                                                             />
                                                                         ))}
@@ -519,9 +548,11 @@ const BundleManagement = () => {
                                                                                 sx={{
                                                                                     fontSize: '0.75rem',
                                                                                     fontWeight: 800,
-                                                                                    bgcolor: alpha(bundleColor, 0.1),
-                                                                                    color: bundleColor,
-                                                                                    borderRadius: 2
+                                                                                    bgcolor: bundleColor,
+                                                                                    color: '#fff',
+                                                                                    borderRadius: '8px',
+                                                                                    border: 'none',
+                                                                                    boxShadow: `0 4px 12px ${alpha(bundleColor, 0.3)}`
                                                                                 }}
                                                                             />
                                                                         )}
@@ -542,166 +573,86 @@ const BundleManagement = () => {
                 </DragDropContext>
             )}
 
-            {/* Pricing Dialog */}
-            <Dialog
-                open={openPricingDialog}
-                onClose={() => setOpenPricingDialog(false)}
-                fullWidth
-                maxWidth="sm"
-                PaperProps={{ sx: { borderRadius: 6, p: 2 } }}
-            >
-                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary }}>
-                    Edit Pricing
-                    <Typography sx={{ color: COLORS.textLight, fontWeight: 600, mt: 0.5 }}>{editingBundle?.name}</Typography>
+            {/* Premium Pricing Dialog */}
+            <Dialog open={openPricingDialog} onClose={() => setOpenPricingDialog(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '24px', overflow: 'hidden' } }}>
+                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary, background: 'linear-gradient(to right, #f8fafc, #fff)', p: 4, pb: 2 }}>
+                    Update Pricing Model
+                    <Typography sx={{ color: COLORS.accent, fontWeight: 700, mt: 0.5, fontSize: '1rem' }}>{editingBundle?.name} Package</Typography>
                 </DialogTitle>
-                <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, pt: 2 }}>
-                        <Alert severity="info" sx={{ borderRadius: 4, bgcolor: alpha('#3b82f6', 0.1), color: '#1e40af', border: 'none', fontWeight: 600 }}>
-                            Set the regular price and optional offer price. Discount will be calculated automatically.
-                        </Alert>
-
+                <DialogContent sx={{ px: 4, pb: 4 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
                         <TextField
-                            fullWidth
-                            label="Regular Price"
-                            type="number"
+                            fullWidth label="Regular Price" type="number"
                             value={pricingForm.regular_price}
                             onChange={(e) => setPricingForm({ ...pricingForm, regular_price: e.target.value })}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-                            }}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
+                            InputProps={{ startAdornment: <InputAdornment position="start"><Typography sx={{fontWeight:800, color:COLORS.primary}}>₹</Typography></InputAdornment> }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px', bgcolor: '#f8fafc', fontWeight: 700 } }}
                             required
                         />
-
                         <TextField
-                            fullWidth
-                            label="Offer Price (Optional)"
-                            type="number"
+                            fullWidth label="Offer Price (Promotional)" type="number"
                             value={pricingForm.offer_price}
                             onChange={(e) => setPricingForm({ ...pricingForm, offer_price: e.target.value })}
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-                            }}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
-                            helperText="Leave empty for no discount"
+                            InputProps={{ startAdornment: <InputAdornment position="start"><Typography sx={{fontWeight:800, color:COLORS.accent}}>₹</Typography></InputAdornment> }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px', bgcolor: alpha(COLORS.accent, 0.03), fontWeight: 700, '&.Mui-focused fieldset': { borderColor: COLORS.accent } } }}
                         />
-
                         {pricingForm.regular_price && pricingForm.offer_price && (
-                            <Box sx={{
-                                p: 2.5,
-                                bgcolor: '#dcfce7',
-                                borderRadius: 4,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 2,
-                                border: '1px solid #bbf7d0'
-                            }}>
+                            <Box sx={{ p: 2, bgcolor: alpha('#10b981', 0.1), borderRadius: '14px', display: 'flex', alignItems: 'center', gap: 2, border: '1px solid rgba(16, 185, 129, 0.2)' }}>
                                 <TrendingDown size={24} color="#059669" />
-                                <Typography sx={{ fontWeight: 900, color: '#059669', fontSize: '1.1rem' }}>
-                                    {calculateDiscount(parseFloat(pricingForm.regular_price), parseFloat(pricingForm.offer_price))}% Discount Applied
-                                </Typography>
+                                <Box>
+                                    <Typography sx={{ fontWeight: 800, color: '#059669' }}>{calculateDiscount(parseFloat(pricingForm.regular_price), parseFloat(pricingForm.offer_price))}% Discount</Typography>
+                                    <Typography variant="caption" sx={{ color: '#047857', fontWeight: 600 }}>Effectively applied to checkout automatically.</Typography>
+                                </Box>
                             </Box>
                         )}
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ p: 4, pt: 2 }}>
-                    <Button onClick={() => setOpenPricingDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: 3, px: 3 }}>
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="contained"
-                        onClick={handleSavePricing}
-                        sx={{
-                            bgcolor: COLORS.accent,
-                            borderRadius: 4,
-                            fontWeight: 900,
-                            px: 5,
-                            py: 1.5,
-                            boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.4)}`,
-                            '&:hover': { bgcolor: COLORS.accentHover, boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.5)}` }
-                        }}
-                    >
-                        Save Pricing
-                    </Button>
+                <DialogActions sx={{ p: 3, px: 4, bgcolor: '#f8fafc', borderTop: `1px solid ${COLORS.border}` }}>
+                    <Button onClick={() => setOpenPricingDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: '12px' }}>Cancel</Button>
+                    <Button variant="contained" onClick={handleSavePricing} sx={{ bgcolor: COLORS.primary, borderRadius: '12px', fontWeight: 800, px: 4, py: 1.2, boxShadow: '0 8px 20px rgba(0,0,0,0.15)', '&:hover': { bgcolor: '#0f172a' } }}>Apply Changes</Button>
                 </DialogActions>
             </Dialog>
 
             {/* Tests Management Dialog */}
-            <Dialog
-                open={openTestsDialog}
-                onClose={() => setOpenTestsDialog(false)}
-                fullWidth
-                maxWidth="md"
-                PaperProps={{ sx: { borderRadius: 6, p: 2 } }}
-            >
-                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary }}>
-                    Manage Tests
-                    <Typography sx={{ color: COLORS.textLight, fontWeight: 600, mt: 0.5 }}>{editingBundle?.name}</Typography>
+            <Dialog open={openTestsDialog} onClose={() => setOpenTestsDialog(false)} fullWidth maxWidth="md" PaperProps={{ sx: { borderRadius: '24px', overflow: 'hidden' } }}>
+                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary, background: 'linear-gradient(to right, #f8fafc, #fff)', p: 4, pb: 2 }}>
+                    Manage Associated Tests
+                    <Typography sx={{ color: COLORS.accent, fontWeight: 700, mt: 0.5, fontSize: '1rem' }}>{editingBundle?.name} Package</Typography>
                 </DialogTitle>
-                <DialogContent>
+                <DialogContent sx={{ px: 4, pb: 4, bgcolor: '#f8fafc' }}>
                     <Box sx={{ pt: 2 }}>
-                        <Alert severity="info" sx={{ borderRadius: 4, mb: 4, bgcolor: alpha('#3b82f6', 0.1), color: '#1e40af', border: 'none', fontWeight: 600 }}>
-                            Select which mock tests should be included in this bundle.
-                        </Alert>
-
-                        <Paper elevation={0} sx={{
-                            maxHeight: 500,
-                            overflow: 'auto',
-                            border: `2px solid ${COLORS.border}`,
-                            borderRadius: 5,
-                            bgcolor: '#f8fafc'
-                        }}>
+                        <Paper elevation={0} sx={{ maxHeight: 450, overflow: 'auto', border: `1px solid ${COLORS.border}`, borderRadius: '16px', bgcolor: '#fff', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                             {tests.length === 0 ? (
                                 <Box sx={{ p: 8, textAlign: 'center' }}>
-                                    <Typography variant="h6" color="error" sx={{ fontWeight: 800, mb: 1 }}>
-                                        No tests available!
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>
-                                        Create tests in Content Management first.
-                                    </Typography>
+                                    <Typography variant="h6" color="error" sx={{ fontWeight: 800, mb: 1 }}>No tests created yet!</Typography>
+                                    <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>Create mock tests in the Content Management portal first.</Typography>
                                 </Box>
                             ) : (
-                                <List sx={{ width: '100%', p: 1 }}>
+                                <List sx={{ width: '100%', p: 1.5 }}>
                                     {tests.map((test) => {
                                         const isIncluded = editingBundle?.tests?.some(t => t.id === test.id);
-
                                         return (
-                                            <ListItem
-                                                key={test.id}
-                                                disablePadding
-                                                sx={{ mb: 1 }}
-                                            >
+                                            <ListItem key={test.id} disablePadding sx={{ mb: 1.5 }}>
                                                 <ListItemButton
                                                     onClick={() => handleToggleTest(test.id)}
                                                     sx={{
-                                                        borderRadius: 4,
-                                                        py: 2,
-                                                        px: 3,
-                                                        border: `2px solid ${isIncluded ? COLORS.accent : 'transparent'}`,
-                                                        bgcolor: isIncluded ? alpha(COLORS.accent, 0.05) : '#fff',
-                                                        transition: 'all 0.2s',
-                                                        '&:hover': { bgcolor: isIncluded ? alpha(COLORS.accent, 0.08) : alpha(COLORS.border, 0.4) }
+                                                        borderRadius: '12px', py: 2, px: 3,
+                                                        border: `2px solid ${isIncluded ? COLORS.primary : COLORS.border}`,
+                                                        bgcolor: isIncluded ? alpha(COLORS.primary, 0.02) : '#fff',
+                                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                        '&:hover': { borderColor: isIncluded ? COLORS.primary : COLORS.accent, transform: 'translateX(4px)' }
                                                     }}
                                                 >
                                                     <ListItemIcon sx={{ minWidth: 48 }}>
-                                                        <Checkbox
-                                                            edge="start"
-                                                            checked={isIncluded}
-                                                            tabIndex={-1}
-                                                            disableRipple
-                                                            size="medium"
-                                                            sx={{ color: COLORS.accent, '&.Mui-checked': { color: COLORS.accent } }}
-                                                        />
+                                                        <Checkbox edge="start" checked={isIncluded} disableRipple sx={{ color: COLORS.primary, '&.Mui-checked': { color: COLORS.primary } }} />
                                                     </ListItemIcon>
                                                     <ListItemText
                                                         primary={test.name}
-                                                        secondary={`${test.subjects?.name || 'Unknown Subject'} • ${test.duration || 0} mins`}
-                                                        primaryTypographyProps={{ fontWeight: 800, fontSize: '1rem', color: isIncluded ? COLORS.accent : COLORS.primary }}
-                                                        secondaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 600, color: COLORS.textLight }}
+                                                        secondary={`${test.subjects?.name || 'Assorted Topic'} • ${test.duration || 0} minutes duration`}
+                                                        primaryTypographyProps={{ fontWeight: 800, fontSize: '1.05rem', color: COLORS.primary }}
+                                                        secondaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 600, color: COLORS.textLight, mt: 0.5 }}
                                                     />
-                                                    {isIncluded && (
-                                                        <CheckCircle size={24} color={COLORS.accent} />
-                                                    )}
+                                                    {isIncluded && <CheckCircle size={28} color={COLORS.primary} strokeWidth={2.5} />}
                                                 </ListItemButton>
                                             </ListItem>
                                         );
@@ -711,126 +662,54 @@ const BundleManagement = () => {
                         </Paper>
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ p: 4, pt: 2 }}>
-                    <Button onClick={() => setOpenTestsDialog(false)} variant="contained" sx={{
-                        bgcolor: COLORS.accent,
-                        borderRadius: 4,
-                        fontWeight: 900,
-                        px: 6,
-                        py: 1.5,
-                        boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.4)}`,
-                        '&:hover': { bgcolor: COLORS.accentHover, boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.5)}` }
-                    }}>
-                        Done
-                    </Button>
+                <DialogActions sx={{ p: 3, px: 4, bgcolor: '#fff', borderTop: `1px solid ${COLORS.border}` }}>
+                    <Button onClick={() => setOpenTestsDialog(false)} variant="contained" sx={{ bgcolor: COLORS.primary, borderRadius: '12px', fontWeight: 800, px: 6, py: 1.2, boxShadow: '0 8px 20px rgba(0,0,0,0.15)', '&:hover': { bgcolor: '#0f172a' } }}>Finish Matching</Button>
                 </DialogActions>
             </Dialog>
 
             {/* Features Dialog */}
-            <Dialog
-                open={openFeaturesDialog}
-                onClose={() => setOpenFeaturesDialog(false)}
-                fullWidth
-                maxWidth="sm"
-                PaperProps={{ sx: { borderRadius: 6, p: 2 } }}
-            >
-                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary }}>
-                    Edit Features
-                    <Typography sx={{ color: COLORS.textLight, fontWeight: 600, mt: 0.5 }}>{editingBundle?.name}</Typography>
+            <Dialog open={openFeaturesDialog} onClose={() => setOpenFeaturesDialog(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '24px', overflow: 'hidden' } }}>
+                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary, background: 'linear-gradient(to right, #f8fafc, #fff)', p: 4, pb: 2 }}>
+                    Highlight Features
+                    <Typography sx={{ color: COLORS.accent, fontWeight: 700, mt: 0.5, fontSize: '1rem' }}>{editingBundle?.name} Package</Typography>
                 </DialogTitle>
-                <DialogContent>
+                <DialogContent sx={{ px: 4, pb: 4 }}>
                     <Box sx={{ pt: 2 }}>
-                        <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
+                        <Box sx={{ display: 'flex', gap: 2, mb: 4, alignItems: 'center' }}>
                             <TextField
-                                fullWidth
-                                label="Add Feature"
-                                placeholder="e.g., Priority Support"
-                                value={newFeature}
-                                onChange={(e) => setNewFeature(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAddFeature()}
-                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
+                                fullWidth label="Enter strong selling point..."
+                                value={newFeature} onChange={(e) => setNewFeature(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAddFeature()}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px', fontWeight: 600 } }}
                             />
-                            <Button
-                                variant="contained"
-                                onClick={handleAddFeature}
-                                sx={{
-                                    bgcolor: COLORS.accent,
-                                    borderRadius: 4,
-                                    minWidth: 64,
-                                    '&:hover': { bgcolor: COLORS.accentHover }
-                                }}
-                            >
+                            <Button variant="contained" onClick={handleAddFeature} sx={{ bgcolor: COLORS.primary, borderRadius: '14px', height: 56, minWidth: 56, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                                 <Plus size={24} color="white" />
                             </Button>
                         </Box>
-
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <AnimatePresence>
                                 {featuresForm.map((feature, index) => (
-                                    <Box
-                                        key={index}
-                                        component={motion.div}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 20 }}
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 2,
-                                            p: 2.5,
-                                            bgcolor: '#f8fafc',
-                                            borderRadius: 4,
-                                            border: `2px solid ${COLORS.border}`,
-                                            transition: 'all 0.2s',
-                                            '&:hover': { borderColor: COLORS.accent, bgcolor: alpha(COLORS.accent, 0.02) }
-                                        }}
-                                    >
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0.75, borderRadius: '50%', bgcolor: alpha('#059669', 0.1) }}>
-                                            <CheckCircle size={18} color="#059669" />
+                                    <Box key={index} component={motion.div} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2, bgcolor: '#f8fafc', borderRadius: '14px', border: `1px solid ${COLORS.border}`, boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 1, borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white' }}>
+                                            <CheckCircle size={16} strokeWidth={3} />
                                         </Box>
-                                        <Typography sx={{ flex: 1, fontWeight: 700, color: COLORS.secondary, fontSize: '1rem' }}>
-                                            {feature}
-                                        </Typography>
-                                        <IconButton
-                                            size="medium"
-                                            onClick={() => handleRemoveFeature(index)}
-                                            sx={{ color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.05)', '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.1)' } }}
-                                        >
-                                            <Trash2 size={20} />
+                                        <Typography sx={{ flex: 1, fontWeight: 700, color: COLORS.primary }}>{feature}</Typography>
+                                        <IconButton size="small" onClick={() => handleRemoveFeature(index)} sx={{ color: '#ef4444', bgcolor: alpha('#ef4444', 0.1), '&:hover': { bgcolor: '#ef4444', color: 'white' } }}>
+                                            <Trash2 size={16} />
                                         </IconButton>
                                     </Box>
                                 ))}
                             </AnimatePresence>
-
                             {featuresForm.length === 0 && (
-                                <Box sx={{ py: 6, textAlign: 'center', border: `2px dashed ${COLORS.border}`, borderRadius: 5 }}>
-                                    <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>
-                                        No features added yet. Use the field above to add features.
-                                    </Typography>
+                                <Box sx={{ py: 6, textAlign: 'center', border: `2px dashed ${COLORS.border}`, borderRadius: '16px', bgcolor: '#f8fafc' }}>
+                                    <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 700 }}>No features active. Type above to add compelling features.</Typography>
                                 </Box>
                             )}
                         </Box>
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ p: 4, pt: 2 }}>
-                    <Button onClick={() => setOpenFeaturesDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: 3, px: 3 }}>
-                        Cancel
-                    </Button>
-                    <Button
-                        variant="contained"
-                        onClick={handleSaveFeatures}
-                        sx={{
-                            bgcolor: COLORS.accent,
-                            borderRadius: 4,
-                            fontWeight: 900,
-                            px: 5,
-                            py: 1.5,
-                            boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.4)}`,
-                            '&:hover': { bgcolor: COLORS.accentHover, boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.5)}` }
-                        }}
-                    >
-                        Save Features
-                    </Button>
+                <DialogActions sx={{ p: 3, px: 4, bgcolor: '#f8fafc', borderTop: `1px solid ${COLORS.border}` }}>
+                    <Button onClick={() => setOpenFeaturesDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: '12px' }}>Discard</Button>
+                    <Button variant="contained" onClick={handleSaveFeatures} sx={{ bgcolor: COLORS.primary, borderRadius: '12px', fontWeight: 800, px: 4, py: 1.2, boxShadow: '0 8px 20px rgba(0,0,0,0.15)', '&:hover': { bgcolor: '#0f172a' } }}>Update Features</Button>
                 </DialogActions>
             </Dialog>
 
