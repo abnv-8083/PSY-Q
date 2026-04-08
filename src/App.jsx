@@ -39,6 +39,7 @@ import StudentForgotPassword from './pages/student/StudentForgotPassword';
 // Admin Sections
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminResetPassword from './pages/admin/AdminResetPassword';
+import AdminSignIn from './pages/admin/AdminSignIn';
 
 // Components & Contexts
 import ProtectedRoute from './components/ProtectedRoute';
@@ -100,12 +101,13 @@ function AnimatedRoutes() {
         <Route path="/student/payment" element={<Layout><StudentPayment /></Layout>} />
 
         {/* Admin Section */}
+        <Route path="/admin/signin" element={<AdminSignIn />} />
+        <Route path="/admin/reset-password" element={<AdminResetPassword />} />
         <Route path="/admin/*" element={
           <ProtectedRoute adminOnly>
             <AdminDashboard />
           </ProtectedRoute>
         } />
-        <Route path="/admin/reset-password" element={<AdminResetPassword />} />
         <Route path="/academic/mocktest/admin/*" element={
           <ProtectedRoute adminOnly>
             <AdminDashboard />
