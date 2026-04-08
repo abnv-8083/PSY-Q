@@ -344,6 +344,9 @@ const BundleManagement = () => {
                                                                 height: '100%',
                                                                 display: 'flex',
                                                                 flexDirection: 'column',
+                                                                maxWidth: { xs: '100%', md: '420px' }, // Enforce max width
+                                                                mx: 'auto', // Center if Grid box is wider
+                                                                width: '100%',
                                                                 transition: 'all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)',
                                                                 '&:hover': {
                                                                     transform: 'translateY(-12px)',
@@ -371,12 +374,13 @@ const BundleManagement = () => {
                                                                     display: 'flex',
                                                                     alignItems: 'center',
                                                                     gap: 1.5,
-                                                                    backdropFilter: 'blur(10px)'
+                                                                    backdropFilter: 'blur(10px)',
+                                                                    maxWidth: 'calc(100% - 64px)'
                                                                 }}>
-                                                                    <Box {...provided.dragHandleProps} sx={{ display: 'flex', alignItems: 'center', cursor: 'grab', opacity: 0.9, color: 'white', '&:active': { cursor: 'grabbing' } }}>
+                                                                    <Box {...provided.dragHandleProps} sx={{ display: 'flex', alignItems: 'center', cursor: 'grab', opacity: 0.9, color: 'white', '&:active': { cursor: 'grabbing' }, flexShrink: 0 }}>
                                                                         <GripVertical size={16} />
                                                                     </Box>
-                                                                    <Typography variant="caption" sx={{ color: 'white', fontWeight: 900, letterSpacing: 2, textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                                                                    <Typography variant="caption" sx={{ color: 'white', fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase', fontSize: '0.75rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                                         {bundle.bundle_type}
                                                                     </Typography>
                                                                 </Box>
@@ -392,19 +396,26 @@ const BundleManagement = () => {
                                                                         background: 'linear-gradient(135deg, #10b981, #059669)',
                                                                         borderRadius: '10px',
                                                                         boxShadow: '0 8px 20px rgba(16, 185, 129, 0.4)',
-                                                                        animation: 'pulse 2s infinite'
+                                                                        animation: 'pulse 2s infinite',
+                                                                        maxWidth: '120px'
                                                                     }}>
-                                                                        <Typography variant="caption" sx={{ color: 'white', fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                                                                        <Typography variant="caption" sx={{ color: 'white', fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                                             ★ MOST POPULAR
                                                                         </Typography>
                                                                     </Box>
                                                                 )}
 
-                                                                <Box sx={{ mt: 3, mb: 4, flexGrow: 0 }}>
-                                                                    <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1, letterSpacing: -0.5 }}>
+                                                                <Box sx={{ mt: 3, mb: 4, flexGrow: 0, width: '100%', overflow: 'hidden' }}>
+                                                                    <Typography variant="h4" sx={{ 
+                                                                        fontWeight: 900, color: COLORS.primary, mb: 1, letterSpacing: -0.5,
+                                                                        wordBreak: 'break-word', overflowWrap: 'break-word'
+                                                                    }}>
                                                                         {bundle.name}
                                                                     </Typography>
-                                                                    <Typography variant="body2" sx={{ color: COLORS.secondary, fontWeight: 500, minHeight: 48, lineHeight: 1.7, opacity: 0.8 }}>
+                                                                    <Typography variant="body2" sx={{ 
+                                                                        color: COLORS.secondary, fontWeight: 500, minHeight: 48, lineHeight: 1.7, opacity: 0.8,
+                                                                        wordBreak: 'break-word', overflowWrap: 'break-word'
+                                                                    }}>
                                                                         {bundle.description}
                                                                     </Typography>
                                                                 </Box>
@@ -478,13 +489,13 @@ const BundleManagement = () => {
                                                                             <Edit size={16} />
                                                                         </IconButton>
                                                                     </Box>
-                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', overflow: 'hidden' }}>
                                                                         {bundle.features?.slice(0, 5).map((feature, idx) => (
                                                                             <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0.5, borderRadius: '50%', background: `linear-gradient(135deg, ${alpha(bundleColor, 0.2)}, ${alpha(bundleColor, 0.05)})` }}>
+                                                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0.5, borderRadius: '50%', background: `linear-gradient(135deg, ${alpha(bundleColor, 0.2)}, ${alpha(bundleColor, 0.05)})`, flexShrink: 0 }}>
                                                                                     <CheckCircle size={15} color={bundleColor} strokeWidth={3} />
                                                                                 </Box>
-                                                                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary }}>
+                                                                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary, wordBreak: 'break-word', overflowWrap: 'break-word', flex: 1 }}>
                                                                                     {feature}
                                                                                 </Typography>
                                                                             </Box>
