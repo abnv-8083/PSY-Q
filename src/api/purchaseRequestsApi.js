@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import axios from 'axios';
 
 /**
  * Create a new purchase request
@@ -9,34 +10,15 @@ import { supabase } from '../lib/supabaseClient';
  * @returns {Promise<Object>} The created purchase request
  */
 export const createPurchaseRequest = async (userId, itemType, itemId, requestNumber) => {
-    // Check if there's already a pending request for this item and user
-    const { data: existing } = await supabase
-        .from('purchase_requests')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('item_type', itemType)
-        .eq('item_id', itemId)
-        .eq('status', 'pending')
-        .single();
-
-    if (existing) {
-        return existing;
-    }
-
-    const { data, error } = await supabase
-        .from('purchase_requests')
-        .insert({
-            user_id: userId,
-            item_type: itemType,
-            item_id: itemId,
-            request_number: requestNumber,
-            status: 'pending'
-        })
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
+    const backendUrl = import.meta.env.VITE_API_URL || '';
+    const res = await axios.post(`${backendUrl}/student/purchase-requests`, {
+        userId,
+        itemType,
+        itemId,
+        requestNumber
+    });
+    if (!res.data.success) throw new Error(res.data.message || 'Failed to create purchase request');
+    return res.data.data;
 };
 
 /**
@@ -47,13 +29,15 @@ export const createPurchaseRequest = async (userId, itemType, itemId, requestNum
 export const fetchUserPurchaseRequests = async (userId) => {
     if (!userId) return [];
     
-    const { data, error } = await supabase
-        .from('purchase_requests')
-        .select('*')
-        .eq('user_id', userId);
-
-    if (error) throw error;
-    return data;
+    try {
+        const backendUrl = import.meta.env.VITE_API_URL || '';
+        const res = await axios.get(`${backendUrl}/student/purchase-requests?userId=${userId}`);
+        if (!res.data.success) throw new Error(res.data.message || 'Failed to fetch user requests');
+        return res.data.data || [];
+    } catch (error) {
+        console.error('Error fetching user purchase requests:', error);
+        return [];
+    }
 };
 
 /**

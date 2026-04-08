@@ -230,6 +230,52 @@ app.post('/api/admin/purchase-requests/:id/reject', async (req, res) => {
   }
 });
 
+// Student endpoints for purchase requests
+app.post('/api/student/purchase-requests', async (req, res) => {
+  try {
+    const { userId, itemType, itemId, requestNumber } = req.body;
+    
+    // Check if there's already a pending request for this item and user
+    const existing = await PurchaseRequest.findOne({
+      user_id: userId,
+      item_type: itemType,
+      item_id: itemId,
+      status: 'pending'
+    });
+
+    if (existing) {
+      return res.json({ success: true, data: existing });
+    }
+
+    const newRequest = new PurchaseRequest({
+      user_id: userId,
+      item_type: itemType,
+      item_id: itemId,
+      request_number: requestNumber,
+      status: 'pending'
+    });
+    
+    await newRequest.save();
+    res.json({ success: true, data: newRequest });
+  } catch (error) {
+    console.error('Create Purchase Request Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/student/purchase-requests', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ success: false, message: 'userId required' });
+
+    const requests = await PurchaseRequest.find({ user_id: userId }).sort({ created_at: -1 });
+    res.json({ success: true, data: requests });
+  } catch (error) {
+    console.error('Fetch Student Purchase Requests Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // --- Data Routes ---
 app.get('/api/subjects', async (req, res) => {
   try {
