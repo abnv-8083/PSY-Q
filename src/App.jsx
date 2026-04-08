@@ -77,7 +77,12 @@ function AnimatedRoutes() {
             <MockTestInterface />
           </ProtectedRoute>
         } />
-        <Route path="/academic/mocktest/rules/:id" element={
+        <Route path="/academic/mocktest/:subjectId/:testId/exam" element={
+          <ProtectedRoute>
+            <MockTestInterface />
+          </ProtectedRoute>
+        } />
+        <Route path="/academic/mocktest/:subjectId/:testId/rules" element={
           <ProtectedRoute>
             <MockTestRules />
           </ProtectedRoute>
@@ -87,7 +92,7 @@ function AnimatedRoutes() {
             <GuestCheckout />
           </ProtectedRoute>
         } />
-        <Route path="/academic/mocktest/analytics/:id" element={
+        <Route path="/academic/mocktest/:subjectId/:testId/results" element={
           <ProtectedRoute>
             <ResultAnalytics />
           </ProtectedRoute>
