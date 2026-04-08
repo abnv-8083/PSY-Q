@@ -306,7 +306,18 @@ const BundleManagement = () => {
                 <DragDropContext onDragEnd={handleDragEnd}>
                     <StrictModeDroppable droppableId="bundles-list" direction="horizontal">
                         {(provided) => (
-                            <Grid container spacing={4} {...provided.droppableProps} ref={provided.innerRef} sx={{ position: 'relative', zIndex: 1 }}>
+                            <Box 
+                                {...provided.droppableProps} 
+                                ref={provided.innerRef} 
+                                sx={{ 
+                                    display: 'grid', 
+                                    gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, // Explicitly 3 in 1 row on desktop
+                                    gap: 4,
+                                    position: 'relative', 
+                                    zIndex: 1,
+                                    alignItems: 'stretch'
+                                }}
+                            >
                                 <AnimatePresence>
                                     {bundles.map((bundle, index) => {
                                         const discount = calculateDiscount(bundle.regular_price, bundle.offer_price);
@@ -315,13 +326,13 @@ const BundleManagement = () => {
                                         return (
                                             <Draggable key={bundle.id} draggableId={bundle.id} index={index}>
                                                 {(provided, snapshot) => (
-                                                    <Grid
-                                                        item
-                                                        xs={12}
-                                                        md={4}
+                                                    <Box
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
-                                                        sx={{ ...provided.draggableProps.style }}
+                                                        sx={{ 
+                                                            ...provided.draggableProps.style,
+                                                            height: '100%'
+                                                        }}
                                                     >
                                                         <motion.div
                                                             initial={{ opacity: 0, y: 30 }}
@@ -571,14 +582,14 @@ const BundleManagement = () => {
                                                                 </Box>
                                                             </Paper>
                                                         </motion.div>
-                                                    </Grid>
+                                                    </Box>
                                                 )}
                                             </Draggable>
                                         );
                                     })}
                                     {provided.placeholder}
                                 </AnimatePresence>
-                            </Grid>
+                            </Box>
                         )}
                     </StrictModeDroppable>
                 </DragDropContext>
