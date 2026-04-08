@@ -45,37 +45,51 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // For SPA navigation requests, always serve index.html so React Router works
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('/index.html').then((cached) => {
+          return cached || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+        });
+      })
+    );
+    return;
+  }
+
   // For images, use cache first strategy
   if (event.request.url.includes('/images/')) {
     event.respondWith(
       caches.match(event.request).then((response) => {
-        return response || fetch(event.request).then((response) => {
-          // Clone and cache the response
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
+        return response || fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseClone);
             });
           }
-          return response;
+          return networkResponse;
         });
       })
     );
+    return;
   }
-  // For other assets, use network first strategy
-  else {
-    event.respondWith(
-      fetch(event.request).then((response) => {
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      }).catch(() => {
-        return caches.match(event.request);
-      })
-    );
-  }
+
+  // For other static assets, use network first with cache fallback
+  event.respondWith(
+    fetch(event.request).then((response) => {
+      if (response && response.status === 200) {
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
+        });
+      }
+      return response;
+    }).catch(() => {
+      return caches.match(event.request).then((cached) => {
+        // Always return a valid Response — never undefined
+        return cached || new Response('', { status: 503, statusText: 'Service Unavailable' });
+      });
+    })
+  );
 });
