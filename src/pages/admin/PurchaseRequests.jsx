@@ -60,9 +60,10 @@ const PurchaseRequests = () => {
                 } catch (err) { console.error("Item info error", err); }
                 
                 return { 
-                    ...req, 
+                    ...req,
+                    id: req.id || req._id, // Map Mongoose _id to id securely
                     item_name: itemName,
-                    student: req.students // DB join injects it as 'students'
+                    student: (typeof req.user_id === 'object' ? req.user_id : null) || req.students // DB join injects it as 'user_id' in Mongo
                 };
             }));
 
@@ -124,7 +125,7 @@ const PurchaseRequests = () => {
         }
     };
 
-    const userEmail = (req) => req.student?.email || req.students?.email || req.user_id;
+    const userEmail = (req) => req.student?.email || req.students?.email || (typeof req.user_id === 'string' ? req.user_id : 'Unknown');
 
     const filteredRequests = requests.filter(req => {
         const matchesStatus = statusFilter === 'all' || req.status === statusFilter;
@@ -230,7 +231,7 @@ const PurchaseRequests = () => {
                                             {row.student?.email || `Student Record Missing`}
                                         </Typography>
                                         <Typography variant="caption" display="block" color="textSecondary">
-                                            {row.student?.full_name || (row.user_id ? `ID: ${row.user_id.substring(0,18)}...` : 'Anonymous User')}
+                                            {row.student?.full_name || (typeof row.user_id === 'string' ? `ID: ${row.user_id.substring(0,18)}...` : 'Anonymous User')}
                                         </Typography>
                                         {row.student?.phone && (
                                             <Typography 
