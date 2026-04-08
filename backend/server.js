@@ -160,8 +160,6 @@ app.get('/api/admin/purchase-requests', async (req, res) => {
       .populate('user_id', 'full_name email phone')
       .sort({ created_at: -1 });
 
-    if (reqError) throw reqError;
-
     // 2. Fetch all bundles and tests just like the frontend did, but securely in one go
     // (We could do this efficiently or just let the frontend do it, but returning it all is cleaner)
     // Actually, we can just return the requests and let the frontend map items, or do it here.
@@ -203,10 +201,6 @@ app.post('/api/admin/purchase-requests/:id/approve', async (req, res) => {
     await request.save();
     
     res.json({ success: true, data: request });
-      
-    if (updateError) throw updateError;
-    
-    res.json({ success: true, data: updatedReq });
   } catch (error) {
     console.error('Approve Purchase Request Error:', error);
     res.status(500).json({ success: false, message: error.message });
@@ -229,10 +223,6 @@ app.post('/api/admin/purchase-requests/:id/reject', async (req, res) => {
     await request.save();
     
     res.json({ success: true, data: request });
-      
-    if (updateError) throw updateError;
-    
-    res.json({ success: true, data: updatedReq });
   } catch (error) {
     console.error('Reject Purchase Request Error:', error);
     res.status(500).json({ success: false, message: error.message });
