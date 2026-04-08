@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import {
@@ -9,21 +9,37 @@ import {
     TextField,
     Button,
     Avatar,
-    IconButton,
     Divider,
-    Alert
+    Alert,
+    CircularProgress,
+    Grid,
+    IconButton,
+    Breadcrumbs,
+    Link
 } from '@mui/material';
-import { ArrowLeft, User, Mail, Lock, Save, Edit2 } from 'lucide-react';
+import { 
+    ArrowLeft, User, Mail, Lock, Save, 
+    Edit2, Camera, Calendar, ShieldCheck,
+    ChevronRight
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
 
+const COLORS = {
+    primary: '#1e293b',
+    accent: '#ca0056',
+    secondary: '#64748b'
+};
 
 const StudentProfile = () => {
     const navigate = useNavigate();
+    const { studentUser, loading: sessionLoading } = useSession();
 
+    const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [userData, setUserData] = useState(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -32,11 +48,9 @@ const StudentProfile = () => {
         confirmPassword: ''
     });
 
-    const { studentUser: sessionUser, loading: sessionLoading } = useSession();
-
     useEffect(() => {
         if (!sessionLoading) {
-            if (!sessionUser) {
+            if (!studentUser) {
                 navigate('/student/signin');
                 return;
             }
@@ -47,8 +61,10 @@ const StudentProfile = () => {
                     const { data: profile, error } = await supabase
                         .from('students')
                         .select('*')
-                        .eq('id', sessionUser.id)
+                        .eq('id', studentUser.id)
                         .single();
+
+                    if (error) throw error;
 
                     if (profile) {
                         setUserData(profile);
@@ -68,12 +84,11 @@ const StudentProfile = () => {
             };
             fetchUserData();
         }
-    }, [sessionUser, sessionLoading, navigate]);
-
+    }, [studentUser, sessionLoading, navigate]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-        setMessage({ type: '', text: '' });
+        if (message.text) setMessage({ type: '', text: '' });
     };
 
     const handleSave = async () => {
@@ -81,133 +96,161 @@ const StudentProfile = () => {
         setMessage({ type: '', text: '' });
 
         try {
-            if (!sessionUser) throw new Error('No user logged in');
+            if (!studentUser) throw new Error('No user logged in');
 
             const updates = {};
+            if (formData.name !== userData?.full_name) updates.full_name = formData.name;
+            if (formData.email !== userData?.email) updates.email = formData.email;
 
-            // Update display name if changed
-            if (formData.name !== userData?.full_name) {
-                updates.full_name = formData.name;
-            }
-
-            // Update email if changed (Note: usually requires verification, but here we just update)
-            if (formData.email !== userData?.email) {
-                updates.email = formData.email;
-            }
-
-            // Password update would need an Edge Function to hash it
             if (formData.newPassword) {
-                if (formData.newPassword !== formData.confirmPassword) {
-                    setMessage({ type: 'error', text: 'Passwords do not match' });
-                    setIsSaving(false);
-                    return;
+                if (formData.newPassword.length < 6) {
+                    throw new Error('Password must be at least 6 characters');
                 }
-                // We'll skip password update here as it needs backend hashing
-                console.warn("Password update requested - this needs a separate backend action.");
+                if (formData.newPassword !== formData.confirmPassword) {
+                    throw new Error('Passwords do not match');
+                }
+                
+                // Update password via Supabase Auth
+                const { error: authError } = await supabase.auth.updateUser({
+                    password: formData.newPassword
+                });
+                if (authError) throw authError;
             }
 
             if (Object.keys(updates).length > 0) {
                 const { error: studentError } = await supabase
                     .from('students')
                     .update(updates)
-                    .eq('id', sessionUser.id);
+                    .eq('id', studentUser.id);
 
                 if (studentError) throw studentError;
-
-                // Update local session too
-                const updatedUser = { ...sessionUser, ...updates };
-                localStorage.setItem('psyq_user', JSON.stringify(updatedUser));
-                // Note: useSession doesn't have a 'refresh' but the state might auto-update if we provide it
-                // For now, simpler to just notify success
             }
 
-            setMessage({ type: 'success', text: 'Profile updated successfully! Some changes may require a refresh.' });
+            setMessage({ type: 'success', text: 'Profile updated successfully!' });
             setIsEditing(false);
             setFormData(prev => ({ ...prev, newPassword: '', confirmPassword: '' }));
-
-            // Refresh user data
-            const { data: profile } = await supabase
-                .from('students')
-                .select('*')
-                .eq('id', sessionUser.id)
-                .single();
-            if (profile) setUserData(profile);
+            
+            // Refresh local data
+            setUserData(prev => ({ ...prev, ...updates }));
 
         } catch (error) {
             console.error('Error updating profile:', error);
-            setMessage({
-                type: 'error',
-                text: 'Failed to update profile. ' + error.message
-            });
+            setMessage({ type: 'error', text: error.message });
         } finally {
             setIsSaving(false);
         }
     };
 
+    if (sessionLoading || loading) {
+        return (
+            <Box sx={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CircularProgress sx={{ color: COLORS.accent }} />
+            </Box>
+        );
+    }
 
     return (
-        <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fce7f3 0%, #dbeafe 100%)', py: 4 }}>
-            <Container maxWidth="md">
-                {/* Header */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-                    <IconButton onClick={() => navigate('/academic/mocktest')} sx={{ mr: 2 }}>
-                        <ArrowLeft />
-                    </IconButton>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#1e293b' }}>
-                        My Profile
-                    </Typography>
-                </Box>
-
-                {/* Loading State */}
-                {loading ? (
-                    <Paper elevation={3} sx={{ p: 4, borderRadius: 4, textAlign: 'center' }}>
-                        <Typography variant="body1" sx={{ color: '#64748b' }}>
-                            Loading profile...
-                        </Typography>
-                    </Paper>
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
+        <Box sx={{ minHeight: '100vh', background: '#f8fafc', pt: 4, pb: 8 }}>
+            <Container maxWidth="lg">
+                {/* Breadcrumbs */}
+                <Breadcrumbs 
+                    separator={<ChevronRight size={14} />} 
+                    sx={{ mb: 3 }}
+                >
+                    <Link 
+                        underline="hover" 
+                        color="inherit" 
+                        onClick={() => navigate('/academic/mocktest')}
+                        sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.5, fontSize: '0.875rem' }}
                     >
-                        <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
-                            {/* Avatar Section */}
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
-                                <Avatar
-                                    sx={{
-                                        width: 120,
-                                        height: 120,
-                                        bgcolor: '#ec4899',
-                                        fontSize: '48px',
-                                        fontWeight: 700,
-                                        mb: 2
-                                    }}
-                                >
-                                    {formData.name?.charAt(0)?.toUpperCase() || 'S'}
-                                </Avatar>
-                                <Typography variant="h5" sx={{ fontWeight: 700, color: '#1e293b' }}>
-                                    {formData.name || 'Student'}
+                        <User size={14} /> Mock Test
+                    </Link>
+                    <Typography color="text.primary" sx={{ fontSize: '0.875rem', fontWeight: 600 }}>Profile</Typography>
+                </Breadcrumbs>
+
+                <Grid container spacing={4}>
+                    {/* Left Side: Photo & Quick Info */}
+                    <Grid item xs={12} md={4}>
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <Paper elevation={0} sx={{ p: 4, borderRadius: 6, textAlign: 'center', border: '1px solid #e2e8f0' }}>
+                                <Box sx={{ position: 'relative', display: 'inline-block', mb: 3 }}>
+                                    <Avatar
+                                        sx={{
+                                            width: 120,
+                                            height: 120,
+                                            bgcolor: COLORS.accent,
+                                            fontSize: '48px',
+                                            fontWeight: 800,
+                                            boxShadow: '0 10px 25px rgba(202, 0, 86, 0.2)'
+                                        }}
+                                    >
+                                        {formData.name?.charAt(0)?.toUpperCase()}
+                                    </Avatar>
+                                    <IconButton 
+                                        sx={{ 
+                                            position: 'absolute', 
+                                            bottom: 0, 
+                                            right: 0, 
+                                            bgcolor: 'white', 
+                                            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                                            '&:hover': { bgcolor: '#f8fafc' }
+                                        }}
+                                        size="small"
+                                    >
+                                        <Camera size={16} color={COLORS.accent} />
+                                    </IconButton>
+                                </Box>
+                                
+                                <Typography variant="h5" sx={{ fontWeight: 800, color: COLORS.primary, mb: 0.5 }}>
+                                    {userData?.full_name}
                                 </Typography>
-                                <Typography variant="body2" sx={{ color: '#64748b' }}>
-                                    {userData?.role === 'student' ? 'Student Account' : 'User'}
+                                <Typography variant="body2" sx={{ color: COLORS.secondary, mb: 3 }}>
+                                    {userData?.email}
                                 </Typography>
-                            </Box>
 
-                            <Divider sx={{ mb: 3 }} />
+                                <Divider sx={{ my: 3 }} />
 
-                            {/* Message Alert */}
-                            {message.text && (
-                                <Alert severity={message.type} sx={{ mb: 3 }}>
-                                    {message.text}
-                                </Alert>
-                            )}
+                                <Box sx={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(202, 0, 86, 0.05)', color: COLORS.accent }}>
+                                            <Calendar size={18} />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: COLORS.secondary, display: 'block' }}>Joined Since</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                                {new Date(userData?.created_at).toLocaleDateString()}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(16, 185, 129, 0.05)', color: '#10b981' }}>
+                                            <ShieldCheck size={18} />
+                                        </Box>
+                                        <Box>
+                                            <Typography variant="caption" sx={{ color: COLORS.secondary, display: 'block' }}>Account Status</Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#10b981' }}>Verified</Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            </Paper>
+                        </motion.div>
+                    </Grid>
 
-                            {/* Profile Information */}
-                            <Box sx={{ mb: 3 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#1e293b' }}>
-                                        Personal Information
+                    {/* Right Side: Form */}
+                    <Grid item xs={12} md={8}>
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <Paper elevation={0} sx={{ p: 4, borderRadius: 6, border: '1px solid #e2e8f0' }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 800, color: COLORS.primary }}>
+                                        Personal Settings
                                     </Typography>
                                     {!isEditing && (
                                         <Button
@@ -215,170 +258,131 @@ const StudentProfile = () => {
                                             onClick={() => setIsEditing(true)}
                                             sx={{
                                                 textTransform: 'none',
-                                                fontWeight: 600,
-                                                color: '#ec4899'
+                                                fontWeight: 700,
+                                                color: COLORS.accent,
+                                                borderRadius: '12px',
+                                                px: 3,
+                                                '&:hover': { bgcolor: 'rgba(202, 0, 86, 0.05)' }
                                             }}
                                         >
-                                            Edit Profile
+                                            Edit Details
                                         </Button>
                                     )}
                                 </Box>
 
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                                    {/* Name Field */}
-                                    <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#64748b', mb: 1 }}>
-                                            Full Name
-                                        </Typography>
+                                {message.text && (
+                                    <Alert severity={message.type} sx={{ mb: 3, borderRadius: 3 }}>
+                                        {message.text}
+                                    </Alert>
+                                )}
+
+                                <Grid container spacing={3}>
+                                    <Grid item xs={12} sm={6}>
+                                        <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.primary }}>Full Name</Typography>
                                         <TextField
                                             fullWidth
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
                                             disabled={!isEditing}
+                                            variant="outlined"
                                             InputProps={{
                                                 startAdornment: <User size={20} style={{ marginRight: 12, color: '#94a3b8' }} />
                                             }}
-                                            sx={{
-                                                '& .MuiOutlinedInput-root': {
-                                                    borderRadius: 2,
-                                                    bgcolor: isEditing ? '#fff' : '#f8fafc'
-                                                }
-                                            }}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                         />
-                                    </Box>
-
-                                    {/* Email Field */}
-                                    <Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#64748b', mb: 1 }}>
-                                            Email Address
-                                        </Typography>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.primary }}>Email Address</Typography>
                                         <TextField
                                             fullWidth
                                             name="email"
-                                            type="email"
                                             value={formData.email}
                                             onChange={handleChange}
                                             disabled={!isEditing}
+                                            variant="outlined"
                                             InputProps={{
                                                 startAdornment: <Mail size={20} style={{ marginRight: 12, color: '#94a3b8' }} />
                                             }}
-                                            sx={{
-                                                '& .MuiOutlinedInput-root': {
-                                                    borderRadius: 2,
-                                                    bgcolor: isEditing ? '#fff' : '#f8fafc'
-                                                }
-                                            }}
+                                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                         />
-                                    </Box>
+                                    </Grid>
 
-                                    {/* Password Fields (only when editing) */}
                                     {isEditing && (
                                         <>
-                                            <Box>
-                                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#64748b', mb: 1 }}>
-                                                    New Password (Optional)
+                                            <Grid item xs={12}>
+                                                <Divider sx={{ my: 1 }} />
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 800, mt: 2, mb: 1, color: COLORS.primary }}>
+                                                    Change Password
                                                 </Typography>
+                                            </Grid>
+                                            <Grid item xs={12} sm={6}>
+                                                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.primary }}>New Password</Typography>
                                                 <TextField
                                                     fullWidth
                                                     name="newPassword"
                                                     type="password"
                                                     value={formData.newPassword}
                                                     onChange={handleChange}
-                                                    placeholder="Enter new password"
+                                                    placeholder="Min. 6 characters"
                                                     InputProps={{
                                                         startAdornment: <Lock size={20} style={{ marginRight: 12, color: '#94a3b8' }} />
                                                     }}
-                                                    sx={{
-                                                        '& .MuiOutlinedInput-root': {
-                                                            borderRadius: 2
-                                                        }
-                                                    }}
+                                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                                 />
-                                            </Box>
-
-                                            <Box>
-                                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#64748b', mb: 1 }}>
-                                                    Confirm New Password
-                                                </Typography>
+                                            </Grid>
+                                            <Grid item xs={12} sm={6}>
+                                                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.primary }}>Confirm Password</Typography>
                                                 <TextField
                                                     fullWidth
                                                     name="confirmPassword"
                                                     type="password"
                                                     value={formData.confirmPassword}
                                                     onChange={handleChange}
-                                                    placeholder="Confirm new password"
+                                                    placeholder="Match new password"
                                                     InputProps={{
                                                         startAdornment: <Lock size={20} style={{ marginRight: 12, color: '#94a3b8' }} />
                                                     }}
-                                                    sx={{
-                                                        '& .MuiOutlinedInput-root': {
-                                                            borderRadius: 2
-                                                        }
-                                                    }}
+                                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                                 />
-                                            </Box>
+                                            </Grid>
                                         </>
                                     )}
-                                </Box>
-                            </Box>
+                                </Grid>
 
-                            {/* Action Buttons */}
-                            {isEditing && (
-                                <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
-                                    <Button
-                                        fullWidth
-                                        variant="outlined"
-                                        onClick={() => {
-                                            setIsEditing(false);
-                                            setFormData({
-                                                name: userData?.full_name || '',
-                                                email: userData?.email || '',
-                                                newPassword: '',
-                                                confirmPassword: ''
-                                            });
-                                            setMessage({ type: '', text: '' });
-                                        }}
-                                        sx={{
-                                            textTransform: 'none',
-                                            fontWeight: 600,
-                                            borderRadius: 2,
-                                            py: 1.5
-                                        }}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        fullWidth
-                                        variant="contained"
-                                        onClick={handleSave}
-                                        disabled={isSaving}
-                                        startIcon={<Save size={18} />}
-                                        sx={{
-                                            textTransform: 'none',
-                                            fontWeight: 600,
-                                            bgcolor: '#ec4899',
-                                            borderRadius: 2,
-                                            py: 1.5,
-                                            '&:hover': {
-                                                bgcolor: '#db2777'
-                                            }
-                                        }}
-                                    >
-                                        {isSaving ? 'Saving...' : 'Save Changes'}
-                                    </Button>
-                                </Box>
-                            )}
-
-                            {/* Account Info */}
-                            <Box sx={{ mt: 4, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
-                                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 500 }}>
-                                    <strong>Account Created:</strong> {userData?.created_at ? new Date(userData.created_at).toLocaleDateString() : 'N/A'}
-                                </Typography>
-                            </Box>
-                        </Paper>
-                    </motion.div>
-                )}
+                                {isEditing && (
+                                    <Box sx={{ display: 'flex', gap: 2, mt: 5 }}>
+                                        <Button
+                                            fullWidth
+                                            variant="outlined"
+                                            onClick={() => setIsEditing(false)}
+                                            sx={{ py: 1.5, borderRadius: 3, fontWeight: 700, textTransform: 'none' }}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
+                                            onClick={handleSave}
+                                            disabled={isSaving}
+                                            startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <Save size={18} />}
+                                            sx={{ 
+                                                py: 1.5, 
+                                                borderRadius: 3, 
+                                                fontWeight: 700, 
+                                                textTransform: 'none',
+                                                bgcolor: COLORS.accent,
+                                                '&:hover': { bgcolor: '#9d174d' }
+                                            }}
+                                        >
+                                            {isSaving ? 'Processing...' : 'Save Changes'}
+                                        </Button>
+                                    </Box>
+                                )}
+                            </Paper>
+                        </motion.div>
+                    </Grid>
+                </Grid>
             </Container>
         </Box>
     );
