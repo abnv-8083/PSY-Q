@@ -16,7 +16,10 @@ export const fetchBundles = async () => {
         discount_percentage: bundle.offer_price
             ? Math.round(((bundle.regular_price - bundle.offer_price) / bundle.regular_price) * 100)
             : 0,
-        tests: bundle.tests || []
+        tests: (bundle.tests || []).map(test => ({
+            ...(typeof test === 'object' ? test : {}),
+            id: test._id || test.id || (typeof test === 'string' ? test : null)
+        }))
     }));
 };
 

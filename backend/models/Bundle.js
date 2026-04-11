@@ -3,8 +3,10 @@ import mongoose from 'mongoose';
 const bundleSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String },
-  price: { type: Number, default: 0 },
-  original_price: { type: Number },
+  regular_price: { type: Number, default: 0 },
+  offer_price: { type: Number, default: 0 },
+  bundle_type: { type: String, default: 'BASIC' }, // e.g., 'BASIC', 'ADVANCED', 'PREMIUM'
+  features: [{ type: String }],
   subjects: [{ type: String }], // Array of subject names or IDs
   tests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Test' }],
   display_order: { type: Number, default: 0 },
