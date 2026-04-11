@@ -80,7 +80,14 @@ const MockTestDashboard = () => {
                     ...subject,
                     id: subject._id || subject.id,
                     tests: (allTestsData || [])
-                        .filter(test => (test.subject_id === (subject._id || subject.id)) && test.is_published !== false)
+                        .filter(test => {
+                            const subjectName = subject.name?.toLowerCase().trim();
+                            const testSubject = test.subject?.toLowerCase().trim();
+                            const matchesSubject = testSubject === subjectName ||
+                                test.subject_id === (subject._id || subject.id);
+                            const isPublished = test.is_published !== false && test.is_active !== false;
+                            return matchesSubject && isPublished;
+                        })
                         .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
                 }));
 
