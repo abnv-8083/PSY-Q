@@ -6,7 +6,13 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 import * as authController from './controllers/authController.js';
-import { Student, Admin, Booking, PurchaseRequest, Payment } from './models/index.js';
+import * as analyticsController from './controllers/analyticsController.js';
+import * as contactController from './controllers/contactController.js';
+import * as notificationsController from './controllers/notificationsController.js';
+import * as adminManagementController from './controllers/adminController.js';
+import * as bundleController from './controllers/bundleController.js';
+import * as paymentController from './controllers/paymentController.js';
+import { Student, Admin, Booking, PurchaseRequest, Payment, Subject, Bundle, Test, Question, Result, ContactSubmission, Notification } from './models/index.js';
 
 // Load environment variables
 dotenv.config();
@@ -74,6 +80,8 @@ app.post('/api/auth/student/login', authController.studentLogin);
 app.post('/api/auth/admin/login', authController.adminLogin);
 app.get('/api/student/profile', authController.getStudentProfile);
 app.put('/api/student/profile', authController.updateStudentProfile);
+app.post('/api/auth/forgot-password', authController.forgotPassword);
+app.post('/api/auth/reset-password', authController.resetPassword);
 // API Routes
 app.post('/api/sendBookingEmails', async (req, res) => {
   try {
@@ -155,18 +163,27 @@ app.post('/api/admin/send-invite', async (req, res) => {
 // Admin endpoint to securely fetch purchase requests with student details
 app.get('/api/admin/purchase-requests', async (req, res) => {
   try {
-    // 1. Fetch requests with basic related data
-    // Fetch requests with student details using Mongoose populate
     const requests = await PurchaseRequest.find()
       .populate('user_id', 'full_name email phone')
       .sort({ created_at: -1 });
 
-    // 2. Fetch all bundles and tests just like the frontend did, but securely in one go
-    // (We could do this efficiently or just let the frontend do it, but returning it all is cleaner)
-    // Actually, we can just return the requests and let the frontend map items, or do it here.
-    // Let's just return what the DB returns, and let frontend format it if needed.
-    
-    res.json({ success: true, data: requests });
+    const tests = await Test.find().select('name');
+    const bundles = await Bundle.find().select('name');
+
+    const mapped = requests.map(req => {
+      const doc = req.toObject();
+      let itemName = 'Unknown Item';
+      if (doc.item_type === 'test') {
+        const t = tests.find(t => t._id.toString() === doc.item_id);
+        if (t) itemName = t.name;
+      } else if (doc.item_type === 'bundle') {
+        const b = bundles.find(b => b._id.toString() === doc.item_id);
+        if (b) itemName = b.name;
+      }
+      return { ...doc, item_name: itemName };
+    });
+
+    res.json({ success: true, data: mapped });
   } catch (error) {
     console.error('Fetch Purchase Requests Error:', error);
     res.status(500).json({ success: false, message: error.message });
@@ -230,6 +247,55 @@ app.post('/api/admin/purchase-requests/:id/reject', async (req, res) => {
   }
 });
 
+// Analytics (Admin)
+app.get('/api/admin/analytics/stats', analyticsController.getDashboardStats);
+app.get('/api/admin/analytics/users/:userId', analyticsController.getUserAnalytics);
+app.get('/api/admin/analytics/search', analyticsController.searchUsers);
+
+// Contact Submissions
+app.get('/api/admin/contact-submissions', contactController.getSubmissions);
+app.post('/api/contact-submissions', contactController.createSubmission);
+app.delete('/api/admin/contact-submissions/:id', contactController.deleteSubmission);
+
+// Notifications
+app.get('/api/notifications', notificationsController.getNotifications);
+app.post('/api/admin/notifications', notificationsController.createNotification);
+app.put('/api/admin/notifications/:id', notificationsController.updateNotification);
+app.delete('/api/admin/notifications/:id', notificationsController.deleteNotification);
+app.post('/api/admin/notifications/reorder', notificationsController.reorderNotifications);
+
+// Student Management (Admin)
+app.get('/api/admin/students', async (req, res) => {
+  try {
+    const students = await Student.find().sort({ created_at: -1 });
+    res.json({ success: true, data: students });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.delete('/api/admin/students/:id', async (req, res) => {
+  try {
+    await Student.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Student deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Admin Management (Superadmin)
+app.get('/api/admin/management', adminManagementController.getAdmins);
+app.post('/api/admin/management', adminManagementController.createAdmin);
+app.put('/api/admin/management/:id', adminManagementController.updateAdmin);
+app.delete('/api/admin/management/:id', adminManagementController.deleteAdmin);
+app.get('/api/student/payments', paymentController.getStudentPayments);
+app.post('/api/payments', paymentController.createPayment);
+app.post('/api/admin/send-invite', (req, res) => {
+    // TODO: Integrate actual email service (Nodemailer, Resend, etc.)
+    console.log('Sending invite to:', req.body.email);
+    res.json({ success: true, message: 'Invite sent' });
+});
+
 // Student endpoints for purchase requests
 app.post('/api/student/purchase-requests', async (req, res) => {
   try {
@@ -286,10 +352,135 @@ app.get('/api/subjects', async (req, res) => {
   }
 });
 
+app.post('/api/subjects', async (req, res) => {
+  try {
+    const subject = new Subject(req.body);
+    await subject.save();
+    res.json({ success: true, data: subject });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 app.get('/api/tests', async (req, res) => {
   try {
-    const tests = await Test.find();
+    const { subjectId } = req.query;
+    const filter = subjectId ? { subject_id: subjectId } : {};
+    const tests = await Test.find(filter).sort({ display_order: 1 });
     res.json({ success: true, data: tests });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/tests/:id', async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.id);
+    if (!test) return res.status(404).json({ success: false, message: 'Test not found' });
+    res.json({ success: true, data: test });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/tests', async (req, res) => {
+  try {
+    const test = new Test(req.body);
+    await test.save();
+    res.json({ success: true, data: test });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.put('/api/tests/:id', async (req, res) => {
+  try {
+    const test = await Test.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ success: true, data: test });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Bundle Routes
+app.get('/api/bundles', bundleController.getBundles);
+app.get('/api/bundles/:id', bundleController.getBundleById);
+app.post('/api/admin/bundles', bundleController.createBundle);
+app.put('/api/admin/bundles/:id', bundleController.updateBundle);
+app.delete('/api/admin/bundles/:id', bundleController.deleteBundle);
+app.post('/api/admin/bundles/reorder', bundleController.reorderBundles);
+
+app.get('/api/tests/:id/questions', async (req, res) => {
+  try {
+    const questions = await Question.find({ test_id: req.params.id });
+    res.json({ success: true, data: questions });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Questions API
+app.get('/api/questions', async (req, res) => {
+  try {
+    const questions = await Question.find().limit(100);
+    res.json({ success: true, data: questions });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/questions', async (req, res) => {
+  try {
+    const question = new Question(req.body);
+    await question.save();
+    // Update test total questions count
+    await Test.findByIdAndUpdate(req.body.test_id, { $inc: { total_questions: 1 } });
+    res.json({ success: true, data: question });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.put('/api/questions/:id', async (req, res) => {
+  try {
+    const question = await Question.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json({ success: true, data: question });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.delete('/api/questions/:id', async (req, res) => {
+  try {
+    const question = await Question.findByIdAndRemove(req.params.id);
+    if (question) {
+        await Test.findByIdAndUpdate(question.test_id, { $inc: { total_questions: -1 } });
+    }
+    res.json({ success: true, message: 'Question removed' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Results / Analytics API
+app.post('/api/results', async (req, res) => {
+  try {
+    const result = new Result(req.body);
+    await result.save();
+    res.json({ success: true, data: result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.get('/api/results/latest', async (req, res) => {
+  try {
+    const { testId, userId } = req.query;
+    const result = await Result.findOne({ test_id: testId, user_id: userId })
+      .sort({ created_at: -1 });
+    
+    if (!result) return res.status(404).json({ success: false, message: 'No results found' });
+    res.json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -297,8 +488,94 @@ app.get('/api/tests', async (req, res) => {
 
 app.get('/api/bundles', async (req, res) => {
   try {
-    const bundles = await Bundle.find();
+    const bundles = await Bundle.find().sort({ display_order: 1 });
     res.json({ success: true, data: bundles });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Native MongoDB Bundle Management
+app.post('/api/bundles', async (req, res) => {
+  try {
+    const bundle = new Bundle(req.body);
+    await bundle.save();
+    res.json({ success: true, data: bundle });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.put('/api/bundles/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bundle = await Bundle.findByIdAndUpdate(id, req.body, { new: true });
+    if (!bundle) return res.status(404).json({ success: false, message: 'Bundle not found' });
+    res.json({ success: true, data: bundle });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.delete('/api/bundles/:id', async (req, res) => {
+  try {
+    await Bundle.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Bundle deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Admin proxy paths for Supabase Bundle updates (Keeping for now but preferring native)
+app.put('/api/admin/bundles/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Also update MongoDB if it exists there
+    await Bundle.findByIdAndUpdate(id, req.body).catch(() => {});
+    
+    if (supabase) {
+      const { data, error } = await supabase.from('bundles').update(req.body).eq('id', id).select().single();
+      if (!error) return res.json({ success: true, data });
+    }
+    
+    // Fallback or if already fully on mongo
+    const updated = await Bundle.findById(id);
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Admin proxy paths for Supabase Bundle updates (to bypass RLS)
+app.put('/api/admin/bundles/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('bundles').update(req.body).eq('id', id).select().single();
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/admin/bundles/:id/tests', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { testId } = req.body;
+    const { data, error } = await supabase.from('bundle_tests').insert({ bundle_id: id, test_id: testId }).select();
+    if (error) throw error;
+    res.json({ success: true, data: data[0] });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.delete('/api/admin/bundles/:id/tests/:testId', async (req, res) => {
+  try {
+    const { id, testId } = req.params;
+    const { error } = await supabase.from('bundle_tests').delete().eq('bundle_id', id).eq('test_id', testId);
+    if (error) throw error;
+    res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

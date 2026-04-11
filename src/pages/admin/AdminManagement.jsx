@@ -22,7 +22,8 @@ import {
     CircularProgress,
     Avatar
 } from '@mui/material';
-import { supabase } from '../../lib/supabaseClient';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import apiClient from '../../lib/apiClient';
 import {
     UserPlus, Shield, Mail, Trash2, ShieldCheck, User,
     Lock,
@@ -75,9 +76,7 @@ const AdminManagement = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
-    // Config - Matches Edge Function check
-    const ADMIN_API_KEY = 'psyq_admin_secret_2024';
-
+    // Superadmin check
     const isSuperAdmin = currentUser?.role === 'super_admin' || currentUser?.role === 'superadmin';
 
     useEffect(() => {
@@ -88,18 +87,11 @@ const AdminManagement = () => {
         setLoading(true);
         setError(null);
         try {
-            const { data, error } = await supabase.functions.invoke('create-admin', {
-                method: 'GET',
-                headers: {
-                    'x-admin-api-key': ADMIN_API_KEY
-                }
-            });
-
-            if (error) throw error;
-            setAdmins(data || []);
+            const res = await apiClient.get('/admin/management');
+            setAdmins(res.data.data || []);
         } catch (error) {
             console.error('Error fetching admins:', error);
-            setError('Failed to load administrators. Make sure you have applied the database migrations.');
+            setError('Failed to load administrators.');
         } finally {
             setLoading(false);
         }
@@ -119,27 +111,19 @@ const AdminManagement = () => {
             // 1. Generate password
             const tempPassword = Math.random().toString(36).slice(-10) + 'A1!';
 
-            // 2. Call Edge Function (POST) to create user
-            const { data, error: functionError } = await supabase.functions.invoke('create-admin', {
-                method: 'POST',
-                headers: {
-                    'x-admin-api-key': ADMIN_API_KEY
-                },
-                body: {
-                    email: inviteForm.email,
-                    fullName: inviteForm.fullName,
-                    role: inviteForm.role,
-                    password: tempPassword
-                }
+            // 2. Call Native API to create user
+            const res = await apiClient.post('/admin/management', {
+                email: inviteForm.email,
+                full_name: inviteForm.fullName,
+                role: inviteForm.role,
+                password: tempPassword
             });
 
-            if (functionError) throw functionError;
-            if (data.error) throw new Error(data.error);
+            if (!res.data.success) throw new Error(res.data.statusText || 'Creation failed');
 
             // 3. Send Invite Email via Backend
             try {
-                const backendUrl = import.meta.env.VITE_API_URL || '';
-                await axios.post(`${backendUrl}/admin/send-invite`, {
+                await apiClient.post('/admin/send-invite', {
                     email: inviteForm.email,
                     name: inviteForm.fullName,
                     password: tempPassword
@@ -168,7 +152,7 @@ const AdminManagement = () => {
             fetchAdmins();
         } catch (err) {
             console.error('Creation Error:', err);
-            setError(err.message);
+            setError(err.response?.data?.message || err.message);
         } finally {
             setInviting(false);
         }
@@ -191,21 +175,14 @@ const AdminManagement = () => {
         setSuccess(null);
 
         try {
-            const { data, error: updateError } = await supabase.functions.invoke('create-admin', {
-                method: 'PATCH',
-                headers: {
-                    'x-admin-api-key': ADMIN_API_KEY
-                },
-                body: {
-                    id: selectedAdmin.id,
-                    full_name: editForm.fullName,
-                    role: editForm.role,
-                    permissions: editForm.permissions
-                }
+            const adminId = selectedAdmin._id || selectedAdmin.id;
+            const res = await apiClient.put(`/admin/management/${adminId}`, {
+                full_name: editForm.fullName,
+                role: editForm.role,
+                permissions: editForm.permissions
             });
 
-            if (updateError) throw updateError;
-            if (data.error) throw new Error(data.error);
+            if (!res.data.success) throw new Error(res.data.message || 'Update failed');
 
             setSuccess('Admin updated successfully.');
             setEditDialogOpen(false);
@@ -222,20 +199,12 @@ const AdminManagement = () => {
         if (!window.confirm(`Are you sure you want to ${action} this administrator?`)) return;
 
         try {
-            const { data, error: updateError } = await supabase.functions.invoke('create-admin', {
-                method: 'PATCH',
-                headers: {
-                    'x-admin-api-key': ADMIN_API_KEY
-                },
-                body: {
-                    id: admin.id,
-                    is_blocked: !admin.is_blocked
-                }
+            const adminId = admin._id || admin.id;
+            const res = await apiClient.put(`/admin/management/${adminId}`, {
+                is_blocked: !admin.is_blocked
             });
 
-            console.log('Block Toggle Data:', data);
-            if (updateError) throw updateError;
-            if (data.error) throw new Error(data.error);
+            if (!res.data.success) throw new Error(res.data.message || 'Action failed');
 
             setSuccess(`Admin ${action}ed successfully.`);
             fetchAdmins();
@@ -252,15 +221,15 @@ const AdminManagement = () => {
         setSuccess(null);
 
         try {
-            // 1. Request token from Edge Function
-            const { token } = await adminResetPasswordRequest(admin.email);
+            // 1. Request token from native backend
+            const resData = await adminResetPasswordRequest(admin.email);
+            const token = resData.token;
 
             // 2. Generate Reset Link
             const resetLink = `${window.location.origin}/admin/reset-password?token=${token}&email=${admin.email}`;
 
-            // 3. Send via Backend
-            const backendUrl = import.meta.env.VITE_API_URL || '';
-            await axios.post(`${backendUrl}/send-reset-link`, {
+            // 3. Send via Backend (native)
+            await apiClient.post('/send-reset-link', {
                 email: admin.email,
                 name: admin.full_name,
                 resetLink: resetLink
@@ -279,16 +248,10 @@ const AdminManagement = () => {
         if (!window.confirm('Are you sure you want to remove this administrator? They will be permanently deleted.')) return;
 
         try {
-            const { error: deleteError } = await supabase.functions.invoke(`create-admin?id=${adminId}`, {
-                method: 'DELETE',
-                headers: {
-                    'x-admin-api-key': ADMIN_API_KEY
-                }
-            });
+            const res = await apiClient.delete(`/admin/management/${adminId}`);
+            if (!res.data.success) throw new Error(res.data.message || 'Delete failed');
 
-            if (deleteError) throw deleteError;
-
-            setAdmins(admins.filter(a => a.id !== adminId));
+            setAdmins(admins.filter(a => (a._id || a.id) !== adminId));
             setSuccess('Admin deleted successfully.');
         } catch (err) {
             setError('Failed to delete admin.');
@@ -383,7 +346,7 @@ const AdminManagement = () => {
                             <TableRow><TableCell colSpan={5} align="center">No admins found</TableCell></TableRow>
                         ) : (
                             filteredAdmins.map((admin) => (
-                                <TableRow key={admin.id}>
+                                <TableRow key={admin._id}>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                             <Avatar sx={{ bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent }}><User size={20} /></Avatar>
@@ -411,7 +374,7 @@ const AdminManagement = () => {
                                                 <User size={18} style={{ opacity: admin.is_blocked ? 1 : 0.5 }} />
                                             </IconButton>
                                             {admin.email !== currentUser.email && (
-                                                <IconButton onClick={() => handleDeleteAdmin(admin.id)} color="error" size="small" title="Delete Admin"><Trash2 size={18} /></IconButton>
+                                                <IconButton onClick={() => handleDeleteAdmin(admin._id)} color="error" size="small" title="Delete Admin"><Trash2 size={18} /></IconButton>
                                             )}
                                         </Box>
                                     </TableCell>

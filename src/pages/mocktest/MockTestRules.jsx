@@ -3,8 +3,8 @@ import { Box, Container, Typography, Paper, Divider, List, ListItem, ListItemIco
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, AlertCircle, Clock, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { supabase } from '../../lib/supabaseClient';
 import MockTestNavbar from '../../components/MockTestNavbar';
+import { fetchTestById } from '../../api/testsApi';
 
 const MockTestRules = () => {
     const { subjectId, testId } = useParams();
@@ -14,23 +14,15 @@ const MockTestRules = () => {
     useEffect(() => {
         const fetchTestDetails = async () => {
             try {
-                // Fetch Test details and count questions
-                const { data: test, error } = await supabase
-                    .from('tests')
-                    .select('*, questions(id)')
-                    .eq('id', testId)
-                    .single();
-
-                if (error) throw error;
-
+                const test = await fetchTestById(testId);
                 setTestDetails({
                     name: test.name,
                     duration: test.duration,
-                    questions: test.questions?.length || 0,
-                    marks: test.questions?.length || 0
+                    questions: test.total_questions || 0,
+                    marks: test.total_marks || test.total_questions || 0
                 });
             } catch (error) {
-                console.error("Error fetching test details from Supabase:", error);
+                console.error("Error fetching test details:", error);
             }
         };
         fetchTestDetails();

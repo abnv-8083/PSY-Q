@@ -159,3 +159,58 @@ export const updateStudentProfile = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email, type = 'student' } = req.body;
+        const Model = type === 'admin' ? Admin : Student;
+        const user = await Model.findOne({ email });
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // Generate a short-lived reset token (15 mins)
+        const token = jwt.sign({ id: user._id, email: user.email, type }, JWT_SECRET, { expiresIn: '15m' });
+
+        res.json({
+            success: true,
+            token,
+            user: {
+                full_name: user.full_name || 'User',
+                email: user.email
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, token, newPassword } = req.body;
+
+        // Verify token
+        let decoded;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET);
+        } catch (err) {
+            return res.status(401).json({ error: 'Invalid or expired reset token' });
+        }
+
+        if (decoded.email !== email) {
+            return res.status(400).json({ error: 'Token email mismatch' });
+        }
+
+        const Model = decoded.type === 'admin' ? Admin : Student;
+        const user = await Model.findById(decoded.id);
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const salt = await bcrypt.genSalt(10);
+        user.password_hash = await bcrypt.hash(newPassword, salt);
+        await user.save();
+
+        res.json({ success: true, message: 'Password reset successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};

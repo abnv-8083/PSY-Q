@@ -10,8 +10,8 @@ import {
     CheckCircle2, XCircle, ChevronDown, RefreshCw, Home, Award,
     Sparkles, PartyPopper, Star, ArrowRight, BarChart2
 } from 'lucide-react';
-import { supabase } from '../../lib/supabaseClient';
 import { useSession } from '../../contexts/SessionContext';
+import { fetchTestQuestions, fetchLatestResult } from '../../api/testsApi';
 
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
@@ -81,37 +81,48 @@ const ResultAnalytics = () => {
 
             const fetchData = async () => {
                 try {
-                    const { data: qData } = await supabase
-                        .from('questions')
-                        .select('*')
-                        .eq('test_id', testId)
-                        .order('created_at', { ascending: true });
+                    const qData = await fetchTestQuestions(testId);
 
                     if (qData) {
-                        const mappedQuestions = qData.map(q => ({
-                            ...q,
-                            text: q.text || q.question_text,
-                            correctKey: q.correct_key !== undefined ? q.correct_key : q.correct_answer
-                        }));
+                        const mappedQuestions = qData.map(q => {
+                            let options = q.options;
+                            let correctKey = q.correct_key;
+                            
+                            if (options && options.length > 0 && typeof options[0] === 'object') {
+                                options = q.options.map(opt => opt.text);
+                                const correctIdx = q.options.findIndex(opt => opt.id === q.correct_answer);
+                                if (correctIdx !== -1) correctKey = correctIdx;
+                            }
+                            return {
+                                ...q,
+                                text: q.text || q.question_text,
+                                options,
+                                correctKey: correctKey !== undefined ? correctKey : 0
+                            };
+                        });
                         setQuestions(mappedQuestions);
                         setTotal(mappedQuestions.length);
 
-                        const { data: attempt } = await supabase
-                            .from('attempts')
-                            .select('*')
-                            .eq('test_id', testId)
-                            .eq('user_id', user.id)
-                            .order('created_at', { ascending: false })
-                            .limit(1)
-                            .single();
+                        const attempt = await fetchLatestResult(testId, user.id || user._id);
 
                         if (attempt) {
                             setScore(attempt.score);
-                            setAnswers(attempt.answers || {});
+                            // Transform Result model answers array back to frontend map
+                            const answersMap = {};
+                            if (Array.isArray(attempt.answers)) {
+                                attempt.answers.forEach(ans => {
+                                    const qIndex = qData.findIndex(q => (q._id || q.id) === ans.question_id);
+                                    if (qIndex !== -1 && ans.selected_option) {
+                                        const optIndex = parseInt(ans.selected_option.split('_')[1]);
+                                        answersMap[qIndex] = optIndex;
+                                    }
+                                });
+                            }
+                            setAnswers(answersMap);
                         }
                     }
                 } catch (err) {
-                    console.error("Error fetching result analytics:", err);
+                    console.error("Error fetching result analytics via backend:", err);
                 } finally {
                     setLoading(false);
                 }

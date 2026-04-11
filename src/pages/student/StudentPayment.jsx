@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 import {
     Box,
     Container,
@@ -50,19 +50,10 @@ const StudentPayment = () => {
 
             try {
                 setLoading(true);
-                const { data, error } = await supabase
-                    .from('payments')
-                    .select('*')
-                    .eq('userId', studentUser.id)
-                    .order('createdAt', { ascending: false });
-
-                if (error) {
-                    // If the table doesn't exist yet or other error, we'll just set empty
-                    console.warn('Payments fetch error (might be missing table):', error.message);
-                    setPayments([]);
-                } else {
-                    setPayments(data || []);
-                }
+                const res = await fetch(`${API_URL}/student/payments?userId=${studentUser._id || studentUser.id}`);
+                const json = await res.json();
+                if (!json.success) throw new Error(json.message);
+                setPayments(json.data || []);
             } catch (error) {
                 console.error('Error fetching payments:', error);
             } finally {
@@ -197,7 +188,7 @@ const StudentPayment = () => {
                                 <Box>
                                     <Typography variant="caption" sx={{ color: COLORS.secondary, fontWeight: 700, textTransform: 'uppercase' }}>Last Transaction</Typography>
                                     <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary }}>
-                                        {payments.length > 0 ? new Date(payments[0].createdAt).toLocaleDateString() : 'None'}
+                                        {payments.length > 0 ? new Date(payments[0].created_at).toLocaleDateString() : 'None'}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -240,7 +231,7 @@ const StudentPayment = () => {
                                         <TableRow key={payment.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                             <TableCell>
                                                 <Typography variant="body2" sx={{ fontWeight: 700, color: COLORS.primary }}>
-                                                    {payment.testName || 'Bundle Subscription'}
+                                                    {payment.type === 'bundle' ? 'Bundle Subscription' : 'Mock Test Purchase'}
                                                 </Typography>
                                                 <Typography variant="caption" sx={{ color: COLORS.secondary }}>
                                                     Lifetime Access
@@ -253,7 +244,7 @@ const StudentPayment = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <Typography variant="body2" sx={{ color: COLORS.secondary }}>
-                                                    {formatDate(payment.createdAt)}
+                                                    {formatDate(payment.created_at)}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell>
@@ -275,7 +266,7 @@ const StudentPayment = () => {
                                             </TableCell>
                                             <TableCell>
                                                 <Typography variant="caption" sx={{ fontFamily: 'monospace', color: COLORS.secondary }}>
-                                                    {payment.paymentId?.substring(0, 12)}...
+                                                    {payment.payment_id?.substring(0, 12)}...
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>

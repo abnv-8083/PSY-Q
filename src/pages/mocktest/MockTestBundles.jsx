@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../../lib/supabaseClient';
+import { fetchUserAccess } from '../../api/testsApi';
+import { fetchUserPurchaseRequests } from '../../api/purchaseRequestsApi';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
 import { useSession } from '../../contexts/SessionContext';
@@ -63,26 +64,22 @@ const MockTestBundles = () => {
                 setBundles(bundlesData || []);
 
                 if (user) {
-                    // Check user_bundles for approved access
-                    const { data: userBundles } = await supabase
-                        .from('user_bundles')
-                        .select('bundle_id')
-                        .eq('user_id', user.id);
+                    const userId = user._id || user.id;
 
-                    if (userBundles) {
-                        setPurchasedBundleIds(new Set(userBundles.map(ub => ub.bundle_id)));
-                    }
+                    // Fetch access (combines bundles and tests)
+                    const accessIds = await fetchUserAccess(userId);
+                    if (accessIds) setPurchasedBundleIds(new Set(accessIds));
 
-                    // Check requests (pending and approved)
-                    const { data: requests } = await supabase
-                        .from('purchase_requests')
-                        .select('item_id, status')
-                        .eq('user_id', user.id)
-                        .eq('item_type', 'bundle');
-
+                    // Fetch pending purchase requests
+                    const requests = await fetchUserPurchaseRequests(userId);
                     if (requests) {
-                        setPendingBundleIds(new Set(requests.filter(r => r.status === 'pending').map(r => r.item_id)));
-                        const approvedIds = requests.filter(r => r.status === 'approved').map(r => r.item_id);
+                        const pendingIds = requests
+                            .filter(r => r.status === 'pending' && r.item_type === 'bundle')
+                            .map(r => r.item_id);
+                        setPendingBundleIds(new Set(pendingIds));
+                        
+                        // Also add approved requests to purchased if not already handled by accessIds
+                        const approvedIds = requests.filter(r => r.status === 'approved' && r.item_type === 'bundle').map(r => r.item_id);
                         if (approvedIds.length > 0) {
                             setPurchasedBundleIds(prev => new Set([...prev, ...approvedIds]));
                         }

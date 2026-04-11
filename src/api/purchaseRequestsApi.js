@@ -1,11 +1,10 @@
-import { supabase } from '../lib/supabaseClient';
 import axios from 'axios';
 
 /**
  * Create a new purchase request
- * @param {string} userId - UUID of the user
+ * @param {string} userId - MongoDB ID of the user
  * @param {string} itemType - 'test' or 'bundle'
- * @param {string} itemId - UUID of the item
+ * @param {string} itemId - MongoDB ID of the item
  * @param {string} requestNumber - 10-digit request number
  * @returns {Promise<Object>} The created purchase request
  */
@@ -23,7 +22,7 @@ export const createPurchaseRequest = async (userId, itemType, itemId, requestNum
 
 /**
  * Fetch all purchase requests for a user
- * @param {string} userId - UUID of the user
+ * @param {string} userId - MongoDB ID of the user
  * @returns {Promise<Array>} Array of purchase requests
  */
 export const fetchUserPurchaseRequests = async (userId) => {
@@ -63,32 +62,19 @@ export const fetchAllPurchaseRequests = async () => {
 
 /**
  * Update purchase request status (Admin only)
- * @param {string} requestId - UUID of the request
+ * @param {string} requestId - MongoDB ID of the request
  * @param {string} status - 'approved' or 'rejected'
  * @returns {Promise<Object>} Updated purchase request
  */
 export const updatePurchaseRequestStatus = async (requestId, status) => {
     const backendUrl = import.meta.env.VITE_API_URL || '';
     
-    if (status === 'approved' || status === 'rejected') {
-        const endpoint = status === 'approved' ? 'approve' : 'reject';
-        const response = await fetch(`${backendUrl}/admin/purchase-requests/${requestId}/${endpoint}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const json = await response.json();
-        if (!response.ok || !json.success) throw new Error(json.message || `${status} failed`);
-        return json.data;
-    }
-
-    // Fallback for other potential statuses (if any)
-    const { data, error } = await supabase
-        .from('purchase_requests')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', requestId)
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
+    const endpoint = status === 'approved' ? 'approve' : 'reject';
+    const response = await fetch(`${backendUrl}/admin/purchase-requests/${requestId}/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    });
+    const json = await response.json();
+    if (!response.ok || !json.success) throw new Error(json.message || `${status} failed`);
+    return json.data;
 };

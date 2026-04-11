@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, TextField, Paper, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, FormLabel, RadioGroup, FormControlLabel, Radio, Divider, Grid, Avatar, Fab, Alert, alpha } from '@mui/material';
-import { supabase } from '../../lib/supabaseClient';
+import { fetchTestQuestions } from '../../api/testsApi';
+import { createQuestion, updateQuestion, deleteQuestion } from '../../api/questionsApi';
 import ModernDialog from '../../components/ModernDialog';
 import { Plus, Trash2, ChevronLeft, HelpCircle, CheckCircle2, MessageSquare, FileUp, Loader2, Pencil, Circle, ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -85,23 +86,32 @@ const QuestionBank = ({ subject, test, onBack }) => {
     const fetchQuestions = async () => {
         if (!test || !test.id) return;
         try {
-            const { data, error } = await supabase
-                .from('questions')
-                .select('*')
-                .eq('test_id', test.id)
-                .order('created_at', { ascending: true });
+            const data = await fetchTestQuestions(test.id);
 
-            if (error) throw error;
+            // Transform MongoDB format back to simple frontend format if needed
+            const formattedQuestions = data.map(q => {
+                let options = q.options;
+                let correctKey = q.correct_key;
+                
+                // If it's the MongoDB object format, map back to string array and index
+                if (options && options.length > 0 && typeof options[0] === 'object') {
+                    options = q.options.map(opt => opt.text);
+                    // Find index of correct_answer (id) in options
+                    const correctIdx = q.options.findIndex(opt => opt.id === q.correct_answer);
+                    if (correctIdx !== -1) correctKey = correctIdx;
+                }
 
-            // Map correct_key back to correctKey for compatibility
-            const formattedQuestions = data.map(q => ({
-                ...q,
-                correctKey: q.correct_key
-            }));
+                return {
+                    ...q,
+                    id: q._id || q.id,
+                    options,
+                    correctKey: correctKey !== undefined ? correctKey : 0
+                };
+            });
 
             setQuestions(formattedQuestions);
         } catch (error) {
-            console.error("Error fetching questions from Supabase:", error);
+            console.error("Error fetching questions from MongoDB:", error);
             setDialog({
                 open: true,
                 title: 'Fetch Failed',
@@ -113,31 +123,28 @@ const QuestionBank = ({ subject, test, onBack }) => {
 
     const handleSaveQuestion = async () => {
         if (!newQ.text || newQ.options.some(opt => !opt)) return;
+        
+        // Transform simple format to MongoDB object format
+        const mongoOptions = newQ.options.map((optText, idx) => ({
+            id: `opt_${idx}`,
+            text: optText
+        }));
+        const mongoCorrectAnswer = `opt_${newQ.correctKey}`;
+
         try {
+            const payload = {
+                test_id: test.id,
+                text: newQ.text,
+                options: mongoOptions,
+                correct_answer: mongoCorrectAnswer,
+                correct_key: newQ.correctKey, // Keep for legacy/index reference
+                explanation: newQ.explanation
+            };
+
             if (isEditMode && editingQuestion) {
-                const { error } = await supabase
-                    .from('questions')
-                    .update({
-                        text: newQ.text,
-                        options: newQ.options,
-                        correct_key: newQ.correctKey,
-                        explanation: newQ.explanation
-                    })
-                    .eq('id', editingQuestion.id);
-
-                if (error) throw error;
+                await updateQuestion(editingQuestion.id, payload);
             } else {
-                const { error } = await supabase
-                    .from('questions')
-                    .insert({
-                        test_id: test.id,
-                        text: newQ.text,
-                        options: newQ.options,
-                        correct_key: newQ.correctKey,
-                        explanation: newQ.explanation
-                    });
-
-                if (error) throw error;
+                await createQuestion(payload);
             }
 
             setNewQ({ text: '', options: ['', '', '', ''], correctKey: 0, explanation: '' });
@@ -146,7 +153,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
             setEditingQuestion(null);
             fetchQuestions();
         } catch (error) {
-            console.error(`Error ${isEditMode ? 'updating' : 'adding'} question in Supabase:`, error);
+            console.error(`Error ${isEditMode ? 'updating' : 'adding'} question in MongoDB:`, error);
             setDialog({
                 open: true,
                 title: `${isEditMode ? 'Update' : 'Add'} Failed`,
@@ -177,15 +184,10 @@ const QuestionBank = ({ subject, test, onBack }) => {
             onConfirm: async () => {
                 setDialog(prev => ({ ...prev, open: false }));
                 try {
-                    const { error } = await supabase
-                        .from('questions')
-                        .delete()
-                        .eq('id', id);
-
-                    if (error) throw error;
+                    await deleteQuestion(id);
                     fetchQuestions();
                 } catch (error) {
-                    console.error("Error deleting question in Supabase:", error);
+                    console.error("Error deleting question in MongoDB:", error);
                     setDialog({
                         open: true,
                         title: 'Delete Failed',
@@ -234,17 +236,24 @@ const QuestionBank = ({ subject, test, onBack }) => {
 
         try {
             setImporting(true);
-            const { error } = await supabase
-                .from('questions')
-                .insert(parsedQuestions.map(q => ({
+            const importPromises = parsedQuestions.map(q => {
+                const mongoOptions = q.options.map((optText, idx) => ({
+                    id: `opt_${idx}`,
+                    text: optText
+                }));
+                const mongoCorrectAnswer = `opt_${q.correctKey}`;
+
+                return createQuestion({
                     test_id: test.id,
                     text: q.text,
-                    options: q.options,
+                    options: mongoOptions,
+                    correct_answer: mongoCorrectAnswer,
                     correct_key: q.correctKey,
                     explanation: q.explanation
-                })));
+                });
+            });
 
-            if (error) throw error;
+            await Promise.all(importPromises);
 
             setDialog({
                 open: true,
@@ -256,7 +265,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
             setParsedQuestions([]);
             fetchQuestions();
         } catch (error) {
-            console.error("Error importing questions to Supabase:", error);
+            console.error("Error importing questions to MongoDB:", error);
             setDialog({
                 open: true,
                 title: 'Import Failed',

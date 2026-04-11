@@ -1,243 +1,117 @@
-import { supabase } from '../lib/supabaseClient';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 /**
  * Fetch all bundles with their associated tests
- * @returns {Promise<Array>} Array of bundles with calculated discount percentages
+ * @returns {Promise<Array>} Array of bundles
  */
 export const fetchBundles = async () => {
-    const { data, error } = await supabase
-        .from('bundles')
-        .select(`
-      *,
-      bundle_tests (
-        test_id,
-        added_at,
-        tests (*)
-      )
-    `)
-        .order('display_order', { ascending: true });
-
-    if (error) throw error;
-
-    // Calculate discount percentage for each bundle
-    return data.map(bundle => ({
+    const response = await fetch(`${API_URL}/bundles`);
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    
+    // Calculate values frontend expects
+    return result.data.map(bundle => ({
         ...bundle,
+        id: bundle._id || bundle.id, // For mongo compatibility
         discount_percentage: bundle.offer_price
             ? Math.round(((bundle.regular_price - bundle.offer_price) / bundle.regular_price) * 100)
             : 0,
-        tests: bundle.bundle_tests?.map(bt => bt.tests) || []
+        tests: bundle.tests || []
     }));
 };
 
 /**
- * Fetch a single bundle by type
- * @param {string} bundleType - 'BASIC', 'ADVANCED', or 'PREMIUM'
- * @returns {Promise<Object>} Bundle object with tests and discount
- */
-export const fetchBundleByType = async (bundleType) => {
-    const { data, error } = await supabase
-        .from('bundles')
-        .select(`
-      *,
-      bundle_tests (
-        test_id,
-        added_at,
-        tests (*)
-      )
-    `)
-        .eq('bundle_type', bundleType)
-        .single();
-
-    if (error) throw error;
-
-    return {
-        ...data,
-        discount_percentage: data.offer_price
-            ? Math.round(((data.regular_price - data.offer_price) / data.regular_price) * 100)
-            : 0,
-        tests: data.bundle_tests?.map(bt => bt.tests) || []
-    };
-};
-
-/**
  * Fetch a single bundle by ID
- * @param {string} bundleId - UUID of the bundle
- * @returns {Promise<Object>} Bundle object with tests and discount
+ * @param {string} bundleId - ID of the bundle
+ * @returns {Promise<Object>} Bundle object
  */
 export const fetchBundleById = async (bundleId) => {
-    const { data, error } = await supabase
-        .from('bundles')
-        .select(`
-      *,
-      bundle_tests (
-        test_id,
-        added_at,
-        tests (*)
-      )
-    `)
-        .eq('id', bundleId)
-        .single();
-
-    if (error) throw error;
-
-    return {
-        ...data,
-        discount_percentage: data.offer_price
-            ? Math.round(((data.regular_price - data.offer_price) / data.regular_price) * 100)
-            : 0,
-        tests: data.bundle_tests?.map(bt => bt.tests) || []
-    };
+    const response = await fetch(`${API_URL}/bundles/${bundleId}`);
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    return result.data;
 };
 
 /**
  * Update bundle configuration
- * @param {string} bundleId - UUID of the bundle
+ * @param {string} bundleId - ID of the bundle
  * @param {Object} updates - Fields to update
  * @returns {Promise<Object>} Updated bundle
  */
 export const updateBundle = async (bundleId, updates) => {
-    // Validate offer_price <= regular_price
-    if (updates.offer_price !== undefined && updates.regular_price !== undefined) {
-        if (updates.offer_price > updates.regular_price) {
-            throw new Error('Offer price cannot be higher than regular price');
-        }
-    }
+    const response = await fetch(`${API_URL}/admin/bundles/${bundleId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    return result.data;
+};
 
-    // If only updating offer_price, fetch current regular_price for validation
-    if (updates.offer_price !== undefined && updates.regular_price === undefined) {
-        const { data: currentBundle } = await supabase
-            .from('bundles')
-            .select('regular_price')
-            .eq('id', bundleId)
-            .single();
-
-        if (currentBundle && updates.offer_price > currentBundle.regular_price) {
-            throw new Error('Offer price cannot be higher than regular price');
-        }
-    }
-
-    const { data, error } = await supabase
-        .from('bundles')
-        .update(updates)
-        .eq('id', bundleId)
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
+/**
+ * Reorder bundles
+ * @param {Array} bundles - Array of bundles with new order
+ */
+export const reorderBundles = async (bundles) => {
+    const response = await fetch(`${API_URL}/admin/bundles/reorder`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bundles })
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    return result.data;
 };
 
 /**
  * Add test to bundle
- * @param {string} bundleId - UUID of the bundle
- * @param {string} testId - UUID of the test
- * @returns {Promise<Object>} Created bundle_test record
+ * @param {string} bundleId - ID of the bundle
+ * @param {string} testId - ID of the test
+ * @returns {Promise<Object>} Created/updated link record
  */
 export const addTestToBundle = async (bundleId, testId) => {
-    // Check if already exists
-    const { data: existing } = await supabase
-        .from('bundle_tests')
-        .select('*')
-        .eq('bundle_id', bundleId)
-        .eq('test_id', testId)
-        .single();
-
-    if (existing) {
-        throw new Error('This test is already in the bundle');
-    }
-
-    const { data, error } = await supabase
-        .from('bundle_tests')
-        .insert({ bundle_id: bundleId, test_id: testId })
-        .select();
-
-    if (error) throw error;
-    return data[0];
+    // Note: the backend handles bundles with a test collection list usually,
+    // or we'll update the bundle.tests array.
+    // For now, let's keep it simple: Add testId to bundle.tests array via PUT.
+    const bundleRes = await fetch(`${API_URL}/bundles/${bundleId}`);
+    const bundleResJson = await bundleRes.json();
+    const bundle = bundleResJson.data;
+    
+    const updatedTests = [...(bundle.tests || []), testId];
+    return updateBundle(bundleId, { tests: updatedTests });
 };
 
 /**
  * Remove test from bundle
- * @param {string} bundleId - UUID of the bundle
- * @param {string} testId - UUID of the test
+ * @param {string} bundleId - ID of the bundle
+ * @param {string} testId - ID of the test
  */
 export const removeTestFromBundle = async (bundleId, testId) => {
-    const { error } = await supabase
-        .from('bundle_tests')
-        .delete()
-        .eq('bundle_id', bundleId)
-        .eq('test_id', testId);
-
-    if (error) throw error;
+    const bundleRes = await fetch(`${API_URL}/bundles/${bundleId}`);
+    const bundleResJson = await bundleRes.json();
+    const bundle = bundleResJson.data;
+    
+    const updatedTests = (bundle.tests || []).filter(t => t !== testId);
+    return updateBundle(bundleId, { tests: updatedTests });
 };
 
 /**
  * Update bundle features
- * @param {string} bundleId - UUID of the bundle
+ * @param {string} bundleId - ID of the bundle
  * @param {Array<string>} features - Array of feature strings
  * @returns {Promise<Object>} Updated bundle
  */
 export const updateBundleFeatures = async (bundleId, features) => {
-    const { data, error } = await supabase
-        .from('bundles')
-        .update({ features })
-        .eq('id', bundleId)
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
+    return updateBundle(bundleId, { features });
 };
 
 /**
- * Get all tests available for assignment to bundles
- * @returns {Promise<Array>} Array of all tests
+ * Get all tests available (placeholder for consistency)
  */
 export const fetchAvailableTests = async () => {
-    const { data, error } = await supabase
-        .from('tests')
-        .select('*, subjects(name)')
-        .eq('is_published', true)
-        .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
-};
-
-/**
- * Get user's purchased bundles
- * @param {string} userId - UUID of the user
- * @returns {Promise<Array>} Array of user's bundles
- */
-export const fetchUserBundles = async (userId) => {
-    const { data, error } = await supabase
-        .from('user_bundles')
-        .select(`
-      *,
-      bundles (*)
-    `)
-        .eq('user_id', userId);
-
-    if (error) throw error;
-    return data;
-};
-
-/**
- * Purchase a bundle for a user
- * @param {string} userId - UUID of the user
- * @param {string} bundleId - UUID of the bundle
- * @param {number} pricePaid - Actual price paid
- * @returns {Promise<Object>} Created user_bundle record
- */
-export const purchaseBundle = async (userId, bundleId, pricePaid) => {
-    const { data, error } = await supabase
-        .from('user_bundles')
-        .insert({
-            user_id: userId,
-            bundle_id: bundleId,
-            price_paid: pricePaid
-        })
-        .select();
-
-    if (error) throw error;
-    return data[0];
+    const response = await fetch(`${API_URL}/tests`);
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    return result.data;
 };

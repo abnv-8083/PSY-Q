@@ -30,8 +30,8 @@ import {
     LogOut,
     X
 } from 'lucide-react';
-import { supabase } from '../../lib/supabaseClient';
 import { useSession } from '../../contexts/SessionContext';
+import { fetchTestById, fetchTestQuestions, submitResult } from '../../api/testsApi';
 
 import ModernDialog from '../../components/ModernDialog';
 
@@ -86,32 +86,34 @@ const MockTestInterface = () => {
         const fetchTestData = async () => {
             if (!user) return;
             try {
-                const { data: testData, error: testErr } = await supabase
-                    .from('tests')
-                    .select('*')
-                    .eq('id', testId)
-                    .single();
-
-                if (testErr) throw testErr;
+                const testData = await fetchTestById(testId);
                 if (testData) {
                     setTestName(testData.name);
                     if (testData.duration) setTimeLeft(testData.duration * 60);
                 }
 
-                const { data: qData, error: qErr } = await supabase
-                    .from('questions')
-                    .select('*')
-                    .eq('test_id', testId)
-                    .order('created_at', { ascending: true });
+                const qData = await fetchTestQuestions(testId);
+                
+                // Transform MongoDB format back to simple frontend format if needed
+                const formattedQuestions = qData.map(q => {
+                    let options = q.options;
+                    let correctKey = q.correct_key;
+                    
+                    if (options && options.length > 0 && typeof options[0] === 'object') {
+                        options = q.options.map(opt => opt.text);
+                        const correctIdx = q.options.findIndex(opt => opt.id === q.correct_answer);
+                        if (correctIdx !== -1) correctKey = correctIdx;
+                    }
 
-                if (qErr) throw qErr;
-                setQuestions(qData.map(q => ({
-                    ...q,
-                    text: q.text || q.question_text,
-                    correctKey: q.correct_key !== undefined ? q.correct_key : q.correct_answer
-                })));
-
-                // Set student name from session
+                    return {
+                        ...q,
+                        text: q.text || q.question_text,
+                        options: options,
+                        correctKey: correctKey !== undefined ? correctKey : 0
+                    };
+                });
+                
+                setQuestions(formattedQuestions);
                 setStudentName(user.full_name || 'Student');
 
             } catch (err) {
@@ -205,21 +207,28 @@ const MockTestInterface = () => {
             type: 'confirm',
             onConfirm: async () => {
                 setDialog(prev => ({ ...prev, open: false }));
+                
                 const score = questions.reduce((acc, q, idx) => {
                     return answers[idx] === q.correctKey ? acc + 1 : acc;
                 }, 0);
 
                 try {
-                    const { error: insertError } = await supabase.from('attempts').insert({
-                        user_id: user?.id,
+                    // Format results for MongoDB model
+                    const formattedAnswers = questions.map((q, idx) => ({
+                        question_id: q._id || q.id,
+                        selected_option: answers[idx] !== undefined ? `opt_${answers[idx]}` : null,
+                        is_correct: answers[idx] === q.correctKey
+                    }));
 
+                    await submitResult({
+                        user_id: user?._id || user?.id,
                         test_id: testId,
                         score,
-                        total_questions: questions.length,
-                        answers
+                        total_marks: questions.length, // Matching model 'total_marks'
+                        answers: formattedAnswers,
+                        time_spent: (questions[0] ? (questions[0].duration || 100) * 60 : 6000) - timeLeft,
+                        status: 'completed'
                     });
-
-                    if (insertError) throw insertError;
 
                     navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
                         state: { score, total: questions.length, answers, questions }

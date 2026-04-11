@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, CircularProgress, Button } from '@mui/material';
-import { supabase } from '../../lib/supabaseClient';
+import { ensureSubject } from '../../api/subjectsApi';
 import TestBuilder from './TestBuilder';
 import QuestionBank from './QuestionBank';
 
@@ -18,36 +18,12 @@ const ContentManagement = ({ onSubjectChange }) => {
     useEffect(() => {
         const initPsychology = async () => {
             try {
-                // Try to find Psychology subject in Supabase
-                let { data: subjects, error } = await supabase
-                    .from('subjects')
-                    .select('*')
-                    .eq('name', 'Psychology')
-                    .single();
-
-                if (error && error.code !== 'PGRST116') { // PGRST116 is 'no rows returned'
-                    throw error;
-                }
-
-                if (!subjects) {
-                    console.log("Psychology subject not found in Supabase, creating...");
-                    const { data: newSubject, error: insertError } = await supabase
-                        .from('subjects')
-                        .insert({
-                            name: 'Psychology',
-                            description: 'Mock tests for UGC NET Psychology (Paper 1 & Paper 2)'
-                        })
-                        .select()
-                        .single();
-
-                    if (insertError) throw insertError;
-                    subjects = newSubject;
-                }
-
-                setPsychologySubject(subjects);
-                if (onSubjectChange) onSubjectChange(subjects);
+                // Initialize Psychology subject via MongoDB API
+                const subject = await ensureSubject('Psychology', 'Mock tests for UGC NET Psychology (Paper 1 & Paper 2)');
+                setPsychologySubject(subject);
+                if (onSubjectChange) onSubjectChange(subject);
             } catch (error) {
-                console.error("Error initializing Psychology subject in Supabase:", error);
+                console.error("Error initializing Psychology subject in MongoDB:", error);
             } finally {
                 setLoading(false);
             }

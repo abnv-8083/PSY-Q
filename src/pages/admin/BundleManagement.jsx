@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, Grid, TextField, Button, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, List, ListItem, ListItemButton, ListItemText, ListItemIcon, Chip, Alert, InputAdornment, alpha, MenuItem } from '@mui/material';
-import { supabase } from '../../lib/supabaseClient';
 import ModernDialog from '../../components/ModernDialog';
 import { Package, BookOpen, CheckCircle, Edit, Save, X, Plus, Trash2, TrendingDown, GripVertical, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchBundles, updateBundle, addTestToBundle, removeTestFromBundle, updateBundleFeatures, fetchAvailableTests } from '../../api/bundlesApi';
+import { fetchBundles, updateBundle, addTestToBundle, removeTestFromBundle, updateBundleFeatures, fetchAvailableTests, reorderBundles } from '../../api/bundlesApi';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
 
@@ -301,15 +300,7 @@ const BundleManagement = () => {
         setBundles(items);
 
         try {
-            // Batch update display_order in Supabase
-            const updates = items.map((bundle, index) =>
-                supabase
-                    .from('bundles')
-                    .update({ display_order: index })
-                    .eq('id', bundle.id)
-            );
-
-            await Promise.all(updates);
+            await reorderBundles(items);
         } catch (error) {
             console.error("Error reordering bundles:", error);
             fetchData();

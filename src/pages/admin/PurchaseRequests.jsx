@@ -7,7 +7,6 @@ import {
     Select, FormControl, InputLabel, Grid
 } from '@mui/material';
 import { CheckCircle, XCircle, Clock, Search, Filter } from 'lucide-react';
-import { supabase } from '../../lib/supabaseClient';
 import { fetchAllPurchaseRequests, updatePurchaseRequestStatus } from '../../api/purchaseRequestsApi';
 
 const COLORS = {
@@ -41,36 +40,16 @@ const PurchaseRequests = () => {
     const loadRequests = async () => {
         try {
             setLoading(true);
-            // 1. Fetch Requests (Now hits the secure Express backend)
             const data = await fetchAllPurchaseRequests();
             
-            // 2. Enriched Data (Items mapping)
-            // The backend already joined 'students(full_name, email, phone)'. 
-            // We just need to map bundle/test names.
-            const enrichedData = await Promise.all(data.map(async (req) => {
-                let itemName = 'Unknown Item';
-                try {
-                    if (req.item_type === 'bundle') {
-                        const { data: bData } = await supabase.from('bundles').select('name').eq('id', req.item_id).single();
-                        if (bData) itemName = bData.name;
-                    } else {
-                        const { data: tData } = await supabase.from('tests').select('name').eq('id', req.item_id).single();
-                        if (tData) itemName = tData.name;
-                    }
-                } catch (err) { console.error("Item info error", err); }
-                
-                return { 
-                    ...req,
-                    id: req.id || req._id, // Map Mongoose _id to id securely
-                    item_name: itemName,
-                    student: (typeof req.user_id === 'object' ? req.user_id : null) || req.students // DB join injects it as 'user_id' in Mongo
-                };
+            // Map Mongoose _id to id and ensure item_name (now handled by backend mostly)
+            const mappedData = data.map(req => ({
+                ...req,
+                id: req.id || req._id,
+                student: (typeof req.user_id === 'object' ? req.user_id : null) || req.students || {}
             }));
 
-            setRequests(enrichedData);
-            // setFilteredRequests(enrichedData); // This line was in the instruction but setFilteredRequests is not defined.
-                                                // Assuming it was a typo or intended for a different state variable.
-                                                // Keeping it commented out to avoid runtime errors.
+            setRequests(mappedData);
         } catch (err) {
             console.error("Error loading purchase requests:", err);
             setError("Failed to load purchase requests.");

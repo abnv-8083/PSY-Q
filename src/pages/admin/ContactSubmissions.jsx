@@ -4,9 +4,9 @@ import {
     TableHead, TableRow, Chip, IconButton, Dialog, DialogTitle, DialogContent,
     DialogActions, Button, TextField, MenuItem, Stack, Avatar, Tooltip, Link
 } from '@mui/material';
-import { supabase } from '../../lib/supabaseClient';
 import { Eye, Trash2, Download, ExternalLink, Filter, Search, X, Image as ImageIcon, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const COLORS = {
     primary: '#0f172a',
@@ -32,13 +32,10 @@ const ContactSubmissions = () => {
     const fetchSubmissions = async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
-                .from('contact_submissions')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-            setSubmissions(data || []);
+            const res = await fetch(`${API_URL}/admin/contact-submissions`);
+            const json = await res.json();
+            if (!json.success) throw new Error(json.message);
+            setSubmissions(json.data || []);
         } catch (error) {
             console.error('Error fetching contact submissions:', error);
         } finally {
@@ -55,14 +52,13 @@ const ContactSubmissions = () => {
         if (!confirm('Are you sure you want to delete this submission?')) return;
 
         try {
-            const { error } = await supabase
-                .from('contact_submissions')
-                .delete()
-                .eq('id', id);
+            const res = await fetch(`${API_URL}/admin/contact-submissions/${id}`, {
+                method: 'DELETE'
+            });
+            const json = await res.json();
+            if (!json.success) throw new Error(json.message);
 
-            if (error) throw error;
-
-            setSubmissions(prev => prev.filter(s => s.id !== id));
+            setSubmissions(prev => prev.filter(s => (s._id || s.id) !== id));
             alert('Submission deleted successfully');
         } catch (error) {
             console.error('Error deleting submission:', error);
@@ -191,7 +187,7 @@ const ContactSubmissions = () => {
                                     const typeStyle = getTypeColor(submission.contact_type);
                                     return (
                                         <TableRow
-                                            key={submission.id}
+                                            key={submission._id || submission.id}
                                             component={motion.tr}
                                             whileHover={{ backgroundColor: 'rgba(233, 30, 99, 0.02)' }}
                                         >
@@ -257,7 +253,7 @@ const ContactSubmissions = () => {
                                                     <Tooltip title="Delete">
                                                         <IconButton
                                                             size="small"
-                                                            onClick={() => handleDeleteSubmission(submission.id)}
+                                                            onClick={() => handleDeleteSubmission(submission._id || submission.id)}
                                                             sx={{ color: COLORS.error }}
                                                         >
                                                             <Trash2 size={18} />

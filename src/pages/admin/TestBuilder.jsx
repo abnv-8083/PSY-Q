@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, alpha } from '@mui/material';
-import { supabase } from '../../lib/supabaseClient';
+import { fetchTests, createTest, updateTest, deleteTest } from '../../api/testsApi';
 import ModernDialog from '../../components/ModernDialog';
 import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,23 +38,17 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
 
     useEffect(() => {
         if (subject && subject.id) {
-            fetchTests();
+            getTests();
         }
     }, [subject?.id]);
 
-    const fetchTests = async () => {
+    const getTests = async () => {
         if (!subject || !subject.id) return;
         try {
-            const { data, error } = await supabase
-                .from('tests')
-                .select('*, questions(count)')
-                .eq('subject_id', subject.id)
-                .order('display_order', { ascending: true });
-
-            if (error) throw error;
+            const data = await fetchTests(subject.id);
             setTests(data);
         } catch (error) {
-            console.error("Error fetching tests from Supabase:", error);
+            console.error("Error fetching tests from MongoDB:", error);
             setDialog({
                 open: true,
                 title: 'Fetch Failed',
@@ -68,40 +62,31 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         if (!newTest.name) return;
         try {
             if (isEditMode && editingTest) {
-                const { error } = await supabase
-                    .from('tests')
-                    .update({
-                        name: newTest.name,
-                        price: Number(newTest.price),
-                        duration: Number(newTest.duration),
-                        year: newTest.year ? Number(newTest.year) : null
-                    })
-                    .eq('id', editingTest.id);
-
-                if (error) throw error;
+                await updateTest(editingTest.id, {
+                    name: newTest.name,
+                    price: Number(newTest.price),
+                    duration: Number(newTest.duration),
+                    year: newTest.year ? Number(newTest.year) : null
+                });
             } else {
-                const { error } = await supabase
-                    .from('tests')
-                    .insert({
-                        subject_id: subject.id,
-                        name: newTest.name,
-                        price: Number(newTest.price),
-                        duration: Number(newTest.duration),
-                        year: newTest.year ? Number(newTest.year) : null,
-                        is_published: true,
-                        display_order: tests.length > 0 ? Math.max(...tests.map(t => t.display_order || 0)) + 1 : 0
-                    });
-
-                if (error) throw error;
+                await createTest({
+                    subject_id: subject.id,
+                    name: newTest.name,
+                    price: Number(newTest.price),
+                    duration: Number(newTest.duration),
+                    year: newTest.year ? Number(newTest.year) : null,
+                    is_published: true,
+                    display_order: tests.length > 0 ? Math.max(...tests.map(t => t.display_order || 0)) + 1 : 0
+                });
             }
 
             setNewTest({ name: '', price: 0, duration: 100, year: '' });
             setOpenTestDialog(false);
             setIsEditMode(false);
             setEditingTest(null);
-            fetchTests();
+            getTests();
         } catch (error) {
-            console.error(`Error ${isEditMode ? 'updating' : 'adding'} test in Supabase:`, error);
+            console.error(`Error ${isEditMode ? 'updating' : 'adding'} test in MongoDB:`, error);
             setDialog({
                 open: true,
                 title: `${isEditMode ? 'Update' : 'Add'} Failed`,
@@ -132,15 +117,10 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
             onConfirm: async () => {
                 setDialog(prev => ({ ...prev, open: false }));
                 try {
-                    const { error } = await supabase
-                        .from('tests')
-                        .delete()
-                        .eq('id', id);
-
-                    if (error) throw error;
-                    fetchTests();
+                    await deleteTest(id);
+                    getTests();
                 } catch (error) {
-                    console.error("Error deleting test in Supabase:", error);
+                    console.error("Error deleting test in MongoDB:", error);
                     setDialog({
                         open: true,
                         title: 'Delete Failed',
@@ -163,18 +143,13 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         setTests(items);
 
         try {
-            // Batch update display_order in Supabase
-            const updates = items.map((test, index) =>
-                supabase
-                    .from('tests')
-                    .update({ display_order: index })
-                    .eq('id', test.id)
-            );
-
+            // Update individual display orders as separate batch calls for simplicity
+            // or update backend to handle batch sort
+            const updates = items.map((test, index) => updateTest(test.id, { display_order: index }));
             await Promise.all(updates);
         } catch (error) {
             console.error("Error reordering tests:", error);
-            fetchTests();
+            getTests();
         }
     };
 
@@ -320,7 +295,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                                                             <Box sx={{ px: 2, py: 1, borderRadius: 3, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                                                 <HelpCircle size={16} color="#0284c7" />
                                                                 <Typography variant="body2" sx={{ fontWeight: 900, color: '#0369a1' }}>
-                                                                    {test.questions?.[0]?.count || 0} Questions
+                                                                    {test.total_questions || test.questions?.[0]?.count || 0} Questions
                                                                 </Typography>
                                                             </Box>
                                                             <Box sx={{

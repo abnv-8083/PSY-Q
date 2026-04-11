@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
 import {
     Box,
     Container,
@@ -59,7 +58,7 @@ const StudentProfile = () => {
                 try {
                     setLoading(true);
                     const backendUrl = import.meta.env.VITE_API_URL || '';
-                    const res = await fetch(`${backendUrl}/student/profile?userId=${studentUser.id}`);
+                    const res = await fetch(`${backendUrl}/student/profile?userId=${studentUser._id || studentUser.id}`);
                     const json = await res.json();
 
                     if (!res.ok || !json.success) throw new Error(json.error || 'Failed to fetch profile');
@@ -113,7 +112,7 @@ const StudentProfile = () => {
             if (Object.keys(updates).length > 0 || formData.newPassword) {
                 const backendUrl = import.meta.env.VITE_API_URL || '';
                 const payload = {
-                    userId: studentUser.id,
+                    userId: studentUser._id || studentUser.id,
                     updates,
                     newPassword: formData.newPassword || undefined
                 };

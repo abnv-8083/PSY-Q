@@ -1,0 +1,14 @@
+{
+  "id": "8fa87eed-96f6-4d06-88d1-58166dedddbb",
+  "test_id": "598b092f-d748-4268-8818-2fc86718eb29",
+  "text": "Humanistic theories of personality are characterised as:\n(a) Having optimistic ideas about human nature\n(b) Emphasize personal responsibility\n(c) Focus on present than on past\n(d) Believe that fate is an important determinant of human behaviour",
+  "options": [
+    "(a) and (b) only",
+    "(c) and (d) only",
+    "(a), (b) and (c) only",
+    "(b), (c) and (d) only"
+  ],
+  "explanation": "Humanistic theories (e.g., Rogers, Maslow) view human beings as inherently good and capable of growth (optimistic view), emphasize personal responsibility and free will, and focus on the present experience and conscious awareness rather than being dominated by past events. They do not believe that fate determines behavior; instead, they stress choice and self-direction.",
+  "created_at": "2026-02-07T19:32:39.156804+00:00",
+  "correct_key": 2
+}

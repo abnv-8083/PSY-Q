@@ -5,7 +5,10 @@ import {
     TextField, InputAdornment
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
+import { fetchSubjects } from '../../api/subjectsApi';
+import { fetchTests, fetchUserAttempts, fetchUserAccess } from '../../api/testsApi';
+import { fetchBundleById } from '../../api/bundlesApi';
+import { fetchUserPurchaseRequests } from '../../api/purchaseRequestsApi';
 import {
     BookOpen, Clock, ChevronRight, Target, Play, Calendar,
     User, LogOut, CheckCircle, ArrowRight, Award, Zap, Search, X, Sparkles,
@@ -66,29 +69,19 @@ const MockTestDashboard = () => {
     useEffect(() => {
         const fetchData = async (userId) => {
             try {
-                // Fetch Subjects
-                const { data: subjectsData, error: subError } = await supabase
-                    .from('subjects')
-                    .select('*')
-                    .order('name');
-
-                if (subError) throw subError;
-
-                // Fetch Tests for all subjects
-                const { data: testsData, error: testsError } = await supabase
-                    .from('tests')
-                    .select('*, questions(count)');
-
-                // Sort and filter in Javascript as a fallback
-                const filteredTests = (testsData || []).filter(t => t.is_published !== false);
-                const sortedTests = [...filteredTests].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-
-                if (testsError) throw testsError;
+                // Fetch Subjects and Tests via API
+                const [subjectsData, allTestsData] = await Promise.all([
+                    fetchSubjects(),
+                    fetchTests()
+                ]);
 
                 // Map tests to subjects
                 const subjectsWithTests = subjectsData.map(subject => ({
                     ...subject,
-                    tests: sortedTests.filter(test => test.subject_id === subject.id)
+                    id: subject._id || subject.id,
+                    tests: (allTestsData || [])
+                        .filter(test => (test.subject_id === (subject._id || subject.id)) && test.is_published !== false)
+                        .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
                 }));
 
                 setSubjects(subjectsWithTests);
@@ -98,114 +91,52 @@ const MockTestDashboard = () => {
                     setSelectedSubject(subjectsWithTests[0].id);
                 }
 
-                // Fetch User Attempts
+                // Fetch User Attempts & Access
                 if (userId) {
-                    const { data: attemptData, error: attemptError } = await supabase
-                        .from('attempts')
-                        .select('test_id')
-                        .eq('user_id', userId);
-
-                    if (attemptError) throw attemptError;
+                    const [attemptData, accessIdsArr, pendingReqs] = await Promise.all([
+                        fetchUserAttempts(userId),
+                        fetchUserAccess(userId),
+                        fetchUserPurchaseRequests(userId)
+                    ]);
 
                     const attemptMap = {};
                     attemptData?.forEach(attempt => {
-                        attemptMap[attempt.test_id] = (attemptMap[attempt.test_id] || 0) + 1;
+                        const tId = attempt.test_id;
+                        attemptMap[tId] = (attemptMap[tId] || 0) + 1;
                     });
                     setAttempts(attemptMap);
-                }
 
-                // --- Fetch User Access ---
-                if (userId) {
-                    const accessIds = new Set();
-
-                    // 1. Check user_bundles
-                    const { data: userBundles } = await supabase
-                        .from('user_bundles')
-                        .select('bundle_id, bundles(bundle_tests(test_id))')
-                        .eq('user_id', userId);
-
-                    if (userBundles) {
-                        userBundles.forEach(ub => {
-                            ub.bundles?.bundle_tests?.forEach(bt => accessIds.add(bt.test_id));
-                        });
-                    }
-
-                    // 2. Check approved bundle requests (Fallback for RLS)
-                    const { data: approvedBundleReqs } = await supabase
-                        .from('purchase_requests')
-                        .select('item_id, bundles:item_id(bundle_tests(test_id))')
-                        .eq('user_id', userId)
-                        .eq('item_type', 'bundle')
-                        .eq('status', 'approved');
-
-                    if (approvedBundleReqs) {
-                        approvedBundleReqs.forEach(req => {
-                            req.bundles?.bundle_tests?.forEach(bt => accessIds.add(bt.test_id));
-                        });
-                    }
-
-                    // 3. Check individual test payments (Fallback for RLS)
-                    const { data: approvedTestReqs } = await supabase
-                        .from('purchase_requests')
-                        .select('item_id')
-                        .eq('user_id', userId)
-                        .eq('item_type', 'test')
-                        .eq('status', 'approved');
-
-                    if (approvedTestReqs) {
-                        approvedTestReqs.forEach(req => accessIds.add(req.item_id));
-                    }
-
-                    // 4. Check regular payments table
-                    const { data: payments } = await supabase
-                        .from('payments')
-                        .select('item_id')
-                        .eq('user_id', userId)
-                        .eq('status', 'success');
-
-                    if (payments) {
-                        payments.forEach(p => accessIds.add(p.item_id));
-                    }
-
-                    setAccessedTestIds(accessIds);
-
-                    // --- Fetch Pending requests ---
-                    const { data: pendingReqs } = await supabase
-                        .from('purchase_requests')
-                        .select('item_id')
-                        .eq('user_id', userId)
-                        .eq('status', 'pending');
-
+                    setAccessedTestIds(new Set(accessIdsArr || []));
+                    
                     if (pendingReqs) {
-                        setPendingTestIds(new Set(pendingReqs.map(r => r.item_id)));
+                        const pendingIds = pendingReqs
+                            .filter(r => r.status === 'pending')
+                            .map(r => r.item_id);
+                        setPendingTestIds(new Set(pendingIds));
                     }
                 }
 
                 // --- Fetch Bundle Specific Data if applicable ---
                 const bundleId = location.state?.bundleId;
                 if (bundleId) {
-                    const { data: bundleData } = await supabase
-                        .from('bundles')
-                        .select('name, bundle_tests(test_id)')
-                        .eq('id', bundleId)
-                        .single();
-
+                    const bundleData = await fetchBundleById(bundleId);
                     if (bundleData) {
                         setActiveBundle(bundleData);
-                        setBundleTests(new Set(bundleData.bundle_tests.map(bt => bt.test_id)));
+                        setBundleTests(new Set(bundleData.tests || []));
                     }
                 }
 
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error fetching dashboard data:", error);
             } finally {
                 setLoading(false);
             }
         };
 
         if (!sessionLoading) {
-            fetchData(user?.id);
+            fetchData(user?._id || user?.id);
         }
+    }, [user, sessionLoading, navigate]);
     }, [user, sessionLoading, navigate]);
 
     useEffect(() => {
@@ -664,7 +595,7 @@ const MockTestDashboard = () => {
                                                         <Stack direction="row" alignItems="center" spacing={1}>
                                                             <Target size={14} color="white" strokeWidth={2.5} />
                                                             <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem' }}>
-                                                                {test.questions?.[0]?.count || 0} Qs
+                                                                {test.total_questions || 0} Qs
                                                             </Typography>
                                                         </Stack>
                                                         <Stack direction="row" alignItems="center" spacing={1}>
@@ -676,7 +607,7 @@ const MockTestDashboard = () => {
                                                         <Stack direction="row" alignItems="center" spacing={1}>
                                                             <Award size={14} color="white" strokeWidth={2.5} />
                                                             <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem' }}>
-                                                                {test.questions?.[0]?.count || 0} Mks
+                                                                {test.total_questions || 0} Mks
                                                             </Typography>
                                                         </Stack>
                                                         <Stack direction="row" alignItems="center" spacing={1}>

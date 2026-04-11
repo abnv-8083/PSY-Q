@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 /**
  * Fetch all active notifications ordered by display_order
@@ -6,14 +6,10 @@ import { supabase } from '../lib/supabaseClient';
  */
 export const fetchNotifications = async () => {
     try {
-        const { data, error } = await supabase
-            .from('notifications')
-            .select('*')
-            .eq('is_active', true)
-            .order('display_order', { ascending: true });
-
-        if (error) throw error;
-        return { data, error: null };
+        const response = await fetch(`${API_URL}/notifications?activeOnly=true`);
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+        return { data: result.data, error: null };
     } catch (error) {
         console.error('Error fetching notifications:', error);
         return { data: null, error };
@@ -26,13 +22,10 @@ export const fetchNotifications = async () => {
  */
 export const fetchAllNotifications = async () => {
     try {
-        const { data, error } = await supabase
-            .from('notifications')
-            .select('*')
-            .order('display_order', { ascending: true });
-
-        if (error) throw error;
-        return { data, error: null };
+        const response = await fetch(`${API_URL}/notifications`);
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+        return { data: result.data, error: null };
     } catch (error) {
         console.error('Error fetching all notifications:', error);
         return { data: null, error };
@@ -42,29 +35,18 @@ export const fetchAllNotifications = async () => {
 /**
  * Create a new notification
  * @param {Object} notification - Notification data
- * @param {string} notification.image_url - URL to the image
- * @param {string} notification.header - Header text
- * @param {string} notification.description - Description text
- * @param {boolean} notification.is_active - Whether the notification is active
- * @param {number} notification.display_order - Display order
  * @returns {Promise<{data: Object, error: Error|null}>}
  */
 export const createNotification = async (notification) => {
     try {
-        const { data, error } = await supabase
-            .from('notifications')
-            .insert([{
-                image_url: notification.image_url,
-                header: notification.header,
-                description: notification.description,
-                is_active: notification.is_active ?? true,
-                display_order: notification.display_order ?? 0
-            }])
-            .select()
-            .single();
-
-        if (error) throw error;
-        return { data, error: null };
+        const response = await fetch(`${API_URL}/admin/notifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(notification)
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+        return { data: result.data, error: null };
     } catch (error) {
         console.error('Error creating notification:', error);
         return { data: null, error };
@@ -79,15 +61,14 @@ export const createNotification = async (notification) => {
  */
 export const updateNotification = async (id, updates) => {
     try {
-        const { data, error } = await supabase
-            .from('notifications')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return { data, error: null };
+        const response = await fetch(`${API_URL}/admin/notifications/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates)
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
+        return { data: result.data, error: null };
     } catch (error) {
         console.error('Error updating notification:', error);
         return { data: null, error };
@@ -101,12 +82,11 @@ export const updateNotification = async (id, updates) => {
  */
 export const deleteNotification = async (id) => {
     try {
-        const { error } = await supabase
-            .from('notifications')
-            .delete()
-            .eq('id', id);
-
-        if (error) throw error;
+        const response = await fetch(`${API_URL}/admin/notifications/${id}`, {
+            method: 'DELETE'
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
         return { success: true, error: null };
     } catch (error) {
         console.error('Error deleting notification:', error);
@@ -115,21 +95,19 @@ export const deleteNotification = async (id) => {
 };
 
 /**
- * Reorder notifications by updating their display_order
+ * Reorder notifications
  * @param {Array<{id: string, display_order: number}>} notifications - Array of notifications with new order
  * @returns {Promise<{success: boolean, error: Error|null}>}
  */
 export const reorderNotifications = async (notifications) => {
     try {
-        // Update each notification's display_order
-        const updates = notifications.map((notification, index) =>
-            supabase
-                .from('notifications')
-                .update({ display_order: index })
-                .eq('id', notification.id)
-        );
-
-        await Promise.all(updates);
+        const response = await fetch(`${API_URL}/admin/notifications/reorder`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notifications })
+        });
+        const result = await response.json();
+        if (!result.success) throw new Error(result.message);
         return { success: true, error: null };
     } catch (error) {
         console.error('Error reordering notifications:', error);
@@ -144,18 +122,5 @@ export const reorderNotifications = async (notifications) => {
  * @returns {Promise<{data: Object, error: Error|null}>}
  */
 export const toggleNotificationStatus = async (id, isActive) => {
-    try {
-        const { data, error } = await supabase
-            .from('notifications')
-            .update({ is_active: isActive })
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return { data, error: null };
-    } catch (error) {
-        console.error('Error toggling notification status:', error);
-        return { data: null, error };
-    }
+    return updateNotification(id, { is_active: isActive });
 };

@@ -8,6 +8,8 @@ import Test from './Test.js';
 import Question from './Question.js';
 import Result from './Result.js';
 import Payment from './Payment.js';
+import ContactSubmission from './ContactSubmission.js';
+import Notification from './Notification.js';
 
 export {
   Student,
@@ -19,5 +21,7 @@ export {
   Test,
   Question,
   Result,
-  Payment
+  Payment,
+  ContactSubmission,
+  Notification
 };

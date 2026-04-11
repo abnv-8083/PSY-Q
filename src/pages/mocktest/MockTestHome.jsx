@@ -10,11 +10,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
 import NotificationsCarousel from '../../components/NotificationsCarousel';
 import { fetchBundles } from '../../api/bundlesApi';
+import { fetchTests, fetchUserAttempts, fetchUserAccess } from '../../api/testsApi';
+import { fetchUserPurchaseRequests } from '../../api/purchaseRequestsApi';
 import { useSession } from '../../contexts/SessionContext';
 
 // --- Constants ---
@@ -466,49 +467,45 @@ const MockTestHome = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch Tests
-                const { data: testsData } = await supabase
-                    .from('tests')
-                    .select('*, questions(id)')
-                    .limit(6);
-                if (testsData) setTests(testsData || []);
+                // Fetch Tests (Limit 6 for carousel)
+                const testsData = await fetchTests();
+                if (testsData) setTests(testsData.slice(0, 6));
 
                 // Fetch Bundles using the API for calculated fields
                 const bundlesData = await fetchBundles();
                 setBundles(bundlesData || []);
-                // Fetch User Attempts if logged in
-                if (user) {
-                    const { data: attemptData } = await supabase
-                        .from('attempts')
-                        .select('test_id')
-                        .eq('user_id', user.id);
 
+                // Fetch User data if logged in
+                if (user) {
+                    const userId = user._id || user.id;
+
+                    const attemptData = await fetchUserAttempts(userId);
                     if (attemptData) {
                         const attemptMap = {};
                         attemptData.forEach(attempt => {
-                            attemptMap[attempt.test_id] = (attemptMap[attempt.test_id] || 0) + 1;
+                            const tId = attempt.test_id;
+                            attemptMap[tId] = (attemptMap[tId] || 0) + 1;
                         });
                         setAttempts(attemptMap);
                     }
 
-                    // Fetch purchased bundles
-                    const { data: userBundles } = await supabase
-                        .from('user_bundles')
-                        .select('bundle_id')
-                        .eq('user_id', user.id);
-                    if (userBundles) setPurchasedBundleIds(new Set(userBundles.map(ub => ub.bundle_id)));
+                    // Fetch access (combines bundles and tests)
+                    const accessIds = await fetchUserAccess(userId);
+                    if (accessIds) setPurchasedBundleIds(new Set(accessIds));
 
-                    // Fetch pending requests
-                    const { data: requests } = await supabase
-                        .from('purchase_requests')
-                        .select('item_id')
-                        .eq('user_id', user.id)
-                        .eq('item_type', 'bundle')
-                        .eq('status', 'pending');
-                    if (requests) setPendingBundleIds(new Set(requests.map(r => r.item_id)));
+                    // Fetch pending purchase requests
+                    const requests = await fetchUserPurchaseRequests(userId);
+                    if (requests) {
+                        const pendingIds = requests
+                            .filter(r => r.status === 'pending' && r.item_type === 'bundle')
+                            .map(r => r.item_id);
+                        setPendingBundleIds(new Set(pendingIds));
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching home data:", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchData();
@@ -611,7 +608,7 @@ const MockTestHome = () => {
                                             QUESTIONS
                                         </Typography>
                                         <Typography variant="subtitle1" sx={{ fontWeight: 900, color: 'white', lineHeight: 1 }}>
-                                            {test.questions?.length || 0}
+                                            {test.total_questions || 0}
                                         </Typography>
                                     </Box>
                                 </Grid>

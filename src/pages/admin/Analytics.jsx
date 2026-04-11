@@ -68,8 +68,8 @@ import {
     PolarAngleAxis,
     PolarRadiusAxis,
 } from 'recharts';
-import { supabase } from '../../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const COLORS = {
     primary: '#0f172a',
@@ -116,82 +116,32 @@ const Analytics = () => {
     const fetchAnalyticsData = async () => {
         setLoading(true);
         try {
-            // 1. Total Users
-            const { count: userCount } = await supabase
-                .from('students')
-                .select('*', { count: 'exact', head: true });
+            const res = await fetch(`${API_URL}/admin/analytics/stats`);
+            const json = await res.json();
+            if (!json.success) throw new Error(json.message);
+            const data = json.data;
 
-            // 2. Total Revenue & Recent Payments
-            const { data: payments } = await supabase
-                .from('payments')
-                .select('*, bundles(name)')
-                .eq('status', 'captured')
-                .order('created_at', { ascending: false });
-
-            const totalRev = payments?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-
-            // 3. Total Attempts & Subjects
-            const { data: allAttempts } = await supabase
-                .from('attempts')
-                .select('*, tests(name, subject_id, subjects(name))')
-                .order('created_at', { ascending: false });
-
-            const { count: attemptCount } = await supabase
-                .from('attempts')
-                .select('*', { count: 'exact', head: true });
-
-            // 4. Active Bundles
-            const { count: bundleCount } = await supabase
-                .from('user_bundles')
-                .select('*', { count: 'exact', head: true });
-
-            // 5. User Growth (last 30 days)
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-            const { data: recentUsers } = await supabase
-                .from('students')
-                .select('created_at')
-                .gte('created_at', thirtyDaysAgo.toISOString())
-                .order('created_at', { ascending: true });
-
-            const growthData = processGrowthData(recentUsers, 30);
-
-            // 6. Revenue Trends
-            const revenueData = processRevenueData(payments, 30);
-
-            // 7. Test Popularity
-            const popularityData = processPopularityData(allAttempts);
-
-            // 8. Bundle Revenue Breakdown
-            const bundleRevData = processBundleRevenue(payments);
-
-            // 9. Subject Performance
-            const subjectPerfData = processSubjectPerformance(allAttempts);
-
-            // 10. Daily Active Users (attempts as proxy)
-            const dauData = processDAU(allAttempts, 30);
-
-            // 11. Recent Activities
-            const { data: latestSignups } = await supabase
-                .from('students')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(5);
+            // Process Data
+            const growthData = processGrowthData(data.recentSignups, 30);
+            const revenueData = processRevenueData(data.payments, 30);
+            const popularityData = processPopularityData(data.allResults);
+            const bundleRevData = processBundleRevenue(data.payments);
+            const subjectPerfData = processSubjectPerformance(data.allResults, data.subjectsMap);
+            const dauData = processDAU(data.allResults, 30);
 
             setStats({
-                totalUsers: userCount || 0,
-                totalRevenue: totalRev,
-                totalAttempts: attemptCount || 0,
-                activeBundles: bundleCount || 0,
+                totalUsers: data.totalUsers || 0,
+                totalRevenue: data.totalRevenue || 0,
+                totalAttempts: data.totalAttempts || 0,
+                activeBundles: data.activeBundles || 0,
                 userGrowth: growthData,
                 revenueTrends: revenueData,
                 testPopularity: popularityData,
                 revenueByBundle: bundleRevData,
                 subjectPerformance: subjectPerfData,
                 dailyActiveUsers: dauData,
-                recentPayments: payments?.slice(0, 5) || [],
-                recentSignups: latestSignups || []
+                recentPayments: data.payments?.slice(0, 5) || [],
+                recentSignups: data.recentSignups || []
             });
 
         } catch (error) {
@@ -212,10 +162,11 @@ const Analytics = () => {
             .sort((a, b) => b.value - a.value);
     };
 
-    const processSubjectPerformance = (attempts) => {
+    const processSubjectPerformance = (attempts, subjectsMap) => {
         const subjects = {};
         attempts?.forEach(a => {
-            const name = a.tests?.subjects?.name || 'Uncategorized';
+            const subjectId = a.test_id?.subject_id;
+            const name = subjectsMap?.[subjectId] || 'Uncategorized';
             if (!subjects[name]) subjects[name] = { totalScore: 0, totalQuestions: 0, count: 0 };
 
             subjects[name].totalScore += a.score || 0;
@@ -252,12 +203,9 @@ const Analytics = () => {
         if (val.length < 2) return;
 
         try {
-            const { data } = await supabase
-                .from('students')
-                .select('id, full_name, email')
-                .or(`full_name.ilike.%${val}%,email.ilike.%${val}%`)
-                .limit(5);
-            setUserOptions(data || []);
+            const res = await fetch(`${API_URL}/admin/analytics/search?query=${val}`);
+            const json = await res.json();
+            setUserOptions(json.data || []);
         } catch (error) {
             console.error('Error searching users:', error);
         }
@@ -268,34 +216,26 @@ const Analytics = () => {
         setSelectedUser(user);
         setModalOpen(true);
         try {
-            // 1. Fetch user attempts
-            const { data: attempts } = await supabase
-                .from('attempts')
-                .select('*, tests(name)')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: true });
+            const userId = user._id || user.id;
+            const res = await fetch(`${API_URL}/admin/analytics/users/${userId}`);
+            const json = await res.json();
+            const data = json.data;
 
-            // 2. Fetch user bundles
-            const { data: bundles } = await supabase
-                .from('user_bundles')
-                .select('*, bundles(*)')
-                .eq('user_id', user.id);
-
-            // 3. Process attempt trends
-            const trends = attempts?.map(a => ({
+            // Process attempt trends
+            const trends = data.attempts?.map(a => ({
                 date: new Date(a.created_at).toLocaleDateString(),
                 score: a.score,
                 total: a.total_questions,
                 percentage: Math.round((a.score / (a.total_questions || 1)) * 100),
-                test: a.tests?.name || 'Unknown'
+                test: a.test_id?.name || 'Unknown'
             })) || [];
 
             setUserAnalytics({
-                attempts: attempts || [],
-                bundles: bundles || [],
+                attempts: data.attempts || [],
+                bundles: data.bundles || [],
                 trends: trends,
-                totalTests: attempts?.length || 0,
-                avgScore: attempts?.length ? Math.round(attempts.reduce((sum, a) => sum + ((a.score / (a.total_questions || 1)) * 100), 0) / attempts.length) : 0
+                totalTests: data.attempts?.length || 0,
+                avgScore: data.attempts?.length ? Math.round(data.attempts.reduce((sum, a) => sum + ((a.score / (a.total_questions || 1)) * 100), 0) / data.attempts.length) : 0
             });
         } catch (error) {
             console.error('Error fetching user analytics:', error);
@@ -341,7 +281,7 @@ const Analytics = () => {
     const processPopularityData = (attempts) => {
         const counts = {};
         attempts?.forEach(a => {
-            const name = a.tests?.name || 'Unknown Test';
+            const name = a.test_id?.name || 'Unknown Test';
             counts[name] = (counts[name] || 0) + 1;
         });
 
@@ -736,7 +676,7 @@ const Analytics = () => {
                                                 {userAnalytics.attempts.slice().reverse().slice(0, 5).map((attempt, i) => (
                                                     <Box key={i} sx={{ p: 2, borderRadius: 3, bgcolor: 'white', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <Box>
-                                                            <Typography variant="body2" sx={{ fontWeight: 800 }}>{attempt.tests?.name}</Typography>
+                                                            <Typography variant="body2" sx={{ fontWeight: 800 }}>{attempt.test_id?.name}</Typography>
                                                             <Typography variant="caption" sx={{ color: COLORS.textLight }}>{new Date(attempt.created_at).toLocaleDateString()}</Typography>
                                                         </Box>
                                                         <Chip
@@ -763,8 +703,8 @@ const Analytics = () => {
                                                         <Box sx={{ p: 2, borderRadius: 3, border: `1px solid ${alpha(COLORS.success, 0.2)}`, bgcolor: alpha(COLORS.success, 0.02), display: 'flex', alignItems: 'center', gap: 2 }}>
                                                             <Award color={COLORS.success} size={24} />
                                                             <Box>
-                                                                <Typography variant="body2" sx={{ fontWeight: 800 }}>{ub.bundles?.name}</Typography>
-                                                                <Typography variant="caption" sx={{ color: COLORS.textLight }}>Purchased on {new Date(ub.created_at).toLocaleDateString()}</Typography>
+                                                                <Typography variant="body2" sx={{ fontWeight: 800 }}>{ub.name}</Typography>
+                                                                <Typography variant="caption" sx={{ color: COLORS.textLight }}>Purchased on {new Date(ub.created_at || Date.now()).toLocaleDateString()}</Typography>
                                                             </Box>
                                                         </Box>
                                                     </Grid>

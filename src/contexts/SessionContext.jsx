@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import apiClient from '../lib/apiClient';
-import { supabase } from '../lib/supabaseClient';
-import axios from 'axios';
 
 const SessionContext = createContext();
 
@@ -121,57 +119,43 @@ export const SessionProvider = ({ children }) => {
         }
     };
 
-    const forgotPassword = async (email) => {
-        const { data, error } = await supabase.functions.invoke('auth-service', {
-            body: { action: 'student-forgot-password', email }
-        });
-        if (error) throw new Error(error.message);
-        if (data.error) throw new Error(data.error);
-
-        // Send reset email via backend
-        if (data.token) {
-            try {
-                const resetLink = `${window.location.origin}/student/reset-password?token=${data.token}&email=${email}`;
-                const backendUrl = import.meta.env.VITE_API_URL || '';
-                await axios.post(`${backendUrl}/send-reset-link`, {
+    const forgotPassword = async (email, type = 'student') => {
+        try {
+            const response = await apiClient.post('/auth/forgot-password', { email, type });
+            const { token, user: userData } = response.data;
+            
+            // Send reset email via backend
+            if (token) {
+                const resetLink = `${window.location.origin}${type === 'admin' ? '/admin' : '/student'}/reset-password?token=${token}&email=${email}`;
+                await apiClient.post('/send-reset-link', {
                     email,
-                    name: data.user?.full_name || 'Student',
+                    name: userData.full_name || 'User',
                     resetLink
                 });
-            } catch (emailErr) {
-                console.error('Failed to send reset email:', emailErr);
-                // We still return data because the token was generated
             }
+            return response.data;
+        } catch (error) {
+            const errorMessage = error.response?.data?.error || 'Failed to request password reset';
+            throw new Error(errorMessage);
         }
-
-        return data;
     };
 
     const resetPassword = async (email, token, newPassword) => {
-        const { data, error } = await supabase.functions.invoke('auth-service', {
-            body: { action: 'student-reset-password', email, token, newPassword }
-        });
-        if (error) throw new Error(error.message);
-        if (data.error) throw new Error(data.error);
-        return data;
+        try {
+            const response = await apiClient.post('/auth/reset-password', { email, token, newPassword });
+            return response.data;
+        } catch (error) {
+            const errorMessage = error.response?.data?.error || 'Failed to reset password';
+            throw new Error(errorMessage);
+        }
     };
 
     const adminResetPasswordRequest = async (email) => {
-        const { data, error } = await supabase.functions.invoke('auth-service', {
-            body: { action: 'admin-reset-password-request', email }
-        });
-        if (error) throw new Error(error.message);
-        if (data.error) throw new Error(data.error);
-        return data;
+        return forgotPassword(email, 'admin');
     };
 
     const adminResetPasswordConfirm = async (email, token, newPassword) => {
-        const { data, error } = await supabase.functions.invoke('auth-service', {
-            body: { action: 'admin-reset-password-confirm', email, token, newPassword }
-        });
-        if (error) throw new Error(error.message);
-        if (data.error) throw new Error(data.error);
-        return data;
+        return resetPassword(email, token, newPassword);
     };
 
     // Helper to get the relevant user based on the current route

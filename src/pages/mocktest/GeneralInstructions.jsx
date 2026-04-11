@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { Home, ChevronDown, ChevronUp, LogOut, ArrowRight, BookOpen, Clock, AlertTriangle } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
+import { fetchTestById } from '../../api/testsApi';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
 
@@ -43,13 +43,7 @@ const GeneralInstructions = () => {
     useEffect(() => {
         const fetchTestDetails = async () => {
             try {
-                const { data: test, error } = await supabase
-                    .from('tests')
-                    .select('*')
-                    .eq('id', testId)
-                    .single();
-
-                if (error) throw error;
+                const test = await fetchTestById(testId);
                 setTestDetails(test);
             } catch (err) {
                 console.error("Error fetching test details:", err);

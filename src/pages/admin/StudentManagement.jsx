@@ -19,7 +19,6 @@ import {
     Avatar,
     Tooltip
 } from '@mui/material';
-import { supabase } from '../../lib/supabaseClient';
 import {
     User, Search, Trash2, UserCheck,
     Calendar, Phone, Mail, Filter, ArrowUpDown
@@ -49,8 +48,7 @@ const StudentManagement = () => {
     const [success, setSuccess] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
 
-    // Config - Matches Edge Function check
-    const ADMIN_API_KEY = 'psyq_admin_secret_2024';
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
     useEffect(() => {
         fetchStudents();
@@ -60,18 +58,14 @@ const StudentManagement = () => {
         setLoading(true);
         setError(null);
         try {
-            const { data, error: fetchError } = await supabase.functions.invoke('create-admin?type=students', {
-                method: 'GET',
-                headers: {
-                    'x-admin-api-key': ADMIN_API_KEY
-                }
-            });
-
-            if (fetchError) throw fetchError;
-            setStudents(data || []);
+            const response = await fetch(`${API_URL}/admin/students`);
+            const result = await response.json();
+            
+            if (!result.success) throw new Error(result.message);
+            setStudents(result.data || []);
         } catch (err) {
             console.error('Error fetching students:', err);
-            setError('Failed to load students. Make sure database RLS and Edge Function are synced.');
+            setError('Failed to load students. Please check backend connection.');
         } finally {
             setLoading(false);
         }
@@ -92,14 +86,12 @@ const StudentManagement = () => {
 
         setActionLoading(true);
         try {
-            const { error: deleteError } = await supabase.functions.invoke(`create-admin?id=${student.id}&table=students`, {
-                method: 'DELETE',
-                headers: {
-                    'x-admin-api-key': ADMIN_API_KEY
-                }
+            const response = await fetch(`${API_URL}/admin/students/${student.id || student._id}`, {
+                method: 'DELETE'
             });
+            const result = await response.json();
 
-            if (deleteError) throw deleteError;
+            if (!result.success) throw new Error(result.message);
 
             setSuccess('Student deleted successfully.');
             fetchStudents();
