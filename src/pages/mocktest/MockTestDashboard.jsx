@@ -88,6 +88,7 @@ const MockTestDashboard = () => {
                             const isPublished = test.is_published !== false && test.is_active !== false;
                             return matchesSubject && isPublished;
                         })
+                        .map(test => ({ ...test, id: test._id || test.id }))
                         .sort((a, b) => (a.display_order || 0) - (b.display_order || 0))
                 }));
 

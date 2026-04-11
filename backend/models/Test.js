@@ -5,6 +5,7 @@ const testSchema = new mongoose.Schema({
   description: { type: String },
   bundle_id: { type: String }, // Can link to a Bundle
   subject: { type: String },
+  subject_id: { type: String }, // Link to a Subject _id
   duration: { type: Number, default: 60 }, // in minutes
   total_questions: { type: Number, default: 0 },
   price: { type: Number, default: 0 },
