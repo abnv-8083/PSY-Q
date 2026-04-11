@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, TextField, Button, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, List, ListItem, ListItemButton, ListItemText, ListItemIcon, Chip, Alert, InputAdornment, alpha } from '@mui/material';
+import { Box, Typography, Paper, Grid, TextField, Button, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, List, ListItem, ListItemButton, ListItemText, ListItemIcon, Chip, Alert, InputAdornment, alpha, MenuItem } from '@mui/material';
 import { supabase } from '../../lib/supabaseClient';
 import ModernDialog from '../../components/ModernDialog';
 import { Package, BookOpen, CheckCircle, Edit, Save, X, Plus, Trash2, TrendingDown, GripVertical, ChevronRight } from 'lucide-react';
@@ -29,6 +29,14 @@ const BundleManagement = () => {
     const [openPricingDialog, setOpenPricingDialog] = useState(false);
     const [openTestsDialog, setOpenTestsDialog] = useState(false);
     const [openFeaturesDialog, setOpenFeaturesDialog] = useState(false);
+    const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+
+    // Details form state
+    const [detailsForm, setDetailsForm] = useState({
+        name: '',
+        description: '',
+        bundle_type: ''
+    });
 
     // Pricing form state
     const [pricingForm, setPricingForm] = useState({
@@ -141,6 +149,53 @@ const BundleManagement = () => {
                 open: true,
                 title: 'Update Failed',
                 message: `Failed to update pricing: ${error.message}`,
+                type: 'error'
+            });
+        }
+    };
+
+    const handleOpenDetailsDialog = (bundle) => {
+        setEditingBundle(bundle);
+        setDetailsForm({
+            name: bundle.name || '',
+            description: bundle.description || '',
+            bundle_type: bundle.bundle_type || 'BASIC'
+        });
+        setOpenDetailsDialog(true);
+    };
+
+    const handleSaveDetails = async () => {
+        if (!detailsForm.name.trim() || !detailsForm.description.trim()) {
+            setDialog({
+                open: true,
+                title: 'Validation Error',
+                message: 'Name and description cannot be empty.',
+                type: 'warning'
+            });
+            return;
+        }
+
+        try {
+            await updateBundle(editingBundle.id, {
+                name: detailsForm.name.trim(),
+                description: detailsForm.description.trim(),
+                bundle_type: detailsForm.bundle_type
+            });
+
+            setDialog({
+                open: true,
+                title: 'Details Updated',
+                message: 'Bundle details have been updated successfully!',
+                type: 'success'
+            });
+            setOpenDetailsDialog(false);
+            fetchData();
+        } catch (error) {
+            console.error("Error updating details:", error);
+            setDialog({
+                open: true,
+                title: 'Update Failed',
+                message: `Failed to update details: ${error.message}`,
                 type: 'error'
             });
         }
@@ -417,12 +472,17 @@ const BundleManagement = () => {
                                                                 )}
 
                                                                 <Box sx={{ mt: 3, mb: 4, flexGrow: 0, width: '100%', overflow: 'hidden' }}>
-                                                                    <Typography variant="h4" sx={{ 
-                                                                        fontWeight: 900, color: COLORS.primary, mb: 1, letterSpacing: -0.5,
-                                                                        wordBreak: 'break-word', overflowWrap: 'break-word'
-                                                                    }}>
-                                                                        {bundle.name}
-                                                                    </Typography>
+                                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                                        <Typography variant="h4" sx={{ 
+                                                                            fontWeight: 900, color: COLORS.primary, mb: 1, letterSpacing: -0.5,
+                                                                            wordBreak: 'break-word', overflowWrap: 'break-word'
+                                                                        }}>
+                                                                            {bundle.name}
+                                                                        </Typography>
+                                                                        <IconButton size="small" onClick={() => handleOpenDetailsDialog(bundle)} sx={{ color: bundleColor, bgcolor: alpha(bundleColor, 0.1), '&:hover': { bgcolor: bundleColor, color: '#fff' } }}>
+                                                                            <Edit size={16} />
+                                                                        </IconButton>
+                                                                    </Box>
                                                                     <Typography variant="body2" sx={{ 
                                                                         color: COLORS.secondary, fontWeight: 500, minHeight: 48, lineHeight: 1.7, opacity: 0.8,
                                                                         wordBreak: 'break-word', overflowWrap: 'break-word'
@@ -732,6 +792,49 @@ const BundleManagement = () => {
                 <DialogActions sx={{ p: 3, px: 4, bgcolor: '#f8fafc', borderTop: `1px solid ${COLORS.border}` }}>
                     <Button onClick={() => setOpenFeaturesDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: '12px' }}>Discard</Button>
                     <Button variant="contained" onClick={handleSaveFeatures} sx={{ bgcolor: COLORS.primary, borderRadius: '12px', fontWeight: 800, px: 4, py: 1.2, boxShadow: '0 8px 20px rgba(0,0,0,0.15)', '&:hover': { bgcolor: '#0f172a' } }}>Update Features</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* General Details Dialog */}
+            <Dialog open={openDetailsDialog} onClose={() => setOpenDetailsDialog(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '24px', overflow: 'hidden' } }}>
+                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary, background: 'linear-gradient(to right, #f8fafc, #fff)', p: 4, pb: 2 }}>
+                    Update General Details
+                    <Typography sx={{ color: COLORS.accent, fontWeight: 700, mt: 0.5, fontSize: '1rem' }}>{editingBundle?.name} Package</Typography>
+                </DialogTitle>
+                <DialogContent sx={{ px: 4, pb: 4 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
+                        <TextField
+                            fullWidth label="Bundle Name"
+                            value={detailsForm.name}
+                            onChange={(e) => setDetailsForm({ ...detailsForm, name: e.target.value })}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px', fontWeight: 700 } }}
+                            required
+                        />
+                        <TextField
+                            fullWidth label="Description"
+                            multiline rows={3}
+                            value={detailsForm.description}
+                            onChange={(e) => setDetailsForm({ ...detailsForm, description: e.target.value })}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px', fontWeight: 500 } }}
+                            required
+                        />
+                        <TextField
+                            select
+                            fullWidth label="Bundle Tier"
+                            value={detailsForm.bundle_type}
+                            onChange={(e) => setDetailsForm({ ...detailsForm, bundle_type: e.target.value })}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px', fontWeight: 700 } }}
+                            required
+                        >
+                            <MenuItem value="BASIC">BASIC</MenuItem>
+                            <MenuItem value="ADVANCED">ADVANCED</MenuItem>
+                            <MenuItem value="PREMIUM">PREMIUM</MenuItem>
+                        </TextField>
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ p: 3, px: 4, bgcolor: '#f8fafc', borderTop: `1px solid ${COLORS.border}` }}>
+                    <Button onClick={() => setOpenDetailsDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: '12px' }}>Cancel</Button>
+                    <Button variant="contained" onClick={handleSaveDetails} sx={{ bgcolor: COLORS.primary, borderRadius: '12px', fontWeight: 800, px: 4, py: 1.2, boxShadow: '0 8px 20px rgba(0,0,0,0.15)', '&:hover': { bgcolor: '#0f172a' } }}>Save Changes</Button>
                 </DialogActions>
             </Dialog>
 
