@@ -38,7 +38,8 @@ const BundleManagement = () => {
     const [detailsForm, setDetailsForm] = useState({
         name: '',
         description: '',
-        bundle_type: ''
+        bundle_type: '',
+        is_best_seller: false
     });
 
     // Pricing form state
@@ -162,7 +163,8 @@ const BundleManagement = () => {
         setDetailsForm({
             name: bundle.name || '',
             description: bundle.description || '',
-            bundle_type: bundle.bundle_type || 'BASIC'
+            bundle_type: bundle.bundle_type || 'BASIC',
+            is_best_seller: bundle.is_best_seller || false
         });
         setOpenDetailsDialog(true);
     };
@@ -182,7 +184,8 @@ const BundleManagement = () => {
             await updateBundle(editingBundle.id, {
                 name: detailsForm.name.trim(),
                 description: detailsForm.description.trim(),
-                bundle_type: detailsForm.bundle_type
+                bundle_type: detailsForm.bundle_type,
+                is_best_seller: detailsForm.is_best_seller
             });
 
             setDialog({
@@ -446,8 +449,8 @@ const BundleManagement = () => {
                                                                     </Typography>
                                                                 </Box>
 
-                                                                {/* Best Value Badge for Premium */}
-                                                                {bundle.bundle_type === 'PREMIUM' && (
+                                                                {/* Best Value Badge for Best Seller */}
+                                                                {bundle.is_best_seller && (
                                                                     <Box sx={{
                                                                         position: 'absolute',
                                                                         top: -16,
@@ -458,7 +461,8 @@ const BundleManagement = () => {
                                                                         borderRadius: '10px',
                                                                         boxShadow: '0 8px 20px rgba(16, 185, 129, 0.4)',
                                                                         animation: 'pulse 2s infinite',
-                                                                        maxWidth: '120px'
+                                                                        maxWidth: '120px',
+                                                                        zIndex: 2
                                                                     }}>
                                                                         <Typography variant="caption" sx={{ color: 'white', fontWeight: 900, letterSpacing: 1, textTransform: 'uppercase', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                                             ★ MOST POPULAR
@@ -906,6 +910,18 @@ const BundleManagement = () => {
                             <MenuItem value="ADVANCED">ADVANCED</MenuItem>
                             <MenuItem value="PREMIUM">PREMIUM</MenuItem>
                         </TextField>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: alpha('#10b981', 0.05), borderRadius: '14px', border: '1px dashed #10b981' }}>
+                            <Checkbox 
+                                checked={detailsForm.is_best_seller} 
+                                onChange={(e) => setDetailsForm({ ...detailsForm, is_best_seller: e.target.checked })}
+                                sx={{ color: '#10b981', '&.Mui-checked': { color: '#10b981' } }}
+                            />
+                            <Box>
+                                <Typography sx={{ fontWeight: 800, color: '#059669' }}>Highlight as Best Seller</Typography>
+                                <Typography variant="caption" sx={{ color: '#047857', fontWeight: 600 }}>This will display a "MOST POPULAR" star badge on the card.</Typography>
+                            </Box>
+                        </Box>
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 3, px: 4, bgcolor: '#f8fafc', borderTop: `1px solid ${COLORS.border}` }}>

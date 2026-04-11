@@ -10,6 +10,7 @@ const bundleSchema = new mongoose.Schema({
   subjects: [{ type: String }], // Array of subject names or IDs
   tests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Test' }],
   display_order: { type: Number, default: 0 },
+  is_best_seller: { type: Boolean, default: false },
   is_active: { type: Boolean, default: true },
   image_url: { type: String },
   created_at: { type: Date, default: Date.now },
