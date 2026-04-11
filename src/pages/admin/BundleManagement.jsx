@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid, TextField, Button, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, List, ListItem, ListItemButton, ListItemText, ListItemIcon, Chip, Alert, InputAdornment, alpha, MenuItem } from '@mui/material';
+import { Box, Typography, Paper, Grid, TextField, Button, IconButton, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, List, ListItem, ListItemButton, ListItemText, ListItemIcon, Chip, Alert, InputAdornment, alpha, MenuItem, Tabs, Tab, Stack } from '@mui/material';
 import ModernDialog from '../../components/ModernDialog';
-import { Package, BookOpen, CheckCircle, Edit, Save, X, Plus, Trash2, TrendingDown, GripVertical, ChevronRight } from 'lucide-react';
+import { Package, BookOpen, CheckCircle, Edit, Save, X, Plus, Trash2, TrendingDown, GripVertical, ChevronRight, Search, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchBundles, updateBundle, addTestToBundle, removeTestFromBundle, updateBundleFeatures, fetchAvailableTests, reorderBundles } from '../../api/bundlesApi';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
@@ -29,6 +29,10 @@ const BundleManagement = () => {
     const [openTestsDialog, setOpenTestsDialog] = useState(false);
     const [openFeaturesDialog, setOpenFeaturesDialog] = useState(false);
     const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
+    
+    // New test management state
+    const [testSearchQuery, setTestSearchQuery] = useState('');
+    const [testTab, setTestTab] = useState(0); // 0: Selected, 1: All
 
     // Details form state
     const [detailsForm, setDetailsForm] = useState({
@@ -694,49 +698,125 @@ const BundleManagement = () => {
                 </DialogTitle>
                 <DialogContent sx={{ px: 4, pb: 4, bgcolor: '#f8fafc' }}>
                     <Box sx={{ pt: 2 }}>
+                        {/* Search & Tabs Header */}
+                        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
+                            <Box sx={{ flex: 1 }}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    placeholder="Search tests by name..."
+                                    value={testSearchQuery}
+                                    onChange={(e) => setTestSearchQuery(e.target.value)}
+                                    InputProps={{
+                                        startAdornment: <Search size={18} style={{ marginRight: 8, opacity: 0.5 }} />,
+                                        sx: { borderRadius: '12px', bgcolor: 'white' }
+                                    }}
+                                />
+                            </Box>
+                            <Tabs 
+                                value={testTab} 
+                                onChange={(e, v) => setTestTab(v)} 
+                                sx={{ 
+                                    minHeight: '40px',
+                                    '& .MuiTabs-indicator': { bgcolor: COLORS.accent, height: 3, borderRadius: '3px' }
+                                }}
+                            >
+                                <Tab 
+                                    label={`Selected (${editingBundle?.tests?.length || 0})`} 
+                                    sx={{ fontWeight: 800, textTransform: 'none', minHeight: '40px' }} 
+                                />
+                                <Tab 
+                                    label="All Available" 
+                                    sx={{ fontWeight: 800, textTransform: 'none', minHeight: '40px' }} 
+                                />
+                            </Tabs>
+                        </Stack>
+
                         <Paper elevation={0} sx={{ maxHeight: 450, overflow: 'auto', border: `1px solid ${COLORS.border}`, borderRadius: '16px', bgcolor: '#fff', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
-                            {tests.length === 0 ? (
-                                <Box sx={{ p: 8, textAlign: 'center' }}>
-                                    <Typography variant="h6" color="error" sx={{ fontWeight: 800, mb: 1 }}>No tests created yet!</Typography>
-                                    <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>Create mock tests in the Content Management portal first.</Typography>
-                                </Box>
-                            ) : (
-                                <List sx={{ width: '100%', p: 1.5 }}>
-                                    {tests.map((test) => {
+                            <List sx={{ width: '100%', p: 1.5 }}>
+                                {(() => {
+                                    const filteredTests = tests.filter(test => {
+                                        const matchesSearch = test.name?.toLowerCase().includes(testSearchQuery.toLowerCase());
+                                        const isIncluded = editingBundle?.tests?.some(t => t.id === test.id);
+                                        
+                                        if (testTab === 0) return isIncluded && matchesSearch;
+                                        return matchesSearch;
+                                    });
+
+                                    if (filteredTests.length === 0) {
+                                        return (
+                                            <Box sx={{ p: 8, textAlign: 'center' }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, color: COLORS.textLight }}>
+                                                    {testSearchQuery ? 'No matching tests found' : (testTab === 0 ? 'No tests selected for this bundle' : 'No tests available')}
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ color: alpha(COLORS.textLight, 0.7), fontWeight: 600 }}>
+                                                    {testTab === 0 && !testSearchQuery ? 'Switch to "All Available" to add tests.' : 'Try a different search term.'}
+                                                </Typography>
+                                            </Box>
+                                        );
+                                    }
+
+                                    return filteredTests.map((test) => {
                                         const isIncluded = editingBundle?.tests?.some(t => t.id === test.id);
                                         return (
                                             <ListItem key={test.id} disablePadding sx={{ mb: 1.5 }}>
-                                                <ListItemButton
-                                                    onClick={() => handleToggleTest(test.id)}
+                                                <Paper
+                                                    elevation={0}
                                                     sx={{
-                                                        borderRadius: '12px', py: 2, px: 3,
-                                                        border: `2px solid ${isIncluded ? COLORS.primary : COLORS.border}`,
-                                                        bgcolor: isIncluded ? alpha(COLORS.primary, 0.02) : '#fff',
-                                                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                        '&:hover': { borderColor: isIncluded ? COLORS.primary : COLORS.accent, transform: 'translateX(4px)' }
+                                                        width: '100%',
+                                                        borderRadius: '12px',
+                                                        border: `2px solid ${isIncluded ? COLORS.accent : COLORS.border}`,
+                                                        bgcolor: isIncluded ? alpha(COLORS.accent, 0.01) : '#fff',
+                                                        transition: 'all 0.2s',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        p: 1.5,
+                                                        px: 2,
+                                                        '&:hover': { borderColor: COLORS.accent, transform: 'translateX(4px)' }
                                                     }}
                                                 >
-                                                    <ListItemIcon sx={{ minWidth: 48 }}>
-                                                        <Checkbox edge="start" checked={isIncluded} disableRipple sx={{ color: COLORS.primary, '&.Mui-checked': { color: COLORS.primary } }} />
-                                                    </ListItemIcon>
+                                                    <Box sx={{ mr: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: '10px', bgcolor: alpha(isIncluded ? COLORS.accent : COLORS.primary, 0.1), color: isIncluded ? COLORS.accent : COLORS.primary }}>
+                                                        <FileText size={20} />
+                                                    </Box>
                                                     <ListItemText
                                                         primary={test.name}
-                                                        secondary={`${test.subjects?.name || 'Assorted Topic'} • ${test.duration || 0} minutes duration`}
-                                                        primaryTypographyProps={{ fontWeight: 800, fontSize: '1.05rem', color: COLORS.primary }}
-                                                        secondaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 600, color: COLORS.textLight, mt: 0.5 }}
+                                                        secondary={`${test.subjects?.name || 'Assorted Topic'} • ${test.duration || 0} minutes`}
+                                                        primaryTypographyProps={{ fontWeight: 800, fontSize: '1rem', color: COLORS.primary }}
+                                                        secondaryTypographyProps={{ fontSize: '0.8rem', fontWeight: 600, color: COLORS.textLight }}
                                                     />
-                                                    {isIncluded && <CheckCircle size={28} color={COLORS.primary} strokeWidth={2.5} />}
-                                                </ListItemButton>
+                                                    <Button
+                                                        variant={isIncluded ? "outlined" : "contained"}
+                                                        size="small"
+                                                        startIcon={isIncluded ? <X size={14} /> : <Plus size={14} />}
+                                                        onClick={() => handleToggleTest(test.id)}
+                                                        sx={{ 
+                                                            borderRadius: '8px', 
+                                                            textTransform: 'none', 
+                                                            fontWeight: 800,
+                                                            minWidth: 100,
+                                                            bgcolor: isIncluded ? 'transparent' : COLORS.primary,
+                                                            color: isIncluded ? '#ef4444' : 'white',
+                                                            borderColor: isIncluded ? '#ef4444' : 'transparent',
+                                                            '&:hover': {
+                                                                bgcolor: isIncluded ? alpha('#ef4444', 0.1) : COLORS.accent,
+                                                                color: isIncluded ? '#ef4444' : 'white',
+                                                                borderColor: isIncluded ? '#ef4444' : 'transparent'
+                                                            }
+                                                        }}
+                                                    >
+                                                        {isIncluded ? 'Remove' : 'Add'}
+                                                    </Button>
+                                                </Paper>
                                             </ListItem>
                                         );
-                                    })}
-                                </List>
-                            )}
+                                    });
+                                })()}
+                            </List>
                         </Paper>
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 3, px: 4, bgcolor: '#fff', borderTop: `1px solid ${COLORS.border}` }}>
-                    <Button onClick={() => setOpenTestsDialog(false)} variant="contained" sx={{ bgcolor: COLORS.primary, borderRadius: '12px', fontWeight: 800, px: 6, py: 1.2, boxShadow: '0 8px 20px rgba(0,0,0,0.15)', '&:hover': { bgcolor: '#0f172a' } }}>Finish Matching</Button>
+                    <Button onClick={() => setOpenTestsDialog(false)} variant="contained" sx={{ bgcolor: COLORS.primary, borderRadius: '12px', fontWeight: 800, px: 6, py: 1.2, boxShadow: '0 8px 20px rgba(0,0,0,0.15)', '&:hover': { bgcolor: '#0f172a' } }}>Done</Button>
                 </DialogActions>
             </Dialog>
 
