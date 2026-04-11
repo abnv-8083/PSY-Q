@@ -32,7 +32,17 @@ export const fetchBundleById = async (bundleId) => {
     const response = await fetch(`${API_URL}/bundles/${bundleId}`);
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
-    return result.data;
+    const bundle = result.data;
+    if (bundle) {
+        bundle.id = bundle._id || bundle.id;
+        if (bundle.tests) {
+            bundle.tests = bundle.tests.map(t => ({
+                ...(typeof t === 'object' ? t : {}),
+                id: (typeof t === 'object' ? (t._id || t.id) : t)
+            }));
+        }
+    }
+    return bundle;
 };
 
 /**
@@ -116,5 +126,8 @@ export const fetchAvailableTests = async () => {
     const response = await fetch(`${API_URL}/tests`);
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
-    return result.data;
+    return (result.data || []).map(test => ({
+        ...test,
+        id: test._id || test.id
+    }));
 };
