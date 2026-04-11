@@ -256,26 +256,27 @@ const MockTestBundles = () => {
                                                     {React.createElement(getBundleIcon(bundle.name), { size: 32, strokeWidth: 2 })}
                                                 </Box>
 
-                                                {bundle.is_popular && (
+                                                {bundle.is_best_seller && (
                                                     <Box
                                                         sx={{
                                                             bgcolor: 'white',
                                                             color: COLORS.accent,
-                                                            px: 2,
-                                                            py: 0.8,
-                                                            borderRadius: '12px',
+                                                            px: 2.5,
+                                                            py: 1,
+                                                            borderRadius: '14px',
                                                             fontWeight: 900,
-                                                            fontSize: '0.65rem',
+                                                            fontSize: '0.7rem',
                                                             textTransform: 'uppercase',
                                                             letterSpacing: '1.5px',
-                                                            boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+                                                            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
                                                             display: 'flex',
                                                             alignItems: 'center',
-                                                            gap: 1
+                                                            gap: 1.2,
+                                                            zIndex: 10
                                                         }}
                                                     >
-                                                        <Sparkles size={14} fill={COLORS.accent} />
-                                                        <span>Most Popular</span>
+                                                        <Star size={14} fill={COLORS.accent} color={COLORS.accent} />
+                                                        <span>MOST POPULAR</span>
                                                     </Box>
                                                 )}
                                             </Box>
@@ -303,39 +304,41 @@ const MockTestBundles = () => {
                                                     wordBreak: 'break-word',
                                                     overflowWrap: 'break-word'
                                                 }}>
-                                                    {bundle.description}
+                                                    {bundle.description || 'Full access to premium test materials and expert insights.'}
                                                 </Typography>
                                             </Box>
 
-                                            <Stack spacing={2} sx={{ mb: 4 }}>
+                                            <Stack spacing={1.5} sx={{ mb: 4 }}>
+                                                {(bundle.features?.length > 0 ? bundle.features : ['Professional Mock Tests', 'Expert Explanations', 'Performance Analytics']).slice(0, 4).map((feature, i) => (
+                                                    <Box key={i} sx={{ 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        gap: 1.8,
+                                                        p: 1.5,
+                                                        borderRadius: 3.5,
+                                                        bgcolor: alpha('#000000', 0.12),
+                                                        backdropFilter: 'blur(10px)',
+                                                        border: `1px solid ${alpha('#ffffff', 0.1)}`
+                                                    }}>
+                                                        <CheckCircle size={18} color="white" strokeWidth={3} />
+                                                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'white', fontSize: '0.85rem' }}>
+                                                            {feature}
+                                                        </Typography>
+                                                    </Box>
+                                                ))}
                                                 <Box sx={{ 
                                                     display: 'flex', 
                                                     alignItems: 'center', 
-                                                    gap: 2,
-                                                    p: 1.8,
-                                                    borderRadius: 4,
-                                                    bgcolor: alpha('#000000', 0.15),
-                                                    backdropFilter: 'blur(10px)',
-                                                    border: `1px solid ${alpha('#ffffff', 0.1)}`
-                                                }}>
-                                                    <CheckCircle size={22} color="white" />
-                                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'white' }}>
-                                                        {bundle.bundle_tests?.length || 0} Professional Tests
-                                                    </Typography>
-                                                </Box>
-                                                <Box sx={{ 
-                                                    display: 'flex', 
-                                                    alignItems: 'center', 
-                                                    gap: 2,
-                                                    p: 1.8,
-                                                    borderRadius: 4,
+                                                    gap: 1.8,
+                                                    p: 1.5,
+                                                    borderRadius: 3.5,
                                                     bgcolor: alpha('#ffffff', 0.15),
                                                     backdropFilter: 'blur(10px)',
-                                                    border: `1px solid ${alpha('#ffffff', 0.1)}`
+                                                    border: `1px solid ${alpha('#ffffff', 0.15)}`
                                                 }}>
-                                                    <Layers size={22} color="white" />
-                                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'white' }}>
-                                                        Expert Analytics
+                                                    <Library size={18} color="white" strokeWidth={3} />
+                                                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'white', fontSize: '0.85rem' }}>
+                                                        {bundle.tests?.length || 0} Standard Mock Tests
                                                     </Typography>
                                                 </Box>
                                             </Stack>
