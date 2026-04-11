@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// v1.0.1 - Triggering fresh deployment to sync with deduplicated database
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Box, Container, Typography, Grid, Card, CardContent, Button, Chip,
     Stack, useTheme, useMediaQuery, Paper, Skeleton, alpha, IconButton, Avatar, Menu, MenuItem, Divider,
