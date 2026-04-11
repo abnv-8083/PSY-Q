@@ -555,17 +555,22 @@ const BundleManagement = () => {
                                                                             <Edit size={16} />
                                                                         </IconButton>
                                                                     </Box>
-                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', overflow: 'hidden' }}>
-                                                                        {bundle.features?.slice(0, 5).map((feature, idx) => (
+                                                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, width: '100%' }}>
+                                                                        {bundle.features?.slice(0, 8).map((feature, idx) => (
                                                                             <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                                                                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 0.5, borderRadius: '50%', background: `linear-gradient(135deg, ${alpha(bundleColor, 0.2)}, ${alpha(bundleColor, 0.05)})`, flexShrink: 0 }}>
                                                                                     <CheckCircle size={15} color={bundleColor} strokeWidth={3} />
                                                                                 </Box>
-                                                                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary, wordBreak: 'break-word', overflowWrap: 'break-word', flex: 1 }}>
+                                                                                <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary, wordBreak: 'break-word', overflowWrap: 'break-word', flex: 1, lineHeight: 1.4 }}>
                                                                                     {feature}
                                                                                 </Typography>
                                                                             </Box>
                                                                         ))}
+                                                                        {bundle.features?.length > 8 && (
+                                                                            <Typography variant="caption" sx={{ color: bundleColor, fontWeight: 800, mt: 1, display: 'block' }}>
+                                                                                + {bundle.features.length - 8} more features
+                                                                            </Typography>
+                                                                        )}
                                                                     </Box>
                                                                 </Box>
 
