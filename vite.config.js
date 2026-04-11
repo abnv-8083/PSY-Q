@@ -16,10 +16,16 @@ export default defineConfig({
   },
   build: {
     assetsInlineLimit: 4096,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['react', 'react-dom', 'react-router-dom'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('@mui')) return 'vendor_mui';
+            if (id.includes('framer-motion')) return 'vendor_animations';
+            if (id.includes('lucide-react')) return 'vendor_icons';
+            return 'vendor_libs';
+          }
         }
       }
     },
