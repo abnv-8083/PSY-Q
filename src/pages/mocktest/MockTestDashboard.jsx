@@ -137,7 +137,6 @@ const MockTestDashboard = () => {
             fetchData(user?._id || user?.id);
         }
     }, [user, sessionLoading, navigate]);
-    }, [user, sessionLoading, navigate]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
