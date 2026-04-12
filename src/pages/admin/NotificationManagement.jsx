@@ -68,7 +68,7 @@ const NotificationManagement = () => {
         setLoading(true);
         const { data, error } = await fetchAllNotifications();
         if (data && !error) {
-            setNotifications(data);
+            setNotifications(data.map(n => ({ ...n, id: n._id || n.id })));
         }
         setLoading(false);
     };
@@ -104,7 +104,8 @@ const NotificationManagement = () => {
                 const { data, error } = await updateNotification(editDialog.notification.id, formData);
                 if (error) throw error;
                 if (data) {
-                    setNotifications(prev => prev.map(n => n.id === data.id ? data : n));
+                    const mappedData = { ...data, id: data._id || data.id };
+                    setNotifications(prev => prev.map(n => n.id === editDialog.notification.id ? mappedData : n));
                 }
             } else {
                 const newNotification = {
@@ -114,7 +115,8 @@ const NotificationManagement = () => {
                 const { data, error } = await createNotification(newNotification);
                 if (error) throw error;
                 if (data) {
-                    setNotifications(prev => [...prev, data]);
+                    const mappedData = { ...data, id: data._id || data.id };
+                    setNotifications(prev => [...prev, mappedData]);
                 }
             }
             setEditDialog({ open: false, notification: null });
