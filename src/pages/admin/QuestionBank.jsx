@@ -49,10 +49,11 @@ const QuestionBank = ({ subject, test, onBack }) => {
     });
 
     useEffect(() => {
-        if (test && test.id) {
-            fetchQuestions();
+        const testId = test?.id || test?._id;
+        if (testId) {
+            fetchQuestions(testId);
         }
-    }, [test?.id]);
+    }, [test?.id, test?._id]);
 
     // Handle scroll to show/hide scroll to top button
     useEffect(() => {
@@ -83,10 +84,11 @@ const QuestionBank = ({ subject, test, onBack }) => {
         }
     };
 
-    const fetchQuestions = async () => {
-        if (!test || !test.id) return;
+    const fetchQuestions = async (testIdOverride) => {
+        const testId = testIdOverride || test?.id || test?._id;
+        if (!testId) return;
         try {
-            const data = await fetchTestQuestions(test.id);
+            const data = await fetchTestQuestions(testId);
 
             // Transform MongoDB format back to simple frontend format if needed
             const formattedQuestions = data.map(q => {

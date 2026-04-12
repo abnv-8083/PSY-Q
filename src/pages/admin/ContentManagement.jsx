@@ -20,8 +20,9 @@ const ContentManagement = ({ onSubjectChange }) => {
             try {
                 // Initialize Psychology subject via MongoDB API
                 const subject = await ensureSubject('Psychology', 'Mock tests for UGC NET Psychology (Paper 1 & Paper 2)');
-                setPsychologySubject(subject);
-                if (onSubjectChange) onSubjectChange(subject);
+                const mappedSubject = { ...subject, id: subject._id };
+                setPsychologySubject(mappedSubject);
+                if (onSubjectChange) onSubjectChange(mappedSubject);
             } catch (error) {
                 console.error("Error initializing Psychology subject in MongoDB:", error);
             } finally {

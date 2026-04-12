@@ -46,7 +46,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         if (!subject || !subject.id) return;
         try {
             const data = await fetchTests(subject.id);
-            setTests(data);
+            setTests(data.map(t => ({ ...t, id: t._id })));
         } catch (error) {
             console.error("Error fetching tests from MongoDB:", error);
             setDialog({
