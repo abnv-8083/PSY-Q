@@ -750,7 +750,7 @@ const Analytics = () => {
                                                                 <Box>
                                                                     <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.primary }}>{ub.name}</Typography>
                                                                     <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 700 }}>Authorized on {new Date(ub.created_at || Date.now()).toLocaleDateString()}</Typography>
-                                                                </Stack>
+                                                                </Box>
                                                             </Box>
                                                         ))}
                                                         {userAnalytics.bundles.length === 0 && (
