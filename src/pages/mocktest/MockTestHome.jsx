@@ -215,7 +215,7 @@ const HeroSection = ({ navigate }) => {
                                     color: COLORS.primary, borderColor: COLORS.primary, fontSize: '1.1rem', py: 1.5, px: 4, borderRadius: 2, textTransform: 'none', fontWeight: 700
                                 }}
                             >
-                                Free Trail
+                                Free Trial
                             </Button>
                         </Stack>
 

@@ -76,7 +76,7 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
     },
     {
       id: 'advanced',
-      name: 'Advanced Plan',
+      name: 'standard plan',
       sessions: 12,
       price: Math.round(basePrice * 12 * 0.80),
       pricePerSession: Math.round(basePrice * 0.80),

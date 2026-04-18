@@ -31,10 +31,10 @@ const COLORS = {
 };
 
 const perks = [
-    { icon: Target, text: 'Unlimited Practice Tests', sub: 'All subjects covered' },
-    { icon: Brain, text: 'AI-Powered Insights', sub: 'Know your weak areas instantly' },
-    { icon: Award, text: 'Rank Among Peers', sub: 'Compete on leaderboards' },
-    { icon: BookOpen, text: 'Video Explanations', sub: 'Expert-crafted walkthroughs' },
+    { icon: Target, text: 'Curated UGC NET Mock Tests', sub: '500+ topic-wise questions' },
+    { icon: Brain, text: 'Practice tests visibility (selected, completed)', sub: 'Adaptive difficulty engine' },
+    { icon: Award, text: 'Performance analytics', sub: 'Track your growth daily' },
+    { icon: BookOpen, text: 'Expert Video Solutions', sub: 'Step-by-step explanations' },
 ];
 
 /* ─── Floating Blob ─── */
@@ -312,7 +312,7 @@ const StudentSignUp = () => {
                         </Box>
                     </Typography>
                     <Typography sx={{ color: alpha('#fff', 0.6), mb: 5, lineHeight: 1.75, fontSize: '0.95rem' }}>
-                        Create your free account and unlock the complete UGC NET preparation toolkit.
+                        join with thousands of students
                     </Typography>
 
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

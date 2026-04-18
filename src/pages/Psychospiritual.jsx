@@ -36,7 +36,7 @@ const Psychospiritual = () => {
       bgColor: "linear-gradient(135deg, #e6b0f6 0%, #ca95d9ff 100%)"
     },
     {
-      name: "Advanced",
+      name: "standard",
       description: "Best for global, complex use cases",
       price: "₹8400",
       color: "#8fae8d",

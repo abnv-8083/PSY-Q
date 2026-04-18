@@ -29,8 +29,8 @@ const COLORS = {
 
 const features = [
     { icon: Target, text: 'Curated UGC NET Mock Tests', sub: '500+ topic-wise questions' },
-    { icon: Brain, text: 'Subject-wise Practice Tests', sub: 'Adaptive difficulty engine' },
-    { icon: Award, text: 'Detailed Performance Analytics', sub: 'Track your growth daily' },
+    { icon: Brain, text: 'Practice tests visibility (selected, completed)', sub: 'Adaptive difficulty engine' },
+    { icon: Award, text: 'Performance analytics', sub: 'Track your growth daily' },
     { icon: BookOpen, text: 'Expert Video Solutions', sub: 'Step-by-step explanations' },
 ];
 
@@ -152,7 +152,7 @@ const StudentSignIn = () => {
                         }}>UGC NET</Box> Exam
                     </Typography>
                     <Typography sx={{ color: alpha('#fff', 0.6), mb: 5, lineHeight: 1.75, fontSize: '0.95rem' }}>
-                        Join thousands of psychology students preparing smarter with our premium mock test platform.
+                        join with thousands of students
                     </Typography>
 
                     {/* Feature list */}
