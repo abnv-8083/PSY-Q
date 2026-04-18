@@ -27,7 +27,7 @@ const FeatureCards = () => {
       title: "Counselling",
       description: "Professional Counselling service to support your mental and emotional health",
       link: "/therapists",
-      image: "/images/counselling.webp"
+      image: "/images/counselling 2.png"
     },
     {
       title: "Webinars",
