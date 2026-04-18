@@ -45,6 +45,7 @@ import AdminSignIn from './pages/admin/AdminSignIn';
 import ProtectedRoute from './components/ProtectedRoute';
 import { SessionProvider } from './contexts/SessionContext';
 import NotFound from './pages/NotFound';
+import WhatsAppFloatingButton from './components/WhatsAppFloatingButton';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -144,6 +145,7 @@ function App() {
       <SessionProvider>
         <Router>
           <AnimatedRoutes />
+          <WhatsAppFloatingButton />
         </Router>
       </SessionProvider>
     </>
