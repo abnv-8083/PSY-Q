@@ -31,10 +31,10 @@ const COLORS = {
 };
 
 const perks = [
-    { icon: Target, text: 'Curated UGC NET Mock Tests', sub: '500+ topic-wise questions' },
+    { icon: Target, text: 'Curated UGC NET Mock Tests', sub: '5000+ topic-wise questions' },
     { icon: Brain, text: 'Practice tests visibility (selected, completed)', sub: 'Adaptive difficulty engine' },
     { icon: Award, text: 'Performance analytics', sub: 'Track your growth daily' },
-    { icon: BookOpen, text: 'Expert Video Solutions', sub: 'Step-by-step explanations' },
+    { icon: BookOpen, text: 'Expert Explanation', sub: 'Step-by-step explanations' },
 ];
 
 /* ─── Floating Blob ─── */

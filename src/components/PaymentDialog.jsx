@@ -188,7 +188,7 @@ const PaymentDialog = ({ open, onClose, testName, testPrice, onUnlock, user, tes
                                         <Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', p: 0.6, borderRadius: '50%', display: 'flex' }}>
                                             <CheckCircle2 size={16} color="#fff" />
                                         </Box>
-                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#fff', fontSize: '0.9rem' }}>Expert Solution Analysis</Typography>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#fff', fontSize: '0.9rem' }}>Expert Explanation Analysis</Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                         <Box sx={{ bgcolor: 'rgba(255,255,255,0.2)', p: 0.6, borderRadius: '50%', display: 'flex' }}>

@@ -28,16 +28,16 @@ const COLORS = {
 };
 
 const features = [
-    { icon: Target, text: 'Curated UGC NET Mock Tests', sub: '500+ topic-wise questions' },
+    { icon: Target, text: 'Curated UGC NET Mock Tests', sub: '5000+ topic-wise questions' },
     { icon: Brain, text: 'Practice tests visibility (selected, completed)', sub: 'Adaptive difficulty engine' },
     { icon: Award, text: 'Performance analytics', sub: 'Track your growth daily' },
-    { icon: BookOpen, text: 'Expert Video Solutions', sub: 'Step-by-step explanations' },
+    { icon: BookOpen, text: 'Expert Explanation', sub: 'Step-by-step explanations' },
 ];
 
 const stats = [
-    { value: '12K+', label: 'Students' },
-    { value: '98%', label: 'Satisfaction' },
-    { value: '500+', label: 'Mock Tests' },
+    { value: '12+', label: 'PYQ' },
+    { value: '97.5%', label: 'success rate' },
+    { value: '100+', label: 'Mock Tests' },
 ];
 
 /* ─── Floating Blob ─── */

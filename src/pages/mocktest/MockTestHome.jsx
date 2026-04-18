@@ -636,7 +636,7 @@ const MockTestHome = () => {
                                     <Sparkles size={14} color="white" />
                                 </Box>
                                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem', opacity: 0.9 }}>
-                                    Expert Solution in English
+                                    Expert Explanation in English
                                 </Typography>
                             </Box>
                         </Stack>
