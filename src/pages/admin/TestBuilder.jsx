@@ -310,6 +310,10 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                                                                 border: `1px solid ${test.price === 0 ? alpha(COLORS.success, 0.2) : alpha('#6366f1', 0.2)}`,
                                                                 display: 'flex', alignItems: 'center', gap: 1.5
                                                             }}>
+                                                                <Typography variant="body2" sx={{
+                                                                    fontWeight: 900,
+                                                                    color: test.is_free_trial ? COLORS.accent : (test.price === 0 ? COLORS.success : '#6366f1')
+                                                                }}>
                                                                     {test.is_free_trial ? `FREE TRIAL (Limit: ${test.free_trial_limit || 1})` : (test.price === 0 ? 'FREE' : `₹${test.price}`)}
                                                                 </Typography>
                                                             </Box>
