@@ -525,46 +525,24 @@ const MockTestHome = () => {
                 whileHover={{ y: -5 }}
                 style={{ height: '100%' }}
             >
-            <Card sx={{
+                <Card sx={{
                     height: '100%',
                     borderRadius: 6,
+                    background: `linear-gradient(135deg, ${COLORS.accent} 0%, #9d174d 100%)`,
+                    boxShadow: `0 15px 35px ${alpha(COLORS.accent, 0.2)}`,
+                    transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    display: 'flex',
+                    flexDirection: 'column',
                     position: 'relative',
                     overflow: 'hidden',
                     color: 'white',
                     border: `1px solid ${alpha('#ffffff', 0.2)}`,
-                    transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                     '&:hover': {
                         transform: 'translateY(-8px)',
                         boxShadow: `0 25px 50px ${alpha(COLORS.accent, 0.4)}`,
-                        '& .card-image-bg': { transform: 'scale(1.1)' },
                         '& .card-icon-bg': { transform: 'scale(1.2) rotate(-15deg)', opacity: 0.12 }
                     }
                 }}>
-                    {/* Background Image with Overlay */}
-                    <Box 
-                        className="card-image-bg"
-                        sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            backgroundImage: `url(/images/mocktest_card.png)`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            transition: 'transform 0.6s ease',
-                            zIndex: 0
-                        }}
-                    />
-                    <Box sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: `linear-gradient(135deg, ${alpha(COLORS.accent, 0.9)} 0%, ${alpha('#9d174d', 0.8)} 100%)`,
-                        zIndex: 1
-                    }} />
                     <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1 }}>
                         {/* Decorative Icon */}
                         <Box className="card-icon-bg" sx={{
@@ -780,43 +758,19 @@ const MockTestHome = () => {
                                                 display: 'flex',
                                                 flexDirection: 'column',
                                                 borderRadius: '48px',
+                                                background: `linear-gradient(135deg, ${COLORS.accent} 0%, #9d174d 100%)`,
+                                                boxShadow: `0 20px 50px ${alpha(COLORS.accent, 0.25)}`,
+                                                transition: 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)',
                                                 position: 'relative',
                                                 overflow: 'hidden',
                                                 border: `1px solid ${alpha('#ffffff', 0.2)}`,
-                                                transition: 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)',
                                                 '&:hover': {
                                                     transform: 'translateY(-16px)',
                                                     boxShadow: `0 35px 80px ${alpha(COLORS.accent, 0.4)}`,
                                                     '& .shimmer': { transform: 'translateX(200%)' },
-                                                    '& .card-image-bg': { transform: 'scale(1.1)' },
                                                     '& .card-icon-bg': { transform: 'scale(1.2) rotate(-10deg)', opacity: 0.1 }
                                                 }
                                             }}>
-                                                {/* Background Image with Overlay */}
-                                                <Box 
-                                                    className="card-image-bg"
-                                                    sx={{
-                                                        position: 'absolute',
-                                                        top: 0,
-                                                        left: 0,
-                                                        right: 0,
-                                                        bottom: 0,
-                                                        backgroundImage: `url(/images/mocktest_card.png)`,
-                                                        backgroundSize: 'cover',
-                                                        backgroundPosition: 'center',
-                                                        transition: 'transform 0.6s ease',
-                                                        zIndex: 0
-                                                    }}
-                                                />
-                                                <Box sx={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    right: 0,
-                                                    bottom: 0,
-                                                    background: `linear-gradient(135deg, ${alpha(COLORS.accent, 0.95)} 0%, ${alpha('#9d174d', 0.85)} 100%)`,
-                                                    zIndex: 1
-                                                }} />
                                                 {/* Decorative Icon */}
                                                 <Box className="card-icon-bg" sx={{
                                                     position: 'absolute',
