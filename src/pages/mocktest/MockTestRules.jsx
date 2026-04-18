@@ -11,10 +11,21 @@ const MockTestRules = () => {
     const navigate = useNavigate();
     const [testDetails, setTestDetails] = useState(null);
 
+    const { user, loading: sessionLoading } = useSession();
+
     useEffect(() => {
+        if (sessionLoading) return;
+
         const fetchTestDetails = async () => {
             try {
                 const test = await fetchTestById(testId);
+                
+                // Auth check for non-free tests
+                if (!user && !test.is_free_trial) {
+                    navigate('/student/signin');
+                    return;
+                }
+
                 setTestDetails({
                     name: test.name,
                     duration: test.duration,
@@ -26,7 +37,7 @@ const MockTestRules = () => {
             }
         };
         fetchTestDetails();
-    }, [testId]);
+    }, [testId, user, sessionLoading, navigate]);
 
     const handleStart = () => {
         navigate(`/academic/mocktest/${subjectId}/${testId}/exam`);

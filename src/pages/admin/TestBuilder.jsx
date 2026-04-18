@@ -23,7 +23,7 @@ const COLORS = {
 const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [tests, setTests] = useState([]);
     const [openTestDialog, setOpenTestDialog] = useState(false);
-    const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 100, year: '' });
+    const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
     const [isEditMode, setIsEditMode] = useState(false);
     const [editingTest, setEditingTest] = useState(null);
 
@@ -66,7 +66,9 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     name: newTest.name,
                     price: Number(newTest.price),
                     duration: Number(newTest.duration),
-                    year: newTest.year ? Number(newTest.year) : null
+                    year: newTest.year ? Number(newTest.year) : null,
+                    is_free_trial: newTest.is_free_trial,
+                    free_trial_limit: Number(newTest.free_trial_limit)
                 });
             } else {
                 await createTest({
@@ -75,12 +77,14 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     price: Number(newTest.price),
                     duration: Number(newTest.duration),
                     year: newTest.year ? Number(newTest.year) : null,
+                    is_free_trial: newTest.is_free_trial,
+                    free_trial_limit: Number(newTest.free_trial_limit),
                     is_published: true,
                     display_order: tests.length > 0 ? Math.max(...tests.map(t => t.display_order || 0)) + 1 : 0
                 });
             }
 
-            setNewTest({ name: '', price: 0, duration: 100, year: '' });
+            setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
             setOpenTestDialog(false);
             setIsEditMode(false);
             setEditingTest(null);
@@ -101,7 +105,9 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
             name: test.name,
             price: test.price,
             duration: test.duration,
-            year: test.year || ''
+            year: test.year || '',
+            is_free_trial: test.is_free_trial || false,
+            free_trial_limit: test.free_trial_limit || 1
         });
         setEditingTest(test);
         setIsEditMode(true);
@@ -206,7 +212,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     variant="contained"
                     startIcon={<Plus size={18} />}
                     onClick={() => {
-                        setNewTest({ name: '', price: 0, duration: 100, year: '' });
+                        setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
                         setIsEditMode(false);
                         setEditingTest(null);
                         setOpenTestDialog(true);
@@ -304,11 +310,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                                                                 border: `1px solid ${test.price === 0 ? alpha(COLORS.success, 0.2) : alpha('#6366f1', 0.2)}`,
                                                                 display: 'flex', alignItems: 'center', gap: 1.5
                                                             }}>
-                                                                <Typography variant="body2" sx={{
-                                                                    fontWeight: 900,
-                                                                    color: test.price === 0 ? COLORS.success : '#6366f1'
-                                                                }}>
-                                                                    {test.price === 0 ? 'FREE TRIAL' : `₹${test.price}`}
+                                                                    {test.is_free_trial ? `FREE TRIAL (Limit: ${test.free_trial_limit || 1})` : (test.price === 0 ? 'FREE' : `₹${test.price}`)}
                                                                 </Typography>
                                                             </Box>
                                                             {test.year && (
@@ -359,7 +361,10 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     <Button
                         variant="contained"
                         startIcon={<Plus />}
-                        onClick={() => setOpenTestDialog(true)}
+                        onClick={() => {
+                             setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
+                             setOpenTestDialog(true);
+                         }}
                         sx={{ bgcolor: COLORS.accent, borderRadius: 4, px: 4, py: 1.5, fontWeight: 900 }}
                     >
                         Create Your First Test
@@ -373,7 +378,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     setOpenTestDialog(false);
                     setIsEditMode(false);
                     setEditingTest(null);
-                    setNewTest({ name: '', price: 0, duration: 100, year: '' });
+                    setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
                 }}
                 fullWidth maxWidth="xs"
                 PaperProps={{ sx: { borderRadius: 6, p: 2 } }}
@@ -406,14 +411,38 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
                                 />
                             </Grid>
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth label="Price (₹)" type="number"
-                                    value={newTest.price} onChange={(e) => setNewTest({ ...newTest, price: e.target.value })}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
-                                />
-                            </Grid>
-                        </Grid>
+                             <Grid item xs={12} md={6}>
+                                 <TextField
+                                     fullWidth label="Price (₹)" type="number"
+                                     value={newTest.price} onChange={(e) => setNewTest({ ...newTest, price: e.target.value })}
+                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
+                                 />
+                             </Grid>
+                             <Grid item xs={12} md={8}>
+                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, bgcolor: alpha(COLORS.accent, 0.04), p: 2, borderRadius: 4, border: `1px solid ${alpha(COLORS.accent, 0.1)}` }}>
+                                     <Box sx={{ flex: 1 }}>
+                                         <Typography variant="subtitle2" sx={{ fontWeight: 800, color: COLORS.primary }}>Is Free Trial?</Typography>
+                                         <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700 }}>Allow guests to take this test</Typography>
+                                     </Box>
+                                     <input 
+                                         type="checkbox" 
+                                         checked={newTest.is_free_trial} 
+                                         onChange={(e) => setNewTest({ ...newTest, is_free_trial: e.target.checked })}
+                                         style={{ width: 22, height: 22, cursor: 'pointer', accentColor: COLORS.accent }}
+                                     />
+                                 </Box>
+                             </Grid>
+                             {newTest.is_free_trial && (
+                                 <Grid item xs={12} md={4}>
+                                     <TextField
+                                         fullWidth label="Attempt Limit" type="number"
+                                         value={newTest.free_trial_limit} onChange={(e) => setNewTest({ ...newTest, free_trial_limit: e.target.value })}
+                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
+                                         helperText="Limits per browser"
+                                     />
+                                 </Grid>
+                             )}
+                         </Grid>
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 4, pt: 2 }}>
@@ -421,7 +450,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                         setOpenTestDialog(false);
                         setIsEditMode(false);
                         setEditingTest(null);
-                        setNewTest({ name: '', price: 0, duration: 100, year: '' });
+                        setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
                     }} sx={{ fontWeight: 800, color: COLORS.textLight }}>Cancel</Button>
                     <Button
                         variant="contained"

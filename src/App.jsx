@@ -73,31 +73,15 @@ function AnimatedRoutes() {
         <Route path="/academic/mocktest" element={<MockTestHome />} />
         <Route path="/academic/mocktest/bundles" element={<MockTestBundles />} />
         <Route path="/academic/mocktest/dashboard" element={<MockTestDashboard />} />
-        <Route path="/academic/mocktest/tests" element={
-          <ProtectedRoute>
-            <MockTestInterface />
-          </ProtectedRoute>
-        } />
-        <Route path="/academic/mocktest/:subjectId/:testId/exam" element={
-          <ProtectedRoute>
-            <MockTestInterface />
-          </ProtectedRoute>
-        } />
-        <Route path="/academic/mocktest/:subjectId/:testId/rules" element={
-          <ProtectedRoute>
-            <MockTestRules />
-          </ProtectedRoute>
-        } />
+        <Route path="/academic/mocktest/tests" element={<MockTestInterface />} />
+        <Route path="/academic/mocktest/:subjectId/:testId/exam" element={<MockTestInterface />} />
+        <Route path="/academic/mocktest/:subjectId/:testId/rules" element={<MockTestRules />} />
         <Route path="/academic/mocktest/checkout" element={
           <ProtectedRoute>
             <GuestCheckout />
           </ProtectedRoute>
         } />
-        <Route path="/academic/mocktest/:subjectId/:testId/results" element={
-          <ProtectedRoute>
-            <ResultAnalytics />
-          </ProtectedRoute>
-        } />
+        <Route path="/academic/mocktest/:subjectId/:testId/results" element={<ResultAnalytics />} />
 
         {/* Student Section */}
         <Route path="/student/signin" element={<StudentSignIn />} />

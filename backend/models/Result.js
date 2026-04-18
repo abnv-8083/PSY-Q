@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 
 const resultSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student' },
+  guest_name: { type: String },
+  is_guest: { type: Boolean, default: false },
   test_id: { type: String, required: true }, // Links to a Test
   score: { type: Number, required: true, default: 0 },
   total_marks: { type: Number, required: true, default: 0 },

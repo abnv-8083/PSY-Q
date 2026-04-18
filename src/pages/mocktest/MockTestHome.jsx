@@ -646,7 +646,14 @@ const MockTestHome = () => {
                         <Button
                             fullWidth
                             variant="contained"
-                            onClick={() => navigate('/academic/mocktest/dashboard')}
+                            onClick={() => {
+                                if (test.is_free_trial) {
+                                    // Navigate directly to rules for free trial
+                                    navigate(`/academic/mocktest/psychology/${test._id || test.id}/rules`);
+                                } else {
+                                    navigate('/academic/mocktest/dashboard');
+                                }
+                            }}
                             endIcon={<ArrowRight size={18} />}
                             sx={{
                                 bgcolor: 'white',
@@ -665,7 +672,7 @@ const MockTestHome = () => {
                                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
                         >
-                            {isFree ? 'Try for Free' : 'Unlock Access Now'}
+                            {test.is_free_trial ? 'Try Free Trial' : (isFree ? 'Try for Free' : 'Unlock Access Now')}
                         </Button>
                     </Box>
                 </Card>

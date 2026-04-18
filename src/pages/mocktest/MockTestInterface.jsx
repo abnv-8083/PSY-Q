@@ -61,10 +61,12 @@ const MockTestInterface = () => {
     const [flags, setFlags] = useState({});
     const [visited, setVisited] = useState({ 0: true });
     const [timeLeft, setTimeLeft] = useState(6000); // Default 100 mins
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [studentName, setStudentName] = useState('Student');
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [test, setTest] = useState(null);
+    const [isGuest, setIsGuest] = useState(false);
+    const [guestNameInput, setGuestNameInput] = useState('');
+    const [showGuestModal, setShowGuestModal] = useState(false);
 
     // Modern Dialog State
     const [dialog, setDialog] = useState({
@@ -78,18 +80,39 @@ const MockTestInterface = () => {
     const { user, loading: sessionLoading } = useSession();
 
     useEffect(() => {
-        if (!sessionLoading && !user) {
-            navigate('/student/signin');
-            return;
-        }
+        if (sessionLoading) return;
 
         const fetchTestData = async () => {
-            if (!user) return;
             try {
                 const testData = await fetchTestById(testId);
-                if (testData) {
-                    setTestName(testData.name);
-                    if (testData.duration) setTimeLeft(testData.duration * 60);
+                if (!testData) throw new Error("Test not found");
+                
+                setTest(testData);
+                setTestName(testData.name);
+                if (testData.duration) setTimeLeft(testData.duration * 60);
+
+                // Trial Limit Check for Guests
+                if (!user) {
+                    if (!testData.is_free_trial) {
+                        navigate('/student/signin');
+                        return;
+                    }
+
+                    const attempts = parseInt(localStorage.getItem(`psyq_trial_${testId}`) || '0');
+                    if (attempts >= (testData.free_trial_limit || 1)) {
+                        setDialog({
+                            open: true,
+                            title: 'Trial Limit Reached',
+                            message: `You have already used your ${testData.free_trial_limit || 1} free attempt(s) for this test. Please sign in to access more tests and advanced analytics.`,
+                            type: 'info',
+                            onConfirm: () => navigate('/student/signin')
+                        });
+                        return;
+                    }
+                    setIsGuest(true);
+                    setStudentName('Guest Student');
+                } else {
+                    setStudentName(user.full_name || 'Student');
                 }
 
                 const qData = await fetchTestQuestions(testId);
@@ -114,7 +137,6 @@ const MockTestInterface = () => {
                 });
                 
                 setQuestions(formattedQuestions);
-                setStudentName(user.full_name || 'Student');
 
             } catch (err) {
                 console.error("Error fetching exam data:", err);
@@ -124,7 +146,7 @@ const MockTestInterface = () => {
             }
         };
         fetchTestData();
-    }, [testId, user, sessionLoading]);
+    }, [testId, user, sessionLoading, navigate]);
 
 
     useEffect(() => {
@@ -207,43 +229,58 @@ const MockTestInterface = () => {
             type: 'confirm',
             onConfirm: async () => {
                 setDialog(prev => ({ ...prev, open: false }));
-                
-                const score = questions.reduce((acc, q, idx) => {
-                    return answers[idx] === q.correctKey ? acc + 1 : acc;
-                }, 0);
-
-                try {
-                    // Format results for MongoDB model
-                    const formattedAnswers = questions.map((q, idx) => ({
-                        question_id: q._id || q.id,
-                        selected_option: answers[idx] !== undefined ? `opt_${answers[idx]}` : null,
-                        is_correct: answers[idx] === q.correctKey
-                    }));
-
-                    await submitResult({
-                        user_id: user?._id || user?.id,
-                        test_id: testId,
-                        score,
-                        total_marks: questions.length, // Matching model 'total_marks'
-                        answers: formattedAnswers,
-                        time_spent: (questions[0] ? (questions[0].duration || 100) * 60 : 6000) - timeLeft,
-                        status: 'completed'
-                    });
-
-                    navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
-                        state: { score, total: questions.length, answers, questions }
-                    });
-                } catch (err) {
-                    console.error("Submission failed:", err);
-                    setDialog({
-                        open: true,
-                        title: 'Submission Failed',
-                        message: `Failed to save your result.\n\nReason: ${err.message || 'Unknown error'}\n\nPlease try clicking Submit again.`,
-                        type: 'error'
-                    });
+                if (!user) {
+                    setShowGuestModal(true);
+                } else {
+                    handleFinalSubmit();
                 }
             }
         });
+    };
+
+    const handleFinalSubmit = async (gName = null) => {
+        const score = questions.reduce((acc, q, idx) => {
+            return answers[idx] === q.correctKey ? acc + 1 : acc;
+        }, 0);
+
+        try {
+            // Format results for MongoDB model
+            const formattedAnswers = questions.map((q, idx) => ({
+                question_id: q._id || q.id,
+                selected_option: answers[idx] !== undefined ? `opt_${answers[idx]}` : null,
+                is_correct: answers[idx] === q.correctKey
+            }));
+
+            await submitResult({
+                user_id: user?._id || user?.id || null,
+                guest_name: gName || guestNameInput,
+                is_guest: !user,
+                test_id: testId,
+                score,
+                total_marks: questions.length,
+                answers: formattedAnswers,
+                time_spent: (test?.duration || 100) * 60 - timeLeft,
+                status: 'completed'
+            });
+
+            // If guest, increment internal attempt counter
+            if (!user) {
+                const currentAttempts = parseInt(localStorage.getItem(`psyq_trial_${testId}`) || '0');
+                localStorage.setItem(`psyq_trial_${testId}`, (currentAttempts + 1).toString());
+            }
+
+            navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
+                state: { score, total: questions.length, answers, questions, guestName: gName || guestNameInput }
+            });
+        } catch (err) {
+            console.error("Submission failed:", err);
+            setDialog({
+                open: true,
+                title: 'Submission Failed',
+                message: `Failed to save your result. Reason: ${err.message || 'Unknown error'}`,
+                type: 'error'
+            });
+        }
     };
 
     const isLastQuestion = currentIdx === questions.length - 1;
@@ -594,6 +631,62 @@ const MockTestInterface = () => {
                 message={dialog.message}
                 type={dialog.type}
             />
+
+            {/* Guest Identity Modal */}
+            <Dialog 
+                open={showGuestModal} 
+                PaperProps={{ sx: { borderRadius: 6, p: 2, border: `2px solid ${alpha(COLORS.accent, 0.2)}` } }}
+                maxWidth="xs" fullWidth
+            >
+                <DialogTitle sx={{ fontWeight: 900, textAlign: 'center', pb: 0 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                        <Avatar sx={{ bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent, width: 56, height: 56 }}>
+                            <User size={32} />
+                        </Avatar>
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary }}>Great Effort!</Typography>
+                    </Box>
+                </DialogTitle>
+                <DialogContent sx={{ pt: 2, textAlign: 'center' }}>
+                    <Typography variant="body1" sx={{ color: COLORS.textLight, mb: 3, fontWeight: 600 }}>
+                        Please enter your name to view your personalized performance analytics and score.
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        placeholder="Your Full Name"
+                        value={guestNameInput}
+                        onChange={(e) => setGuestNameInput(e.target.value)}
+                        autoFocus
+                        variant="outlined"
+                        sx={{ 
+                            '& .MuiOutlinedInput-root': { borderRadius: 4, height: 56 },
+                            '& .MuiOutlinedInput-input': { fontWeight: 800, fontSize: '1.1rem' }
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'center' }}>
+                    <Button 
+                        fullWidth
+                        onClick={() => {
+                            if (guestNameInput.trim()) {
+                                handleFinalSubmit(guestNameInput.trim());
+                                setShowGuestModal(false);
+                            }
+                        }}
+                        variant="contained"
+                        disabled={!guestNameInput.trim()}
+                        sx={{ 
+                            bgcolor: COLORS.accent, 
+                            borderRadius: 4, 
+                            py: 1.5, 
+                            fontWeight: 900,
+                            boxShadow: `0 8px 20px ${alpha(COLORS.accent, 0.3)}`,
+                            '&:hover': { bgcolor: COLORS.accentHover }
+                        }}
+                    >
+                        View My Result
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
