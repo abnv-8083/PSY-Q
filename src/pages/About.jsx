@@ -283,7 +283,7 @@ const About = () => {
                 }}>
                   <Box 
                     component="img"
-                    src="/images/founders/sinan.jpeg"
+                    src="/images/founders/sinan.png"
                     alt="Mohammed Sinan E"
                     sx={{ 
                       width: '100%',
@@ -355,7 +355,7 @@ const About = () => {
                 }}>
                   <Box 
                     component="img"
-                    src="/images/founders/salih.jpeg"
+                    src="/images/founders/salih.png"
                     alt="Muhammed Salih KC"
                     sx={{ 
                       width: '100%',
