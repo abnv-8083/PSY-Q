@@ -402,6 +402,19 @@ app.put('/api/tests/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/tests/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Cascade-delete all questions belonging to this test
+    await Question.deleteMany({ test_id: id });
+    await Test.findByIdAndDelete(id);
+    res.json({ success: true, message: 'Test and its questions deleted successfully' });
+  } catch (error) {
+    console.error('Delete Test Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Bundle Routes
 app.get('/api/bundles', bundleController.getBundles);
 app.get('/api/bundles/:id', bundleController.getBundleById);
