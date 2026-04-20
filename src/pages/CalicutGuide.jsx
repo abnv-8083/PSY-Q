@@ -164,30 +164,8 @@ const CalicutGuide = () => {
             >
               Open Student Portal
             </Button>
-            <Button
-              component="a"
-              href={PORTAL_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              variant="outlined"
-              sx={{
-                color: '#fff',
-                borderColor: 'rgba(255,255,255,0.4)',
-                fontWeight: 700,
-                fontSize: '0.9rem',
-                px: 3, py: 1.5,
-                borderRadius: 3,
-                textTransform: 'none',
-                '&:hover': {
-                  borderColor: '#fff',
-                  bgcolor: 'rgba(255,255,255,0.08)',
-                },
-                transition: 'all 0.2s',
-              }}
-            >
-              Start Free Trial
-            </Button>
           </Box>
+
         </Container>
       </Box>
 
