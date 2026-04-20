@@ -18,6 +18,7 @@ import Psychospiritual from './pages/Psychospiritual';
 import ChildRehabilitation from './pages/ChildRehabilitation';
 import SportsMentalHealth from './pages/SportsMentalHealth';
 import Academic from './pages/academic';
+import CalicutGuide from './pages/CalicutGuide';
 import Policies from './pages/Policies';
 
 // Mock Test Pages
@@ -67,6 +68,7 @@ function AnimatedRoutes() {
         <Route path="/child-rehabilitation" element={<Layout><ChildRehabilitation /></Layout>} />
         <Route path="/sports-mental-health" element={<Layout><SportsMentalHealth /></Layout>} />
         <Route path="/academic-support" element={<Layout><Academic /></Layout>} />
+        <Route path="/calicut-guide" element={<Layout><CalicutGuide /></Layout>} />
         <Route path="/policies" element={<Layout><Policies /></Layout>} />
 
         {/* Mock Test Section */}
