@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, Avatar, alpha } from '@mui/material';
+import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, alpha, Switch, Tooltip, LinearProgress } from '@mui/material';
 import { fetchTests, createTest, updateTest, deleteTest } from '../../api/testsApi';
 import ModernDialog from '../../components/ModernDialog';
-import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle } from 'lucide-react';
+import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle, BookOpen, Gift, DollarSign, Zap, CircleCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
@@ -17,8 +17,45 @@ const COLORS = {
     cardBg: '#FFFFFF',
     textLight: '#64748b',
     border: '#e2e8f0',
-    success: '#10b981'
+    success: '#10b981',
+    info: '#0284c7',
+    warning: '#d97706',
+    indigo: '#6366f1',
 };
+
+// Stat Card for the summary bar
+const StatCard = ({ icon: Icon, label, value, color, bg }) => (
+    <Box sx={{
+        flex: 1,
+        minWidth: 120,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2.5,
+        px: 3,
+        py: 2.5,
+        borderRadius: 4,
+        background: bg || 'rgba(255,255,255,0.7)',
+        backdropFilter: 'blur(12px)',
+        border: `1px solid ${alpha(color, 0.15)}`,
+        boxShadow: `0 2px 12px ${alpha(color, 0.08)}`,
+    }}>
+        <Box sx={{
+            p: 1.5,
+            borderRadius: 3,
+            bgcolor: alpha(color, 0.12),
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color,
+        }}>
+            <Icon size={20} />
+        </Box>
+        <Box>
+            <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, lineHeight: 1 }}>{value}</Typography>
+            <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{label}</Typography>
+        </Box>
+    </Box>
+);
 
 const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [tests, setTests] = useState([]);
@@ -145,12 +182,9 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         const [reorderedItem] = items.splice(result.source.index, 1);
         items.splice(result.destination.index, 0, reorderedItem);
 
-        // Update local state immediately for UX
         setTests(items);
 
         try {
-            // Update individual display orders as separate batch calls for simplicity
-            // or update backend to handle batch sort
             const updates = items.map((test, index) => updateTest(test.id, { display_order: index }));
             await Promise.all(updates);
         } catch (error) {
@@ -158,6 +192,18 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
             getTests();
         }
     };
+
+    const closeDialog = () => {
+        setOpenTestDialog(false);
+        setIsEditMode(false);
+        setEditingTest(null);
+        setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
+    };
+
+    // Computed stats
+    const totalQuestions = tests.reduce((acc, t) => acc + (t.total_questions || t.questions?.[0]?.count || 0), 0);
+    const freeTests = tests.filter(t => t.price === 0 || t.is_free_trial).length;
+    const paidTests = tests.filter(t => t.price > 0 && !t.is_free_trial).length;
 
     if (!subject) {
         return (
@@ -181,33 +227,66 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     }
 
     return (
-        <Box sx={{ p: { xs: 3, md: 6 } }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6 }}>
+        <Box sx={{ p: { xs: 3, md: 5 }, minHeight: '100vh', background: `linear-gradient(160deg, #fdf2f8 0%, #f8fafc 100%)` }}>
+
+            {/* ── Header ────────────────────────────────────────────────── */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4, flexWrap: 'wrap', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
                     {onBack && (
-                        <IconButton
-                            onClick={onBack}
-                            sx={{
-                                bgcolor: 'rgba(0,0,0,0.04)',
-                                '&:hover': { bgcolor: 'rgba(0,0,0,0.08)', transform: 'translateX(-2px)' },
-                                transition: 'all 0.2s'
-                            }}
-                        >
-                            <ChevronLeft />
-                        </IconButton>
+                        <Tooltip title="Go Back">
+                            <IconButton
+                                onClick={onBack}
+                                sx={{
+                                    bgcolor: 'white',
+                                    border: `1px solid ${COLORS.border}`,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                                    '&:hover': { bgcolor: COLORS.primary, color: 'white', borderColor: COLORS.primary, transform: 'translateX(-2px)' },
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <ChevronLeft size={20} />
+                            </IconButton>
+                        </Tooltip>
                     )}
                     <Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-                            <Avatar sx={{ bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent }}>
-                                <Layers size={20} />
-                            </Avatar>
-                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -1 }}>Mock Tests</Typography>
+                        {/* Breadcrumb */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                            <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+                                Content Management
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: COLORS.border }}>›</Typography>
+                            <Typography variant="caption" sx={{ color: COLORS.accent, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
+                                Mock Tests
+                            </Typography>
                         </Box>
-                        <Typography variant="body1" sx={{ color: COLORS.textLight, fontWeight: 600 }}>
-                            Manage tests for <Chip label={subject.name} size="small" sx={{ fontWeight: 800, bgcolor: COLORS.primary, color: 'white', ml: 1 }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -0.5, lineHeight: 1 }}>
+                                Mock Tests
+                            </Typography>
+                            <Chip
+                                label={`${tests.length} Tests`}
+                                size="small"
+                                sx={{
+                                    fontWeight: 800,
+                                    fontSize: '0.75rem',
+                                    bgcolor: alpha(COLORS.accent, 0.1),
+                                    color: COLORS.accent,
+                                    border: `1px solid ${alpha(COLORS.accent, 0.2)}`,
+                                    height: 24,
+                                }}
+                            />
+                        </Box>
+                        <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600, mt: 0.5 }}>
+                            Managing tests for{' '}
+                            <Chip
+                                label={subject.name}
+                                size="small"
+                                sx={{ fontWeight: 800, bgcolor: COLORS.primary, color: 'white', height: 20, fontSize: '0.7rem', ml: 0.5 }}
+                            />
                         </Typography>
                     </Box>
                 </Box>
+
                 <Button
                     variant="contained"
                     startIcon={<Plus size={18} />}
@@ -218,17 +297,37 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                         setOpenTestDialog(true);
                     }}
                     sx={{
-                        bgcolor: COLORS.accent, borderRadius: 4, px: 3, py: 1.5,
-                        fontWeight: 900, textTransform: 'none',
-                        boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.3)}`,
-                        '&:hover': { bgcolor: COLORS.accentHover, boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.4)}`, transform: 'translateY(-2px)' },
-                        transition: 'all 0.3s'
+                        bgcolor: COLORS.accent,
+                        borderRadius: 3,
+                        px: 3.5,
+                        py: 1.5,
+                        fontWeight: 900,
+                        textTransform: 'none',
+                        fontSize: '0.95rem',
+                        boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.35)}`,
+                        '&:hover': {
+                            bgcolor: COLORS.accentHover,
+                            boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.45)}`,
+                            transform: 'translateY(-2px)',
+                        },
+                        transition: 'all 0.25s',
                     }}
                 >
                     Add New Test
                 </Button>
             </Box>
 
+            {/* ── Stats Bar ─────────────────────────────────────────────── */}
+            {tests.length > 0 && (
+                <Box sx={{ display: 'flex', gap: 2, mb: 5, flexWrap: 'wrap' }}>
+                    <StatCard icon={Layers} label="Total Tests" value={tests.length} color={COLORS.accent} />
+                    <StatCard icon={HelpCircle} label="Total Questions" value={totalQuestions} color={COLORS.info} />
+                    <StatCard icon={Gift} label="Free Tests" value={freeTests} color={COLORS.success} />
+                    <StatCard icon={DollarSign} label="Paid Tests" value={paidTests} color={COLORS.indigo} />
+                </Box>
+            )}
+
+            {/* ── Test Cards Grid ────────────────────────────────────────── */}
             <DragDropContext onDragEnd={handleDragEnd}>
                 <StrictModeDroppable droppableId="tests-list">
                     {(provided) => (
@@ -238,232 +337,535 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                             sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 3 }}
                         >
                             <AnimatePresence>
-                                {tests.map((test, index) => (
-                                    <Draggable key={test.id} draggableId={test.id.toString()} index={index}>
-                                        {(provided, snapshot) => (
-                                            <Box
-                                                ref={provided.innerRef}
-                                                {...provided.draggableProps}
-                                                sx={{ width: { xs: '100%', md: 'calc(50% - 12px)' } }}
-                                            >
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 20 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: index * 0.05 }}
+                                {tests.map((test, index) => {
+                                    const qCount = test.total_questions || test.questions?.[0]?.count || 0;
+                                    const isFree = test.price === 0 && !test.is_free_trial;
+                                    const isPaid = test.price > 0 && !test.is_free_trial;
+                                    const isFreeTrial = test.is_free_trial;
+
+                                    // Pricing badge config
+                                    const pricingConfig = isFreeTrial
+                                        ? { label: `Free Trial · ${test.free_trial_limit || 1} attempt${test.free_trial_limit > 1 ? 's' : ''}`, color: COLORS.accent, bg: alpha(COLORS.accent, 0.08), icon: Gift }
+                                        : isFree
+                                        ? { label: 'FREE', color: COLORS.success, bg: alpha(COLORS.success, 0.08), icon: CircleCheck }
+                                        : { label: `₹${test.price}`, color: COLORS.indigo, bg: alpha(COLORS.indigo, 0.08), icon: DollarSign };
+
+                                    const PricingIcon = pricingConfig.icon;
+
+                                    return (
+                                        <Draggable key={test.id} draggableId={test.id.toString()} index={index}>
+                                            {(provided, snapshot) => (
+                                                <Box
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    sx={{ width: { xs: '100%', md: 'calc(50% - 12px)' } }}
                                                 >
-                                                    <Paper sx={{
-                                                        p: 4, borderRadius: 6, position: 'relative',
-                                                        transition: 'all 0.3s',
-                                                        border: snapshot.isDragging ? `2px solid ${COLORS.accent}` : `1px solid ${COLORS.border}`,
-                                                        bgcolor: snapshot.isDragging ? alpha(COLORS.accent, 0.02) : '#fff',
-                                                        boxShadow: snapshot.isDragging ? `0 20px 48px ${alpha(COLORS.accent, 0.2)}` : 'none',
-                                                        '&:hover': { transform: 'translateY(-6px)', boxShadow: '0 16px 40px rgba(0,0,0,0.06)', borderColor: COLORS.accent }
-                                                    }}>
-                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
-                                                                <Box
-                                                                    {...provided.dragHandleProps}
-                                                                    sx={{ cursor: 'grab', color: COLORS.textLight, '&:hover': { color: COLORS.primary } }}
-                                                                >
-                                                                    <GripVertical size={24} />
-                                                                </Box>
-                                                                <Box sx={{ p: 2, borderRadius: 4, bgcolor: alpha(COLORS.accent, 0.08), color: COLORS.accent }}>
-                                                                    <Target size={28} />
-                                                                </Box>
-                                                                <Box>
-                                                                    <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.primary, lineHeight: 1.2 }}>{test.name}</Typography>
-                                                                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>Added: {new Date(test.created_at).toLocaleDateString()}</Typography>
-                                                                </Box>
-                                                            </Box>
-                                                            <Box sx={{ display: 'flex', gap: 1 }}>
-                                                                <IconButton
-                                                                    size="small"
-                                                                    onClick={() => handleEditClick(test)}
-                                                                    sx={{ bgcolor: alpha('#6366f1', 0.1), color: '#6366f1', '&:hover': { bgcolor: alpha('#6366f1', 0.2) } }}
-                                                                >
-                                                                    <Pencil size={18} />
-                                                                </IconButton>
-                                                                <IconButton
-                                                                    size="small"
-                                                                    onClick={() => handleDeleteTest(test.id)}
-                                                                    sx={{ bgcolor: alpha('#ef4444', 0.1), color: '#ef4444', '&:hover': { bgcolor: alpha('#ef4444', 0.2) } }}
-                                                                >
-                                                                    <Trash2 size={18} />
-                                                                </IconButton>
-                                                            </Box>
-                                                        </Box>
-
-                                                        <Box sx={{ display: 'flex', gap: 1.5, mb: 4 }}>
-                                                            <Box sx={{ px: 2, py: 1, borderRadius: 3, bgcolor: '#f8fafc', border: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                                <Clock size={16} color={COLORS.textLight} />
-                                                                <Typography variant="body2" sx={{ fontWeight: 900, color: COLORS.primary }}>{test.duration} mins</Typography>
-                                                            </Box>
-                                                            <Box sx={{ px: 2, py: 1, borderRadius: 3, bgcolor: '#f0f9ff', border: '1px solid #bae6fd', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                                <HelpCircle size={16} color="#0284c7" />
-                                                                <Typography variant="body2" sx={{ fontWeight: 900, color: '#0369a1' }}>
-                                                                    {test.total_questions || test.questions?.[0]?.count || 0} Questions
-                                                                </Typography>
-                                                            </Box>
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 20 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: -10 }}
+                                                        transition={{ delay: index * 0.05, duration: 0.3 }}
+                                                    >
+                                                        <Paper elevation={0} sx={{
+                                                            borderRadius: 5,
+                                                            position: 'relative',
+                                                            overflow: 'hidden',
+                                                            transition: 'all 0.3s cubic-bezier(0.4,0,0.2,1)',
+                                                            border: snapshot.isDragging
+                                                                ? `2px solid ${COLORS.accent}`
+                                                                : `1px solid ${COLORS.border}`,
+                                                            bgcolor: snapshot.isDragging ? alpha(COLORS.accent, 0.02) : '#fff',
+                                                            boxShadow: snapshot.isDragging
+                                                                ? `0 24px 56px ${alpha(COLORS.accent, 0.22)}`
+                                                                : '0 2px 8px rgba(0,0,0,0.04)',
+                                                            '&:hover': {
+                                                                transform: 'translateY(-5px)',
+                                                                boxShadow: `0 20px 48px rgba(0,0,0,0.1)`,
+                                                                borderColor: alpha(COLORS.accent, 0.4),
+                                                            },
+                                                        }}>
+                                                            {/* Accent strip at top */}
                                                             <Box sx={{
-                                                                px: 2, py: 1, borderRadius: 3,
-                                                                bgcolor: test.price === 0 ? alpha(COLORS.success, 0.08) : alpha('#6366f1', 0.08),
-                                                                border: `1px solid ${test.price === 0 ? alpha(COLORS.success, 0.2) : alpha('#6366f1', 0.2)}`,
-                                                                display: 'flex', alignItems: 'center', gap: 1.5
-                                                            }}>
-                                                                <Typography variant="body2" sx={{
-                                                                    fontWeight: 900,
-                                                                    color: test.is_free_trial ? COLORS.accent : (test.price === 0 ? COLORS.success : '#6366f1')
-                                                                }}>
-                                                                    {test.is_free_trial ? `FREE TRIAL (Limit: ${test.free_trial_limit || 1})` : (test.price === 0 ? 'FREE' : `₹${test.price}`)}
-                                                                </Typography>
-                                                            </Box>
-                                                            {test.year && (
-                                                                <Box sx={{ px: 2, py: 1, borderRadius: 3, bgcolor: '#fffbed', border: '1px solid #fef3c7', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                                                    <Calendar size={16} color="#d97706" />
-                                                                    <Typography variant="body2" sx={{ fontWeight: 900, color: '#92400e' }}>{test.year}</Typography>
-                                                                </Box>
-                                                            )}
-                                                        </Box>
+                                                                height: 4,
+                                                                background: `linear-gradient(90deg, ${COLORS.accent} 0%, #ec4899 100%)`,
+                                                                opacity: snapshot.isDragging ? 1 : 0.7,
+                                                                transition: 'opacity 0.3s',
+                                                                '&:hover': { opacity: 1 }
+                                                            }} />
 
-                                                        <Button
-                                                            fullWidth
-                                                            variant="contained"
-                                                            onClick={() => onManageQuestions(test)}
-                                                            sx={{
-                                                                borderRadius: 4, py: 2,
-                                                                bgcolor: COLORS.primary, color: '#fff',
-                                                                fontWeight: 900, textTransform: 'none', fontSize: '1rem',
-                                                                boxShadow: `0 8px 20px ${alpha(COLORS.primary, 0.2)}`,
-                                                                '&:hover': { bgcolor: '#000', transform: 'translateY(-2px)', boxShadow: `0 12px 28px ${alpha(COLORS.primary, 0.3)}` },
-                                                                transition: 'all 0.3s'
-                                                            }}
-                                                        >
-                                                            Manage Question Bank
-                                                        </Button>
-                                                    </Paper>
-                                                </motion.div>
-                                            </Box>
-                                        )}
-                                    </Draggable>
-                                ))}
-                                {provided.placeholder}
+                                                            <Box sx={{ p: 3.5 }}>
+                                                                {/* Row 1: Drag + Icon + Title + Actions */}
+                                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2.5 }}>
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                                        {/* Index number + drag handle */}
+                                                                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                                                                            <Typography sx={{
+                                                                                fontWeight: 900,
+                                                                                fontSize: '1rem',
+                                                                                color: alpha(COLORS.accent, 0.35),
+                                                                                lineHeight: 1,
+                                                                                userSelect: 'none',
+                                                                            }}>
+                                                                                #{String(index + 1).padStart(2, '0')}
+                                                                            </Typography>
+                                                                            <Box
+                                                                                {...provided.dragHandleProps}
+                                                                                sx={{
+                                                                                    cursor: 'grab',
+                                                                                    color: COLORS.border,
+                                                                                    '&:hover': { color: COLORS.textLight },
+                                                                                    transition: 'color 0.2s',
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                }}
+                                                                            >
+                                                                                <GripVertical size={16} />
+                                                                            </Box>
+                                                                        </Box>
+
+                                                                        {/* Icon bubble */}
+                                                                        <Box sx={{
+                                                                            p: 1.5,
+                                                                            borderRadius: 3.5,
+                                                                            background: `linear-gradient(135deg, ${alpha(COLORS.accent, 0.15)} 0%, ${alpha('#ec4899', 0.08)} 100%)`,
+                                                                            color: COLORS.accent,
+                                                                            flexShrink: 0,
+                                                                        }}>
+                                                                            <Target size={24} />
+                                                                        </Box>
+
+                                                                        {/* Title area */}
+                                                                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                                                                            <Typography
+                                                                                variant="h6"
+                                                                                sx={{
+                                                                                    fontWeight: 900,
+                                                                                    color: COLORS.primary,
+                                                                                    lineHeight: 1.25,
+                                                                                    fontSize: '1rem',
+                                                                                    display: '-webkit-box',
+                                                                                    WebkitLineClamp: 2,
+                                                                                    WebkitBoxOrient: 'vertical',
+                                                                                    overflow: 'hidden',
+                                                                                }}
+                                                                            >
+                                                                                {test.name}
+                                                                            </Typography>
+                                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mt: 0.5 }}>
+                                                                                <Calendar size={11} color={COLORS.textLight} />
+                                                                                <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, fontSize: '0.7rem' }}>
+                                                                                    Added {new Date(test.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                                                </Typography>
+                                                                                {test.year && (
+                                                                                    <Chip
+                                                                                        label={test.year}
+                                                                                        size="small"
+                                                                                        sx={{
+                                                                                            height: 16,
+                                                                                            fontSize: '0.65rem',
+                                                                                            fontWeight: 800,
+                                                                                            bgcolor: '#fffbeb',
+                                                                                            color: '#92400e',
+                                                                                            border: '1px solid #fde68a',
+                                                                                            ml: 0.5,
+                                                                                        }}
+                                                                                    />
+                                                                                )}
+                                                                            </Box>
+                                                                        </Box>
+                                                                    </Box>
+
+                                                                    {/* Action buttons */}
+                                                                    <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, ml: 1 }}>
+                                                                        <Tooltip title="Edit Test">
+                                                                            <IconButton
+                                                                                size="small"
+                                                                                onClick={() => handleEditClick(test)}
+                                                                                sx={{
+                                                                                    bgcolor: alpha('#6366f1', 0.08),
+                                                                                    color: '#6366f1',
+                                                                                    width: 32,
+                                                                                    height: 32,
+                                                                                    '&:hover': { bgcolor: '#6366f1', color: '#fff', transform: 'scale(1.1)' },
+                                                                                    transition: 'all 0.2s',
+                                                                                }}
+                                                                            >
+                                                                                <Pencil size={15} />
+                                                                            </IconButton>
+                                                                        </Tooltip>
+                                                                        <Tooltip title="Delete Test">
+                                                                            <IconButton
+                                                                                size="small"
+                                                                                onClick={() => handleDeleteTest(test.id)}
+                                                                                sx={{
+                                                                                    bgcolor: alpha('#ef4444', 0.08),
+                                                                                    color: '#ef4444',
+                                                                                    width: 32,
+                                                                                    height: 32,
+                                                                                    '&:hover': { bgcolor: '#ef4444', color: '#fff', transform: 'scale(1.1)' },
+                                                                                    transition: 'all 0.2s',
+                                                                                }}
+                                                                            >
+                                                                                <Trash2 size={15} />
+                                                                            </IconButton>
+                                                                        </Tooltip>
+                                                                    </Box>
+                                                                </Box>
+
+                                                                {/* Row 2: Stat pills */}
+                                                                <Box sx={{ display: 'flex', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
+                                                                    {/* Duration */}
+                                                                    <Box sx={{
+                                                                        px: 2, py: 0.75,
+                                                                        borderRadius: 2.5,
+                                                                        bgcolor: '#f8fafc',
+                                                                        border: `1px solid ${COLORS.border}`,
+                                                                        display: 'flex', alignItems: 'center', gap: 1,
+                                                                    }}>
+                                                                        <Clock size={13} color={COLORS.textLight} />
+                                                                        <Typography variant="body2" sx={{ fontWeight: 800, color: COLORS.primary, fontSize: '0.8rem' }}>
+                                                                            {test.duration} mins
+                                                                        </Typography>
+                                                                    </Box>
+
+                                                                    {/* Questions */}
+                                                                    <Box sx={{
+                                                                        px: 2, py: 0.75,
+                                                                        borderRadius: 2.5,
+                                                                        bgcolor: '#f0f9ff',
+                                                                        border: '1px solid #bae6fd',
+                                                                        display: 'flex', alignItems: 'center', gap: 1,
+                                                                    }}>
+                                                                        <HelpCircle size={13} color={COLORS.info} />
+                                                                        <Typography variant="body2" sx={{ fontWeight: 800, color: '#0369a1', fontSize: '0.8rem' }}>
+                                                                            {qCount} Question{qCount !== 1 ? 's' : ''}
+                                                                        </Typography>
+                                                                    </Box>
+
+                                                                    {/* Pricing */}
+                                                                    <Box sx={{
+                                                                        px: 2, py: 0.75,
+                                                                        borderRadius: 2.5,
+                                                                        bgcolor: pricingConfig.bg,
+                                                                        border: `1px solid ${alpha(pricingConfig.color, 0.2)}`,
+                                                                        display: 'flex', alignItems: 'center', gap: 1,
+                                                                    }}>
+                                                                        <PricingIcon size={13} color={pricingConfig.color} />
+                                                                        <Typography variant="body2" sx={{ fontWeight: 800, color: pricingConfig.color, fontSize: '0.8rem' }}>
+                                                                            {pricingConfig.label}
+                                                                        </Typography>
+                                                                    </Box>
+                                                                </Box>
+
+                                                                {/* Row 3: Question progress bar */}
+                                                                {qCount > 0 && (
+                                                                    <Box sx={{ mb: 3 }}>
+                                                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+                                                                            <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                                                                                Question Bank
+                                                                            </Typography>
+                                                                            <Typography variant="caption" sx={{ color: COLORS.accent, fontWeight: 800, fontSize: '0.7rem' }}>
+                                                                                {qCount} / {Math.max(qCount, 100)}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                        <LinearProgress
+                                                                            variant="determinate"
+                                                                            value={Math.min((qCount / Math.max(qCount, 100)) * 100, 100)}
+                                                                            sx={{
+                                                                                height: 6,
+                                                                                borderRadius: 3,
+                                                                                bgcolor: alpha(COLORS.accent, 0.1),
+                                                                                '& .MuiLinearProgress-bar': {
+                                                                                    borderRadius: 3,
+                                                                                    background: `linear-gradient(90deg, ${COLORS.accent} 0%, #ec4899 100%)`,
+                                                                                }
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                )}
+
+                                                                {/* Row 4: CTA Button */}
+                                                                <Button
+                                                                    fullWidth
+                                                                    variant="contained"
+                                                                    startIcon={<BookOpen size={16} />}
+                                                                    onClick={() => onManageQuestions(test)}
+                                                                    sx={{
+                                                                        borderRadius: 3,
+                                                                        py: 1.5,
+                                                                        background: `linear-gradient(135deg, ${COLORS.primary} 0%, #334155 100%)`,
+                                                                        color: '#fff',
+                                                                        fontWeight: 800,
+                                                                        textTransform: 'none',
+                                                                        fontSize: '0.9rem',
+                                                                        letterSpacing: 0.2,
+                                                                        boxShadow: `0 6px 18px ${alpha(COLORS.primary, 0.25)}`,
+                                                                        '&:hover': {
+                                                                            background: `linear-gradient(135deg, #0f172a 0%, ${COLORS.primary} 100%)`,
+                                                                            transform: 'translateY(-2px)',
+                                                                            boxShadow: `0 10px 28px ${alpha(COLORS.primary, 0.35)}`,
+                                                                        },
+                                                                        transition: 'all 0.25s',
+                                                                    }}
+                                                                >
+                                                                    Manage Question Bank
+                                                                </Button>
+                                                            </Box>
+                                                        </Paper>
+                                                    </motion.div>
+                                                </Box>
+                                            )}
+                                        </Draggable>
+                                    );
+                                })}
                             </AnimatePresence>
+                            {provided.placeholder}
                         </Box>
                     )}
                 </StrictModeDroppable>
             </DragDropContext>
 
+            {/* ── Empty State ────────────────────────────────────────────── */}
             {tests.length === 0 && (
-                <Box sx={{ py: 12, textAlign: 'center' }}>
-                    <Box sx={{ mb: 4, display: 'inline-flex', p: 3, bgcolor: 'rgba(0,0,0,0.03)', borderRadius: '50%' }}>
-                        <Layout size={64} color={COLORS.textLight} />
-                    </Box>
-                    <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1.5 }}>No Tests Found</Typography>
-                    <Typography variant="body1" sx={{ color: COLORS.textLight, maxWidth: 400, mx: 'auto', mb: 4 }}>
-                        You haven't created any tests for this subject yet. Start by adding a new mock test.
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<Plus />}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                >
+                    <Box
+                        sx={{
+                            py: 12,
+                            textAlign: 'center',
+                            border: `2px dashed ${alpha(COLORS.accent, 0.25)}`,
+                            borderRadius: 6,
+                            bgcolor: alpha(COLORS.accent, 0.02),
+                            cursor: 'pointer',
+                            transition: 'all 0.25s',
+                            '&:hover': {
+                                bgcolor: alpha(COLORS.accent, 0.04),
+                                borderColor: alpha(COLORS.accent, 0.45),
+                            },
+                        }}
                         onClick={() => {
-                             setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
-                             setOpenTestDialog(true);
-                         }}
-                        sx={{ bgcolor: COLORS.accent, borderRadius: 4, px: 4, py: 1.5, fontWeight: 900 }}
+                            setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
+                            setOpenTestDialog(true);
+                        }}
                     >
-                        Create Your First Test
-                    </Button>
-                </Box>
+                        <Box sx={{
+                            mb: 3,
+                            display: 'inline-flex',
+                            p: 3,
+                            borderRadius: '50%',
+                            background: `linear-gradient(135deg, ${alpha(COLORS.accent, 0.12)} 0%, ${alpha('#ec4899', 0.06)} 100%)`,
+                        }}>
+                            <Zap size={52} color={COLORS.accent} />
+                        </Box>
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1.5 }}>
+                            No Tests Yet
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: COLORS.textLight, maxWidth: 380, mx: 'auto', mb: 4, fontWeight: 500 }}>
+                            You haven't created any mock tests yet. Click here or use the button above to get started.
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            startIcon={<Plus size={18} />}
+                            sx={{
+                                bgcolor: COLORS.accent,
+                                borderRadius: 3,
+                                px: 4,
+                                py: 1.5,
+                                fontWeight: 900,
+                                textTransform: 'none',
+                                boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.3)}`,
+                                '&:hover': { bgcolor: COLORS.accentHover },
+                            }}
+                        >
+                            Create Your First Test
+                        </Button>
+                    </Box>
+                </motion.div>
             )}
 
+            {/* ── Add / Edit Dialog ─────────────────────────────────────── */}
             <Dialog
                 open={openTestDialog}
-                onClose={() => {
-                    setOpenTestDialog(false);
-                    setIsEditMode(false);
-                    setEditingTest(null);
-                    setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
+                onClose={closeDialog}
+                fullWidth
+                maxWidth="sm"
+                PaperProps={{
+                    sx: {
+                        borderRadius: 5,
+                        overflow: 'hidden',
+                        boxShadow: '0 40px 80px rgba(0,0,0,0.18)',
+                    }
                 }}
-                fullWidth maxWidth="xs"
-                PaperProps={{ sx: { borderRadius: 6, p: 2 } }}
             >
-                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary }}>
-                    {isEditMode ? 'Edit Mock Test' : 'Add New Mock Test'}
-                </DialogTitle>
-                <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5, pt: 2 }}>
+                {/* Dialog header bar */}
+                <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2,
+                    px: 4,
+                    pt: 4,
+                    pb: 3,
+                    borderBottom: `1px solid ${COLORS.border}`,
+                }}>
+                    <Box sx={{
+                        p: 1.5,
+                        borderRadius: 3,
+                        background: `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)`,
+                        color: '#fff',
+                        display: 'flex',
+                    }}>
+                        {isEditMode ? <Pencil size={20} /> : <Plus size={20} />}
+                    </Box>
+                    <Box>
+                        <DialogTitle sx={{ p: 0, fontWeight: 900, fontSize: '1.4rem', color: COLORS.primary, lineHeight: 1.2 }}>
+                            {isEditMode ? 'Edit Mock Test' : 'Create Mock Test'}
+                        </DialogTitle>
+                        <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700 }}>
+                            {isEditMode ? 'Update the test details below' : 'Fill in the details to create a new test'}
+                        </Typography>
+                    </Box>
+                </Box>
+
+                <DialogContent sx={{ px: 4, py: 3.5 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {/* Test Name */}
                         <TextField
-                            fullWidth label="Test Name"
-                            placeholder="e.g. Psychology Basics - Part 1"
-                            value={newTest.name} onChange={(e) => setNewTest({ ...newTest, name: e.target.value })}
-                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
-                            InputProps={{ sx: { fontWeight: 700, fontSize: '1.1rem' } }}
+                            fullWidth
+                            label="Test Name"
+                            placeholder="e.g. Introduction to Psychology – Paper 1"
+                            value={newTest.name}
+                            onChange={(e) => setNewTest({ ...newTest, name: e.target.value })}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                            InputProps={{ sx: { fontWeight: 700, fontSize: '1rem' } }}
+                            required
                         />
-                        <Grid container spacing={3}>
-                            <Grid item xs={12}>
+
+                        <Grid container spacing={2.5}>
+                            <Grid item xs={12} sm={4}>
                                 <TextField
-                                    fullWidth label="Year" type="number"
+                                    fullWidth
+                                    label="Year"
+                                    type="number"
                                     placeholder="e.g. 2025"
-                                    value={newTest.year} onChange={(e) => setNewTest({ ...newTest, year: e.target.value })}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
+                                    value={newTest.year}
+                                    onChange={(e) => setNewTest({ ...newTest, year: e.target.value })}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                 />
                             </Grid>
-                            <Grid item xs={12} md={6}>
+                            <Grid item xs={12} sm={4}>
                                 <TextField
-                                    fullWidth label="Duration (mins)" type="number"
-                                    value={newTest.duration} onChange={(e) => setNewTest({ ...newTest, duration: e.target.value })}
-                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
+                                    fullWidth
+                                    label="Duration (mins)"
+                                    type="number"
+                                    value={newTest.duration}
+                                    onChange={(e) => setNewTest({ ...newTest, duration: e.target.value })}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                                 />
                             </Grid>
-                             <Grid item xs={12} md={6}>
-                                 <TextField
-                                     fullWidth label="Price (₹)" type="number"
-                                     value={newTest.price} onChange={(e) => setNewTest({ ...newTest, price: e.target.value })}
-                                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
-                                 />
-                             </Grid>
-                             <Grid item xs={12} md={8}>
-                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, bgcolor: alpha(COLORS.accent, 0.04), p: 2, borderRadius: 4, border: `1px solid ${alpha(COLORS.accent, 0.1)}` }}>
-                                     <Box sx={{ flex: 1 }}>
-                                         <Typography variant="subtitle2" sx={{ fontWeight: 800, color: COLORS.primary }}>Is Free Trial?</Typography>
-                                         <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700 }}>Allow guests to take this test</Typography>
-                                     </Box>
-                                     <input 
-                                         type="checkbox" 
-                                         checked={newTest.is_free_trial} 
-                                         onChange={(e) => setNewTest({ ...newTest, is_free_trial: e.target.checked })}
-                                         style={{ width: 22, height: 22, cursor: 'pointer', accentColor: COLORS.accent }}
-                                     />
-                                 </Box>
-                             </Grid>
-                             {newTest.is_free_trial && (
-                                 <Grid item xs={12} md={4}>
-                                     <TextField
-                                         fullWidth label="Attempt Limit" type="number"
-                                         value={newTest.free_trial_limit} onChange={(e) => setNewTest({ ...newTest, free_trial_limit: e.target.value })}
-                                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 4 } }}
-                                         helperText="Limits per browser"
-                                     />
-                                 </Grid>
-                             )}
-                         </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <TextField
+                                    fullWidth
+                                    label="Price (₹)"
+                                    type="number"
+                                    value={newTest.price}
+                                    onChange={(e) => setNewTest({ ...newTest, price: e.target.value })}
+                                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                                    helperText={newTest.price == 0 ? 'Free access' : 'Paid test'}
+                                />
+                            </Grid>
+                        </Grid>
+
+                        {/* Free Trial toggle */}
+                        <Box sx={{
+                            p: 2.5,
+                            borderRadius: 3.5,
+                            border: `1px solid ${newTest.is_free_trial ? alpha(COLORS.accent, 0.3) : COLORS.border}`,
+                            bgcolor: newTest.is_free_trial ? alpha(COLORS.accent, 0.04) : '#fafafa',
+                            transition: 'all 0.25s',
+                        }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Gift size={20} color={newTest.is_free_trial ? COLORS.accent : COLORS.textLight} />
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: COLORS.primary }}>
+                                            Free Trial
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 600 }}>
+                                            Let guests attempt this test without logging in
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                                <Switch
+                                    checked={newTest.is_free_trial}
+                                    onChange={(e) => setNewTest({ ...newTest, is_free_trial: e.target.checked })}
+                                    sx={{
+                                        '& .MuiSwitch-switchBase.Mui-checked': { color: COLORS.accent },
+                                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: COLORS.accent },
+                                    }}
+                                />
+                            </Box>
+
+                            <AnimatePresence>
+                                {newTest.is_free_trial && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                    >
+                                        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${alpha(COLORS.accent, 0.15)}` }}>
+                                            <TextField
+                                                fullWidth
+                                                label="Attempt Limit per Browser"
+                                                type="number"
+                                                value={newTest.free_trial_limit}
+                                                onChange={(e) => setNewTest({ ...newTest, free_trial_limit: e.target.value })}
+                                                size="small"
+                                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 }, maxWidth: 260 }}
+                                                helperText="How many times a guest can attempt this test"
+                                            />
+                                        </Box>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </Box>
                     </Box>
                 </DialogContent>
-                <DialogActions sx={{ p: 4, pt: 2 }}>
-                    <Button onClick={() => {
-                        setOpenTestDialog(false);
-                        setIsEditMode(false);
-                        setEditingTest(null);
-                        setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
-                    }} sx={{ fontWeight: 800, color: COLORS.textLight }}>Cancel</Button>
+
+                <DialogActions sx={{ px: 4, pb: 4, pt: 1, gap: 1.5 }}>
+                    <Button
+                        onClick={closeDialog}
+                        sx={{
+                            fontWeight: 800,
+                            color: COLORS.textLight,
+                            borderRadius: 3,
+                            px: 3,
+                            '&:hover': { bgcolor: alpha(COLORS.textLight, 0.08) },
+                        }}
+                    >
+                        Cancel
+                    </Button>
                     <Button
                         variant="contained"
                         onClick={handleSaveTest}
                         disabled={!newTest.name}
+                        startIcon={isEditMode ? <CircleCheck size={18} /> : <Plus size={18} />}
                         sx={{
-                            bgcolor: COLORS.accent, borderRadius: 4, fontWeight: 900, px: 5, py: 1.5,
-                            boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.4)}`,
-                            '&:hover': { bgcolor: COLORS.accentHover, boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.5)}` }
+                            bgcolor: COLORS.accent,
+                            borderRadius: 3,
+                            fontWeight: 900,
+                            px: 4,
+                            py: 1.25,
+                            textTransform: 'none',
+                            boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.35)}`,
+                            '&:hover': {
+                                bgcolor: COLORS.accentHover,
+                                boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.5)}`,
+                            },
+                            '&.Mui-disabled': { bgcolor: alpha(COLORS.accent, 0.3) },
                         }}
                     >
                         {isEditMode ? 'Save Changes' : 'Create Test'}
