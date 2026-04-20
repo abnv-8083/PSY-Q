@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, alpha, Switch, Tooltip, LinearProgress } from '@mui/material';
+import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, alpha, Switch, Tooltip, LinearProgress, InputAdornment } from '@mui/material';
 import { fetchTests, createTest, updateTest, deleteTest } from '../../api/testsApi';
 import ModernDialog from '../../components/ModernDialog';
-import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle, BookOpen, Gift, DollarSign, Zap, CircleCheck } from 'lucide-react';
+import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle, BookOpen, Gift, DollarSign, Zap, CircleCheck, Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
@@ -59,6 +59,7 @@ const StatCard = ({ icon: Icon, label, value, color, bg }) => (
 
 const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [tests, setTests] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [openTestDialog, setOpenTestDialog] = useState(false);
     const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
     const [isEditMode, setIsEditMode] = useState(false);
@@ -205,6 +206,12 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const freeTests = tests.filter(t => t.price === 0 || t.is_free_trial).length;
     const paidTests = tests.filter(t => t.price > 0 && !t.is_free_trial).length;
 
+    // Search filter
+    const filteredTests = searchQuery.trim()
+        ? tests.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        : tests;
+    const isSearching = searchQuery.trim().length > 0;
+
     if (!subject) {
         return (
             <Box sx={{ p: 4, textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
@@ -319,7 +326,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
 
             {/* ── Stats Bar ─────────────────────────────────────────────── */}
             {tests.length > 0 && (
-                <Box sx={{ display: 'flex', gap: 2, mb: 5, flexWrap: 'wrap' }}>
+                <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
                     <StatCard icon={Layers} label="Total Tests" value={tests.length} color={COLORS.accent} />
                     <StatCard icon={HelpCircle} label="Total Questions" value={totalQuestions} color={COLORS.info} />
                     <StatCard icon={Gift} label="Free Tests" value={freeTests} color={COLORS.success} />
@@ -327,9 +334,59 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                 </Box>
             )}
 
+            {/* ── Search Bar ────────────────────────────────────────────── */}
+            {tests.length > 0 && (
+                <Box sx={{ mb: 4 }}>
+                    <TextField
+                        fullWidth
+                        placeholder="Search tests by name…"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <Search size={18} color={isSearching ? COLORS.accent : COLORS.textLight} />
+                                </InputAdornment>
+                            ),
+                            endAdornment: isSearching && (
+                                <InputAdornment position="end">
+                                    <Tooltip title="Clear search">
+                                        <IconButton size="small" onClick={() => setSearchQuery('')} sx={{ color: COLORS.textLight, '&:hover': { color: COLORS.accent } }}>
+                                            <X size={16} />
+                                        </IconButton>
+                                    </Tooltip>
+                                </InputAdornment>
+                            ),
+                            sx: { fontWeight: 600, fontSize: '0.95rem', borderRadius: 3 },
+                        }}
+                        sx={{
+                            maxWidth: 480,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 3,
+                                bgcolor: '#fff',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                                transition: 'all 0.2s',
+                                '&:hover fieldset': { borderColor: alpha(COLORS.accent, 0.4) },
+                                '&.Mui-focused fieldset': {
+                                    borderColor: COLORS.accent,
+                                    borderWidth: 2,
+                                },
+                            },
+                        }}
+                    />
+                    {isSearching && (
+                        <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, mt: 1, display: 'block' }}>
+                            {filteredTests.length === 0
+                                ? 'No tests match your search'
+                                : `Showing ${filteredTests.length} of ${tests.length} test${tests.length !== 1 ? 's' : ''}`}
+                        </Typography>
+                    )}
+                </Box>
+            )}
+
             {/* ── Test Cards Grid ────────────────────────────────────────── */}
-            <DragDropContext onDragEnd={handleDragEnd}>
-                <StrictModeDroppable droppableId="tests-list">
+            <DragDropContext onDragEnd={isSearching ? () => {} : handleDragEnd}>
+                <StrictModeDroppable droppableId="tests-list" isDropDisabled={isSearching}>
                     {(provided) => (
                         <Box
                             {...provided.droppableProps}
@@ -337,7 +394,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                             sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 3 }}
                         >
                             <AnimatePresence>
-                                {tests.map((test, index) => {
+                                {filteredTests.map((test, index) => {
                                     const qCount = test.total_questions || test.questions?.[0]?.count || 0;
                                     const isFree = test.price === 0 && !test.is_free_trial;
                                     const isPaid = test.price > 0 && !test.is_free_trial;
@@ -624,6 +681,55 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     )}
                 </StrictModeDroppable>
             </DragDropContext>
+
+            {/* ── Search No-Results State ───────────────────────────────── */}
+            {isSearching && filteredTests.length === 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <Box sx={{
+                        py: 10,
+                        textAlign: 'center',
+                        border: `1.5px dashed ${alpha(COLORS.textLight, 0.2)}`,
+                        borderRadius: 5,
+                        bgcolor: alpha(COLORS.textLight, 0.02),
+                    }}>
+                        <Box sx={{
+                            mb: 2.5,
+                            display: 'inline-flex',
+                            p: 2.5,
+                            borderRadius: '50%',
+                            bgcolor: alpha(COLORS.textLight, 0.08),
+                        }}>
+                            <Search size={40} color={COLORS.textLight} />
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>
+                            No tests found
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 500, mb: 3 }}>
+                            No results for <strong>"{searchQuery}"</strong>. Try a different keyword.
+                        </Typography>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<X size={15} />}
+                            onClick={() => setSearchQuery('')}
+                            sx={{
+                                borderRadius: 3,
+                                fontWeight: 800,
+                                textTransform: 'none',
+                                borderColor: alpha(COLORS.textLight, 0.3),
+                                color: COLORS.textLight,
+                                '&:hover': { borderColor: COLORS.accent, color: COLORS.accent, bgcolor: alpha(COLORS.accent, 0.04) },
+                            }}
+                        >
+                            Clear Search
+                        </Button>
+                    </Box>
+                </motion.div>
+            )}
 
             {/* ── Empty State ────────────────────────────────────────────── */}
             {tests.length === 0 && (
