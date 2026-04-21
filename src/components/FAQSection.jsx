@@ -6,25 +6,34 @@ const FAQSection = () => {
 
   const faqs = [
     {
-      question: "What services does Psy-Q offer?",
-      answer: "Psy-Q offers comprehensive support including competitive exam preparation, psychological career webinars, and online counseling services."
+      question: "What are the services Psy-Q providing ",
+      answer: "Psy-Q Learning offers a comprehensive range of mental health and academic support services. These include individual counselling, couple counselling, psychotherapy, Cognitive Behavioral Therapy (CBT), and various other forms of mental health support. In addition, Psy-Q provides learning opportunities such as specialized psychology courses, academic webinars, and mock tests for psychology NET preparation."
     },
     {
-      question: "How can I get started with Psy-Q?",
-      answer: "You can get started by signing up for our services through our website or contacting our support team for personalized guidance."
-    },
-    {
-      question: "Are the counseling sessions confidential?",
-      answer: "Yes, all counseling sessions are completely confidential and conducted in a safe, supportive environment."
+      question: "Is my information kept confidential?",
+      answer: "Yes, all personal information and session discussions are kept strictly confidential and handled with professional ethics."
     },
     {
       question: "Do you offer group sessions or only individual counseling?",
       answer: "We offer both individual and group counseling sessions, as well as webinars that can accommodate multiple participants."
     },
     {
+      question: "How does online counselling work?",
+      answer: "After booking a session, you will connect with a qualified counsellor at the scheduled time through a secure online platform."
+    },
+    {
       question: "What makes Psy-Q different from other counseling services?",
       answer: "Psy-Q specializes in combining psychological insights with competitive exam preparation, providing a unique holistic approach to student success."
-    }
+    },
+    {
+      question: "How can I enroll in a course?",
+      answer: "You can enroll directly through our website by selecting your desired course and completing the registration process."
+    },
+    {
+      question: "Do you offer training for competitive exams like NET?",
+      answer: "Yes, we provide specialized preparation support for exams like UGC NET in Psychology."
+    },
+    
   ];
 
   const toggleFAQ = (index) => {
@@ -93,7 +102,7 @@ const FAQSection = () => {
               style={{
                 backgroundColor: '#ffffff',
                 borderRadius: '12px',
-                // boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
                 border: '1px solid #f3f4f6',
                 overflow: 'hidden',
                 transition: 'all 0.3s ease',

@@ -73,8 +73,8 @@ const Hero = () => {
           top: 0, left: 0, right: 0, bottom: 0,
           zIndex: 0,
           background: {
-            xs: 'linear-gradient(to bottom, rgba(240, 230, 220, 0.8) 0%, rgba(240, 230, 220, 0.75) 30%, transparent 60%)',
-            sm: 'linear-gradient(to bottom, rgba(240, 230, 220, 0.85) 0%, rgba(240, 230, 220, 0.7) 40%, transparent 80%)',
+            xs: 'linear-gradient(to right, rgba(240, 230, 220, 0.8) 0%, rgba(240, 230, 220, 0.75) 90%, transparent 110%)',
+            sm: 'linear-gradient(to right, rgba(240, 230, 220, 0.85) 0%, rgba(240, 230, 220, 0.7) 40%, transparent 80%)',
             md: 'linear-gradient(to right, rgba(240, 230, 220, 0.95) 0%, rgba(240, 230, 220, 0.85) 40%, rgba(240, 230, 220, 0.3) 60%, transparent 80%)'
           },
           pointerEvents: 'none',

@@ -13,7 +13,7 @@ const About = () => {
             <Grid item xs={12} md={6}>
               <Chip 
                 label="Non-judgemental Space" 
-                icon={<Box component="span" sx={{ fontSize: '11px' }}>🍃</Box>}
+                icon={<Box component="span" sx={{ fontSize: '11px' }}></Box>}
                 sx={{ 
                   bgcolor: '#fae0edff', 
                   color: '#ca0056',
@@ -27,7 +27,7 @@ const About = () => {
               <Typography variant="h2" sx={{ 
                 fontWeight: 700, 
                 mb: 3,
-                fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem' },
+                fontSize: { xs: '2.0rem', sm: '3rem', md: '3.5rem' },
                 lineHeight: 1
               }}>
                 Welcome to <Box component="span" sx={{ color: '#ca0056' }}>PSY-Q</Box>
@@ -283,7 +283,7 @@ const About = () => {
                 }}>
                   <Box 
                     component="img"
-                    src="/images/founders/sinan.png"
+                    src="/images/sinan.png"
                     alt="Mohammed Sinan E"
                     sx={{ 
                       width: '100%',
@@ -355,7 +355,7 @@ const About = () => {
                 }}>
                   <Box 
                     component="img"
-                    src="/images/founders/salih.png"
+                    src="/images/salih.png"
                     alt="Muhammed Salih KC"
                     sx={{ 
                       width: '100%',
