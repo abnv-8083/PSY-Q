@@ -23,7 +23,7 @@ const FAQSection = () => {
     },
     {
       question: "What makes Psy-Q different from other counseling services?",
-      answer: "Psy-Q specializes in combining psychological insights with competitive exam preparation, providing a unique holistic approach to student success."
+      answer: "At Psy-Q Learning, we combine counseling, psychotherapy, and practical psychology education to support mental well-being and personal growth. Beyond therapy, we help individuals build self-awareness, resilience, and life skills through affordable, accessible services, courses, and community-based learning—empowering them to understand themselves and confidently navigate academic, career, and life challenges."
     },
     {
       question: "How can I enroll in a course?",
