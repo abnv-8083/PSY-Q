@@ -6,7 +6,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'psyq_secret_key';
 
 export const studentSignup = async (req, res) => {
     try {
-        const { email, password, fullName, phone } = req.body;
+        const { email, password, full_name, fullName, phone, otp: providedOtp } = req.body;
+        const finalFullName = full_name || fullName;
 
         const existing = await Student.findOne({ email });
         if (existing) {
@@ -15,7 +16,7 @@ export const studentSignup = async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otp = providedOtp || Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
         // In this implementation, we return the signup data to the frontend
@@ -25,7 +26,7 @@ export const studentSignup = async (req, res) => {
             signupData: {
                 email,
                 password_hash,
-                full_name: fullName,
+                full_name: finalFullName,
                 phone,
                 otp_code: otp,
                 otp_expires_at: expiresAt
