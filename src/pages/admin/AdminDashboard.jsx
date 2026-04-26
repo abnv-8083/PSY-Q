@@ -16,7 +16,9 @@ import {
     Avatar,
     Divider,
     alpha,
-    Paper
+    Paper,
+    useTheme,
+    useMediaQuery
 } from '@mui/material';
 import {
     LayoutDashboard,
@@ -66,7 +68,17 @@ const AdminDashboard = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { adminUser: user, logoutAdmin } = useSession();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [sidebarOpen, setSidebarOpen] = useState(true);
+
+    useEffect(() => {
+        if (isMobile) {
+            setSidebarOpen(false);
+        } else {
+            setSidebarOpen(true);
+        }
+    }, [isMobile]);
 
     const handleLogout = async () => {
         await logoutAdmin();
@@ -159,12 +171,14 @@ const AdminDashboard = () => {
         <Box sx={{ display: 'flex', minHeight: '100vh', background: `linear-gradient(135deg, ${COLORS.background} 0%, #FFFFFF 100%)`, fontFamily: FONTS.primary }}>
             {/* Sidebar */}
             <Drawer
-                variant="permanent"
+                variant={isMobile ? "temporary" : "permanent"}
+                open={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
                 sx={{
-                    width: sidebarOpen ? 280 : 80,
+                    width: sidebarOpen ? 280 : (isMobile ? 0 : 80),
                     flexShrink: 0,
                     '& .MuiDrawer-paper': {
-                        width: sidebarOpen ? 280 : 80,
+                        width: sidebarOpen ? 280 : (isMobile ? 0 : 80),
                         boxSizing: 'border-box',
                         background: `linear-gradient(180deg, ${COLORS.primary} 0%, #0f172a 100%)`,
                         borderRight: 'none',
@@ -305,8 +319,32 @@ const AdminDashboard = () => {
                 </Box>
             </Drawer>
 
+            {/* Mobile Header (Hamburger Menu) */}
+            {isMobile && (
+                <Box sx={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 16,
+                    zIndex: 10
+                }}>
+                    <IconButton
+                        onClick={() => setSidebarOpen(true)}
+                        sx={{
+                            bgcolor: COLORS.primary,
+                            color: '#fff',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            '&:hover': {
+                                bgcolor: COLORS.accent
+                            }
+                        }}
+                    >
+                        <Menu size={24} />
+                    </IconButton>
+                </Box>
+            )}
+
             {/* Main Content */}
-            <Box component="main" sx={{ flexGrow: 1, overflow: 'auto' }}>
+            <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', width: isMobile ? '100%' : 'auto', pt: isMobile ? 8 : 0 }}>
                 <Routes>
                     <Route
                         path="/"

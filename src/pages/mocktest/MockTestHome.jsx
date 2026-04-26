@@ -721,30 +721,18 @@ const MockTestHome = () => {
                             maxWidth: 1200,
                             mx: 'auto',
                             px: 2,
-                            overflowX: 'auto',
                             pb: 4,
-                            '&::-webkit-scrollbar': {
-                                height: '8px',
-                            },
-                            '&::-webkit-scrollbar-track': {
-                                background: alpha(COLORS.border, 0.5),
-                                borderRadius: '10px',
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                                background: alpha(COLORS.accent, 0.3),
-                                borderRadius: '10px',
-                                '&:hover': {
-                                    background: alpha(COLORS.accent, 0.5),
-                                },
-                            },
                         }}
                     >
                         <Box
                             sx={{
                                 display: 'flex',
-                                gap: 3,
+                                flexDirection: { xs: 'column', md: 'row' },
+                                flexWrap: 'wrap',
+                                justifyContent: { xs: 'center', md: 'flex-start' },
+                                alignItems: { xs: 'center', md: 'stretch' },
+                                gap: 4,
                                 pb: 1,
-                                minWidth: 'min-content'
                             }}
                         >
                             {bundles
@@ -752,8 +740,8 @@ const MockTestHome = () => {
                                     <Box
                                         key={bundle.id}
                                         sx={{
-                                            flex: '0 0 auto',
-                                            width: { xs: '280px', sm: '320px', md: '350px' }
+                                            width: { xs: '100%', sm: '320px', md: '350px' },
+                                            maxWidth: '400px',
                                         }}
                                     >
                                         <motion.div

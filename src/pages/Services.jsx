@@ -66,7 +66,6 @@ const Services = () => {
                 height: '100%',
                 display: 'flex',
                 flexDirection: 'column',
-                ml: 2,
                 transition: 'transform 0.3s ease-in-out',
                 '&:hover': {
                   transform: 'translateY(-8px)'
