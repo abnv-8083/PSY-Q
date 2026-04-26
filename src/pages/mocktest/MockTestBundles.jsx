@@ -7,7 +7,7 @@ import {
 import {
     Package, ShoppingBag, CheckCircle, Zap, ShieldCheck,
     ArrowRight, Star, Layers, Sparkles, BookOpen, Clock, Play,
-    Crown, Brain, Activity, Heart
+    Crown, Brain, Activity, Heart, Library
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
