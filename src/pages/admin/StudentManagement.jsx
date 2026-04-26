@@ -130,7 +130,7 @@ const StudentManagement = () => {
                         View, manage, and monitor all registered students.
                     </Typography>
                 </Box>
-                <Paper sx={{ p: 1, borderRadius: 3, display: 'flex', alignItems: 'center', bgcolor: 'white', border: `1px solid ${COLORS.border}`, minWidth: 350 }}>
+                <Paper sx={{ p: 1, borderRadius: 3, display: 'flex', alignItems: 'center', bgcolor: 'white', border: `1px solid ${COLORS.border}`, minWidth: { xs: '100%', sm: 350 } }}>
                     <Search size={20} color={COLORS.textLight} style={{ marginLeft: 12 }} />
                     <TextField
                         fullWidth
@@ -151,7 +151,7 @@ const StudentManagement = () => {
             {success && <Alert severity="success" sx={{ mb: 4, borderRadius: 2 }} onClose={() => setSuccess(null)}>{success}</Alert>}
 
             {/* Table */}
-            <TableContainer component={Paper} sx={{ borderRadius: 4, border: `1px solid ${COLORS.border}`, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+            <TableContainer component={Paper} sx={{ borderRadius: 4, border: `1px solid ${COLORS.border}`, boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
                 <Table>
                     <TableHead sx={{ bgcolor: alpha(COLORS.primary, 0.02) }}>
                         <TableRow>
