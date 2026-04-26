@@ -1,46 +1,34 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Create reusable transporter object using the default SMTP transport
-export const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Verify connection configuration
-transporter.verify(function (error, success) {
-    if (error) {
-        console.error('📧 Nodemailer verification failed:', error);
-    } else {
-        console.log('📧 Server is ready to take our messages');
-    }
-});
+const defaultFrom = process.env.SMTP_FROM || 'PSY-Q Team <noreply@psyqlearning.com>';
 
 /**
  * Send an email
  * @param {Object} options - { to, subject, text, html }
  */
 export const sendEmail = async ({ to, subject, text, html }) => {
-    const mailOptions = {
-        from: process.env.SMTP_FROM || '"PSY-Q" <noreply@psyqlearning.com>',
-        to,
-        subject,
-        text,
-        html,
-    };
-
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Message sent: %s', info.messageId);
-        return { success: true, messageId: info.messageId };
+        const { data, error } = await resend.emails.send({
+            from: defaultFrom,
+            to,
+            subject,
+            text: text || '',
+            html: html || '',
+        });
+
+        if (error) {
+            console.error('Error sending email via Resend:', error);
+            throw error;
+        }
+
+        console.log('Message sent via Resend: %s', data.id);
+        return { success: true, messageId: data.id };
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.error('Exception sending email via Resend:', error);
         throw error;
     }
 };
