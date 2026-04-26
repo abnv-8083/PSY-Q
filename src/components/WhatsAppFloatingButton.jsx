@@ -1,7 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 const WhatsAppFloatingButton = () => {
+    const location = useLocation();
+
+    // Hide the WhatsApp button on the mock test exam interface to prevent overlapping with the question palette FAB
+    if (location.pathname.includes('/exam')) {
+        return null;
+    }
+
     const handleWhatsAppClick = () => {
         window.open('https://wa.me/+919207010098', '_blank');
     };
