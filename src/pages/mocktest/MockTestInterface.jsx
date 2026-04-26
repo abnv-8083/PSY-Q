@@ -67,6 +67,8 @@ const MockTestInterface = () => {
     const [isGuest, setIsGuest] = useState(false);
     const [guestNameInput, setGuestNameInput] = useState('');
     const [showGuestModal, setShowGuestModal] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     // Modern Dialog State
     const [dialog, setDialog] = useState({
