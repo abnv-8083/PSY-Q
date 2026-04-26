@@ -109,7 +109,7 @@ const MockTestBundles = () => {
                 type: 'bundle',
                 bundleId: bundle.id,
                 name: bundle.name,
-                price: bundle.price
+                price: bundle.offer_price || bundle.regular_price
             }
         });
     };
