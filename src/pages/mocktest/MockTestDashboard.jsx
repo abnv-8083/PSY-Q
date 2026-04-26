@@ -58,8 +58,6 @@ const MockTestDashboard = () => {
     const [selectedYear, setSelectedYear] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const { user, loading: sessionLoading } = useSession();
-    const [activeBundle, setActiveBundle] = useState(null);
-    const [bundleTests, setBundleTests] = useState(new Set());
     const [accessedTestIds, setAccessedTestIds] = useState(new Set());
     const [pendingTestIds, setPendingTestIds] = useState(new Set());
     const navigate = useNavigate();
@@ -125,16 +123,7 @@ const MockTestDashboard = () => {
                     }
                 }
 
-                // --- Fetch Bundle Specific Data if applicable ---
-                const bundleId = location.state?.bundleId;
-                if (bundleId) {
-                    const bundleData = await fetchBundleById(bundleId);
-                    if (bundleData) {
-                        setActiveBundle(bundleData);
-                        setBundleTests(new Set(bundleData.tests || []));
-                    }
-                }
-
+                // Remove bundle fetching since we have a dedicated page now
             } catch (error) {
                 console.error("Error fetching dashboard data:", error);
             } finally {
@@ -191,10 +180,7 @@ const MockTestDashboard = () => {
     const years = ['All', ...new Set(currentSubject?.tests?.map(t => t.year).filter(Boolean).sort((a, b) => b - a))];
 
     // Filter tests by year and search query
-    const displayTests = (activeBundle
-        ? subjects.flatMap(s => s.tests).filter(t => bundleTests.has(t.id))
-        : currentSubject?.tests || []
-    ).filter(t => {
+    const displayTests = (currentSubject?.tests || []).filter(t => {
         const matchesYear = selectedYear === 'All' || t.year === selectedYear;
         const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesYear && matchesSearch;
@@ -273,50 +259,6 @@ const MockTestDashboard = () => {
                     display: 'flex',
                     flexDirection: 'column',
                 }}>
-                    {activeBundle && (
-                        <Box sx={{
-                            mb: 2,
-                            p: 2,
-                            bgcolor: alpha(COLORS.accent, 0.05),
-                            borderRadius: 3,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            border: `1px solid ${alpha(COLORS.accent, 0.1)}`
-                        }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Box sx={{ p: 1, bgcolor: COLORS.accent, borderRadius: 1.5, display: 'flex' }}>
-                                    <Zap size={20} color="white" />
-                                </Box>
-                                <Box>
-                                    <Typography variant="subtitle2" sx={{ color: COLORS.accent, fontWeight: 800, fontSize: '0.75rem', letterSpacing: 1 }}>
-                                        ACTIVE BUNDLE VIEW
-                                    </Typography>
-                                    <Typography variant="h6" sx={{ color: COLORS.primary, fontWeight: 900, lineHeight: 1.2 }}>
-                                        {activeBundle.name}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                            <Button
-                                size="small"
-                                startIcon={<X size={16} />}
-                                onClick={() => {
-                                    setActiveBundle(null);
-                                    setBundleTests(new Set());
-                                    // Also clear location state if possible, though not strictly necessary since states are local
-                                    navigate(location.pathname, { replace: true, state: {} });
-                                }}
-                                sx={{
-                                    color: COLORS.secondary,
-                                    fontWeight: 700,
-                                    textTransform: 'none',
-                                    '&:hover': { bgcolor: alpha(COLORS.secondary, 0.05) }
-                                }}
-                            >
-                                Clear Filter
-                            </Button>
-                        </Box>
-                    )}
                     <Box sx={{
                         display: 'flex',
                         flexDirection: { xs: 'column', md: 'row' },
@@ -367,7 +309,7 @@ const MockTestDashboard = () => {
                         }}>
                             {loading ? (
                                 [1, 2, 3].map(i => <Skeleton key={i} variant="rounded" width={120} height={40} sx={{ borderRadius: 2 }} />)
-                            ) : activeBundle ? null : (
+                            ) : (
                                 subjects.map((subject) => (
                                     <Button
                                         key={subject.id}

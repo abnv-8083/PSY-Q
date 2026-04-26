@@ -386,7 +386,7 @@ const MockTestBundles = () => {
                                                     link-type="access"
                                                     fullWidth
                                                     variant="contained"
-                                                    onClick={() => purchasedBundleIds.has(bundle.id) ? navigate('/academic/mocktest/dashboard', { state: { bundleId: bundle.id } }) : handleBuyBundle(bundle)}
+                                                    onClick={() => purchasedBundleIds.has(bundle.id) ? navigate(`/academic/mocktest/bundles/${bundle.id}`) : handleBuyBundle(bundle)}
                                                     disabled={pendingBundleIds.has(bundle.id)}
                                                     sx={{
                                                         background: purchasedBundleIds.has(bundle.id) 

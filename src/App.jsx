@@ -24,6 +24,7 @@ import Policies from './pages/Policies';
 // Mock Test Pages
 import MockTestHome from './pages/mocktest/MockTestHome';
 import MockTestBundles from './pages/mocktest/MockTestBundles';
+import MockTestBundleView from './pages/mocktest/MockTestBundleView';
 import MockTestDashboard from './pages/mocktest/MockTestDashboard';
 import MockTestInterface from './pages/mocktest/MockTestInterface';
 import MockTestRules from './pages/mocktest/MockTestRules';
@@ -74,6 +75,7 @@ function AnimatedRoutes() {
         {/* Mock Test Section */}
         <Route path="/academic/mocktest" element={<MockTestHome />} />
         <Route path="/academic/mocktest/bundles" element={<MockTestBundles />} />
+        <Route path="/academic/mocktest/bundles/:bundleId" element={<MockTestBundleView />} />
         <Route path="/academic/mocktest/dashboard" element={<MockTestDashboard />} />
         <Route path="/academic/mocktest/tests" element={<MockTestInterface />} />
         <Route path="/academic/mocktest/:subjectId/:testId/exam" element={<MockTestInterface />} />
