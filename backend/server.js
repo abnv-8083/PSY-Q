@@ -121,8 +121,6 @@ app.post('/api/sendBookingEmails', async (req, res) => {
     });
     await newBooking.save();
 
-    if (error) throw error;
-
     res.json({ success: true, message: 'Booking processed successfully' });
   } catch (error) {
     console.error('Booking error:', error);
