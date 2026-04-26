@@ -63,6 +63,7 @@ const MockTestNavbar = () => {
     };
 
     return (
+        <>
         <AppBar 
             position="fixed" 
             elevation={0} 
@@ -291,6 +292,9 @@ const MockTestNavbar = () => {
                 </Box>
             )}
         </AppBar>
+        {/* Spacer to prevent content from hiding behind the fixed navbar */}
+        <Box sx={{ height: { xs: '110px', md: '76px' }, width: '100%', display: 'block' }} aria-hidden="true" />
+        </>
     );
 };
 

@@ -148,7 +148,7 @@ const MockTestBundleView = () => {
             <Box sx={{
                 bgcolor: COLORS.primary,
                 color: 'white',
-                pt: { xs: 8, sm: 10, md: 12 },
+                pt: { xs: 4, md: 6 },
                 pb: { xs: 8, md: 10 },
                 position: 'relative',
                 overflow: 'hidden'

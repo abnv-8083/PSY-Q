@@ -166,7 +166,7 @@ const HeroSection = ({ navigate }) => {
     return (
         <Box sx={{
             bgcolor: '#FFFFFF',
-            pt: { xs: 8, sm: 10, md: 12 }, // Adjusted for single navbar
+            pt: { xs: 4, md: 6 }, // Adjusted for single navbar
             pb: { xs: 8, md: 10 },
             borderBottom: `1px solid ${COLORS.border}`,
             position: 'relative',

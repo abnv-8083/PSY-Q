@@ -194,7 +194,7 @@ const MockTestDashboard = () => {
             <Box sx={{
                 bgcolor: COLORS.primary,
                 color: 'white',
-                pt: { xs: 8, sm: 10, md: 12 }, // Adjusted for single navbar
+                pt: { xs: 4, md: 6 }, // Adjusted for single navbar
                 pb: { xs: 10, md: 12 },
                 position: 'relative',
                 overflow: 'hidden'

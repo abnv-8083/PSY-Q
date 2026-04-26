@@ -193,7 +193,7 @@ const GuestCheckout = () => {
     return (
         <Box sx={{ minHeight: '100vh', background: 'linear-gradient(135deg, #fdf2f8 0%, #fef2f2 100%)' }}>
             <MockTestNavbar />
-            <Box sx={{ pt: { xs: 8, sm: 10, md: 12 }, pb: 8 }}>
+            <Box sx={{ pt: { xs: 4, md: 6 }, pb: 8 }}>
             <Container maxWidth="md">
                 {/* Header/Breadcrumbs */}
                 <Box sx={{ mb: 4 }}>
