@@ -195,7 +195,8 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
       };
 
       // Call the API endpoint
-      const response = await fetch('/api/sendBookingEmails', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+      const response = await fetch(`${API_URL}/sendBookingEmails`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
