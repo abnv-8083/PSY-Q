@@ -5,6 +5,7 @@ import { CheckCircle2, AlertCircle, Clock, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import { fetchTestById } from '../../api/testsApi';
+import { useSession } from '../../contexts/SessionContext';
 
 const MockTestRules = () => {
     const { subjectId, testId } = useParams();
