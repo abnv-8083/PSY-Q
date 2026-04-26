@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(packageDetails ? 2 : 1);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -41,6 +41,31 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
     sessionType: '',
     agreedToTerms: false
   });
+
+  useEffect(() => {
+    if (open) {
+      setStep(packageDetails ? 2 : 1);
+      setErrorMessage('');
+      setSuccessMessage('');
+    } else {
+      setTimeout(() => {
+        setStep(packageDetails ? 2 : 1);
+        setSelectedPackage(null);
+        setSelectedDate(null);
+        setSelectedTime(null);
+        setFormData({
+          fullName: '',
+          email: '',
+          phone: '',
+          age: '',
+          modeOfTherapy: '',
+          primaryConcern: '',
+          sessionType: '',
+          agreedToTerms: false
+        });
+      }, 300);
+    }
+  }, [open, packageDetails]);
 
   //packages based on therapist rate
   const basePrice = therapist?.price ? Number(therapist.price.replace(/\D/g, '')) : 900;
@@ -130,7 +155,7 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
   const handleBack = () => {
     if (step === 3) {
       setStep(2);
-    } else if (step === 2) {
+    } else if (step === 2 && !packageDetails) {
       setStep(1);
     }
   };
@@ -152,11 +177,7 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
 
     try {
       // Format the selected date
-      const bookingDate = new Date(
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-        selectedDate
-      ).toISOString().slice(0, 10);
+      const bookingDate = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(selectedDate).padStart(2, '0')}`;
 
       const bookingData = {
         fullName: formData.fullName,
@@ -168,8 +189,8 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
         sessionType: formData.sessionType,
         selectedDate: bookingDate,
         selectedTime: selectedTime,
-        packageName: selectedPackage ? packages.find(p => p.id === selectedPackage)?.name : '',
-        packageDetails: selectedPackage ? packages.find(p => p.id === selectedPackage) : null,
+        packageName: packageDetails ? packageDetails.name : (selectedPackage ? packages.find(p => p.id === selectedPackage)?.name : ''),
+        packageDetails: packageDetails || (selectedPackage ? packages.find(p => p.id === selectedPackage) : null),
         therapist: therapist ? therapist.name : 'Not Specified'
       };
 
@@ -201,7 +222,7 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
           setSelectedPackage(null);
           setSelectedDate(null);
           setSelectedTime(null);
-          setStep(1);
+          setStep(packageDetails ? 2 : 1);
           onClose();
         }, 1500);
       } else {
@@ -662,7 +683,7 @@ const BookingModal = ({ open, onClose, packageDetails, therapist }) => {
       </DialogContent>
 
       <Box sx={{ p: 3, display: 'flex', gap: 2, justifyContent: 'flex-end', borderTop: '1px solid #e5e7eb' }}>
-        {(step === 2 || step === 3) && (
+        {(step === 3 || (step === 2 && !packageDetails)) && (
           <Button onClick={handleBack} variant="outlined" sx={{ color: '#64748b', borderColor: '#e5e7eb' }}>
             Back
           </Button>

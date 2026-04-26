@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Box, Container, Typography, Grid, Paper, Button, Chip, Table, TableBody, TableCell, TableRow } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-// import BookingModal from '../components/BookingModal';
+import BookingModal from '../components/BookingModal.jsx';
 
 const Psychospiritual = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -242,11 +242,11 @@ return (
         </Box>
       </Container>
 
-      {/* <BookingModal
+      <BookingModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         packageDetails={selectedPackage}
-      /> */}
+      />
     </Box>
   );
 };
