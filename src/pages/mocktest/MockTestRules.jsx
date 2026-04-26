@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container, Typography, Paper, Divider, List, ListItem, ListItemIcon, ListItemText, Button } from '@mui/material';
+import { Box, Container, Typography, Button, Checkbox, FormControlLabel } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle2, AlertCircle, Clock, FileText } from 'lucide-react';
-import { motion } from 'framer-motion';
-import MockTestNavbar from '../../components/MockTestNavbar';
 import { fetchTestById } from '../../api/testsApi';
 import { useSession } from '../../contexts/SessionContext';
+import MockTestNavbar from '../../components/MockTestNavbar';
 
 const MockTestRules = () => {
     const { subjectId, testId } = useParams();
     const navigate = useNavigate();
     const [testDetails, setTestDetails] = useState(null);
-
+    const [agreed, setAgreed] = useState(false);
     const { user, loading: sessionLoading } = useSession();
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         if (sessionLoading) return;
 
         const fetchTestDetails = async () => {
@@ -41,95 +40,132 @@ const MockTestRules = () => {
     }, [testId, user, sessionLoading, navigate]);
 
     const handleStart = () => {
-        navigate(`/academic/mocktest/${subjectId}/${testId}/exam`);
+        if (agreed) {
+            navigate(`/academic/mocktest/${subjectId}/${testId}/exam`);
+        }
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }} className="mesh-bg">
+        <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff', color: '#000000', pb: 8 }}>
             <MockTestNavbar />
-            {/* Animated Background Blobs */}
-            <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: 'none' }}>
-                <motion.div
-                    animate={{
-                        x: [0, 80, 0],
-                        y: [0, 40, 0],
-                        scale: [1, 1.1, 1],
-                    }}
-                    transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    style={{
-                        position: 'absolute',
-                        top: '10%',
-                        right: '10%',
-                        width: '30%',
-                        height: '30%',
-                        background: 'radial-gradient(circle, rgba(202, 0, 86, 0.05) 0%, transparent 70%)',
-                        borderRadius: '50%',
-                        filter: 'blur(50px)',
-                    }}
-                />
-            </Box>
+            
+            <Container maxWidth="lg" sx={{ mt: 4 }}>
+                <Box sx={{ p: { xs: 2, md: 4 }, fontFamily: 'Arial, sans-serif' }}>
+                    
+                    <Typography sx={{ fontWeight: 'bold', textDecoration: 'underline', fontSize: '1.1rem', mb: 2 }}>
+                        General Instructions:
+                    </Typography>
 
-            <Container maxWidth="md" sx={{ py: { xs: 8, sm: 10, md: 12 }, position: 'relative', zIndex: 1 }}>
-                <Paper className="glass-card" sx={{ p: 5, borderRadius: 4, border: '1px solid rgba(241, 245, 249, 0.4)' }}>
-                    <Typography variant="h4" sx={{ mb: 1, fontWeight: 800 }}>Before You Start</Typography>
-                    <Typography variant="body1" sx={{ mb: 4, color: '#5f6368' }}> Please read the instructions carefully.</Typography>
+                    <ol style={{ paddingLeft: '20px', margin: 0, lineHeight: 1.8, fontSize: '0.95rem' }}>
+                        <li>Total duration of <strong>{testDetails?.name || 'the examination'}</strong> is <strong>{testDetails?.duration || 120} min</strong>.</li>
+                        <li>The clock will be set at the server. The countdown timer in the top right corner of screen will display the remaining time available for you to complete the examination. When the timer reaches zero, the examination will end by itself. You will not be required to end or submit your examination.</li>
+                        <li>The Questions Palette displayed on the right side of screen will show the status of each question using one of the following symbols:
+                            <Box sx={{ mt: 2, mb: 2 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1.5 }}>
+                                    <Box sx={{ width: 26, height: 26, bgcolor: '#e0e0e0', flexShrink: 0 }} />
+                                    <Typography variant="body2">You have not visited the question yet.</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1.5 }}>
+                                    <Box sx={{ 
+                                        width: 26, height: 26, bgcolor: '#f57c00', flexShrink: 0,
+                                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                                    }} />
+                                    <Typography variant="body2">You have not answered the question.</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1.5 }}>
+                                    <Box sx={{ 
+                                        width: 26, height: 26, bgcolor: '#4caf50', flexShrink: 0,
+                                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                                    }} />
+                                    <Typography variant="body2">You have answered the question.</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1.5 }}>
+                                    <Box sx={{ width: 26, height: 26, bgcolor: '#d81b60', borderRadius: '50%', flexShrink: 0 }} />
+                                    <Typography variant="body2">You have NOT answered the question, but have marked the question for review.</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1.5 }}>
+                                    <Box sx={{ width: 26, height: 26, bgcolor: '#d81b60', borderRadius: '50%', position: 'relative', flexShrink: 0 }}>
+                                        <Box sx={{ width: 8, height: 8, bgcolor: '#4caf50', borderRadius: '50%', position: 'absolute', bottom: 2, right: 2 }} />
+                                    </Box>
+                                    <Typography variant="body2">The question(s) "Answered and Marked for Review" will be considered for evaluation.</Typography>
+                                </Box>
+                            </Box>
+                        </li>
+                        <li>You can click on the "&gt;" arrow which appears to the left of question palette to collapse the question palette thereby maximizing the question window. To view the question palette again, you can click on "&lt;" which appears on the right side of question window.</li>
+                        <li>You can click on your "Profile" image on top right corner of your screen to change the language during the exam for entire question paper. On clicking of Profile image you will get a drop-down to change the question content to the desired language.</li>
+                        <li>You can click on <span style={{color:'#d81b60', fontWeight:'bold'}}>&#8595;</span> to navigate to the bottom and <span style={{color:'#d81b60', fontWeight:'bold'}}>&#8593;</span> to navigate to top of the question area, without scrolling.</li>
+                    </ol>
 
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 3, mb: 4 }}>
-                        <Box sx={{ p: 2, bgcolor: '#FFF0F3', borderRadius: 3, textAlign: 'center' }}>
-                            <Clock size={24} color="#ca0056" style={{ marginBottom: 8 }} />
-                            <Typography variant="h6" sx={{ fontWeight: 700 }}>{testDetails?.duration} mins</Typography>
-                            <Typography variant="caption">Total Duration</Typography>
-                        </Box>
-                        <Box sx={{ p: 2, bgcolor: '#E3F2FD', borderRadius: 3, textAlign: 'center' }}>
-                            <FileText size={24} color="#1E88E5" style={{ marginBottom: 8 }} />
-                            <Typography variant="h6" sx={{ fontWeight: 700 }}>{testDetails?.questions} Qs</Typography>
-                            <Typography variant="caption">Total Questions</Typography>
-                        </Box>
+                    <Typography sx={{ fontWeight: 'bold', textDecoration: 'underline', fontSize: '1.1rem', mt: 4, mb: 2 }}>
+                        Navigating to a Question:
+                    </Typography>
+
+                    <ol start="7" style={{ paddingLeft: '20px', margin: 0, lineHeight: 1.8, fontSize: '0.95rem' }}>
+                        <li>To answer a question, do the following:
+                            <ol type="a" style={{ paddingLeft: '20px', marginTop: '8px' }}>
+                                <li>Click on the question number in the Question Palette at the right of your screen to go to that numbered question directly. Note that using this option does NOT save your answer to the current question.</li>
+                                <li>Click on <strong>Save & Next</strong> to save your answer for the current question and then go to the next question.</li>
+                                <li>Click on <strong>Mark for Review & Next</strong> to save your answer for the current question, mark it for review, and then go to the next question.</li>
+                            </ol>
+                        </li>
+                    </ol>
+
+                    <Typography sx={{ fontWeight: 'bold', textDecoration: 'underline', fontSize: '1.1rem', mt: 4, mb: 2 }}>
+                        Answering a Question:
+                    </Typography>
+
+                    <ol start="8" style={{ paddingLeft: '20px', margin: 0, lineHeight: 1.8, fontSize: '0.95rem' }}>
+                        <li>Procedure for answering a multiple choice type question:
+                            <ol type="a" style={{ paddingLeft: '20px', marginTop: '8px' }}>
+                                <li>To select your answer, click on the button of one of the options.</li>
+                                <li>To deselect your chosen answer, click on the button of the chosen option again or click on the <strong>Clear Response</strong> button.</li>
+                                <li>To change your chosen answer, click on the button of another option.</li>
+                                <li>To save your answer, you MUST click on the <strong>Save & Next</strong> button.</li>
+                                <li>To mark the question for review, click on the <strong>Mark for Review & Next</strong> button.</li>
+                            </ol>
+                        </li>
+                        <li>To change your answer to a question that has already been answered, first select that question for answering and then follow the procedure for answering that type of question.</li>
+                    </ol>
+
+                    <Box sx={{ mt: 6, p: 3, bgcolor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: 1 }}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox 
+                                    checked={agreed} 
+                                    onChange={(e) => setAgreed(e.target.checked)} 
+                                    color="primary" 
+                                />
+                            }
+                            label={
+                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                    I have read and understood the instructions. All computer hardware allotted to me are in proper working condition. I declare that I am not in possession of / not wearing / not carrying any prohibited gadget like mobile phone, bluetooth devices etc. /any prohibited material with me into the Examination Hall. I agree that in case of not adhering to the instructions, I shall be liable to be debarred from this Test and/or to disciplinary action, which may include ban from future Tests / Examinations.
+                                </Typography>
+                            }
+                            sx={{ alignItems: 'flex-start', m: 0 }}
+                        />
                     </Box>
 
-                    <Divider sx={{ mb: 4 }} />
-
-                    <List sx={{ mb: 4 }}>
-                        {[
-                            "Ensure you have a stable internet connection.",
-                            "Once you start, the timer cannot be paused.",
-                            "Questions can be flagged for review and returned to later.",
-                            "The test will auto-submit once the timer reaches zero.",
-                            "Each question carries 1 mark. There is no negative marking."
-                        ].map((text, index) => (
-                            <ListItem key={index} sx={{ px: 0, alignItems: 'flex-start' }}>
-                                <ListItemIcon sx={{ minWidth: 40, mt: 0.5 }}>
-                                    <CheckCircle2 size={20} color="#4CAF50" />
-                                </ListItemIcon>
-                                <ListItemText primary={text} primaryTypographyProps={{ fontSize: '0.95rem', color: '#374151' }} />
-                            </ListItem>
-                        ))}
-                    </List>
-
-                    <Box sx={{ p: 2, bgcolor: '#FFFDE7', borderRadius: 3, display: 'flex', gap: 2, mb: 5, border: '1px solid #FFF59D' }}>
-                        <AlertCircle size={24} color="#FBC02D" />
-                        <Typography variant="body2" color="#5D4037">
-                            Do not refresh the page or navigate away during the exam, as this may result in data loss.
-                        </Typography>
-                    </Box>
-
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                        <Button
-                            variant="outlined"
-                            onClick={() => navigate(-1)}
-                            sx={{ flex: 1, py: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-                        >
-                            Cancel
-                        </Button>
+                    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', gap: 2 }}>
                         <Button
                             variant="contained"
                             onClick={handleStart}
-                            sx={{ flex: 2, py: 1.5, borderRadius: 2, textTransform: 'none', fontWeight: 600, bgcolor: '#ca0056', '&:hover': { bgcolor: '#b8003f' } }}
+                            disabled={!agreed}
+                            sx={{ 
+                                py: 1.5, 
+                                px: 6,
+                                textTransform: 'none', 
+                                fontWeight: 600, 
+                                fontSize: '1.1rem',
+                                bgcolor: agreed ? '#4caf50' : '#e0e0e0', 
+                                color: agreed ? '#ffffff' : '#9e9e9e',
+                                '&:hover': { bgcolor: '#388e3c' } 
+                            }}
                         >
-                            I Understand, Start Test
+                            PROCEED
                         </Button>
                     </Box>
-                </Paper>
+                    
+                </Box>
             </Container>
         </Box>
     );
