@@ -13,6 +13,7 @@ const testSchema = new mongoose.Schema({
   is_free_trial: { type: Boolean, default: false },
   free_trial_limit: { type: Number, default: 1 },
   passing_score: { type: Number, default: 40 },
+  display_order: { type: Number, default: 0 },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 }, {
