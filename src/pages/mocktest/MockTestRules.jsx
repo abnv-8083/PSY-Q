@@ -67,7 +67,7 @@ const MockTestRules = () => {
                                 </Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1.5 }}>
                                     <Box sx={{ 
-                                        width: 26, height: 26, bgcolor: '#f57c00', flexShrink: 0,
+                                        width: 26, height: 26, bgcolor: '#2196f3', flexShrink: 0,
                                         clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
                                     }} />
                                     <Typography variant="body2">You have not answered the question.</Typography>

@@ -122,7 +122,7 @@ const GeneralInstructions = () => {
                         <Grid container spacing={3}>
                             {[
                                 { color: '#e2e8f0', text: 'You have not visited the question yet.', shape: 'rect' },
-                                { color: '#ff4d4d', text: 'You have not answered the question.', shape: 'status' },
+                                { color: '#2196f3', text: 'You have not answered the question.', shape: 'status' },
                                 { color: '#10b981', text: 'You have answered the question.', shape: 'status' },
                                 { color: '#9b59b6', text: 'You have marked the question for review.', shape: 'circle' }
                             ].map((item, i) => (
