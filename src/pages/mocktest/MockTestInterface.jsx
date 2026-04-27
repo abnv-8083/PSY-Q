@@ -418,13 +418,9 @@ const MockTestInterface = () => {
             </Box>
 
             {/* Logo Bar */}
-            <Box sx={{ py: 0.5, px: { xs: 1, md: 4 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', height: 45 }}>
-                <Box component="img" src="/logos/psyq-logo-header.png" sx={{ height: { xs: 24, md: 30 } }} />
-                <Box sx={{ textAlign: 'center', display: { xs: 'none', md: 'block' } }}>
+            <Box sx={{ py: 0.5, px: { xs: 1, md: 4 }, display: { xs: 'none', md: 'flex' }, justifyContent: 'center', alignItems: 'center', borderBottom: '1px solid #eee', height: 45 }}>
+                <Box sx={{ textAlign: 'center' }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#1e293b' }}>PSYCHOLOGY QUESTION BANK</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Box component="img" src="/logos/ignou.png" sx={{ height: { xs: 20, md: 25 }, opacity: 0.7 }} />
                 </Box>
             </Box>
 
@@ -570,6 +566,20 @@ const MockTestInterface = () => {
                                 }}
                             >
                                 {isMobile ? 'MARK & NEXT' : 'MARK FOR REVIEW & NEXT'}
+                            </Button>
+                            <Button
+                                variant="contained"
+                                onClick={handleSubmit}
+                                sx={{
+                                    bgcolor: '#10b981',
+                                    '&:hover': { bgcolor: '#059669' },
+                                    fontWeight: 700,
+                                    textTransform: 'none',
+                                    fontSize: { xs: '0.75rem', md: '0.875rem' },
+                                    px: { xs: 2, md: 3 }
+                                }}
+                            >
+                                SUBMIT
                             </Button>
                         </Box>
                     </Box>
