@@ -68,7 +68,7 @@ const GuestCheckout = () => {
             const requestRecord = await createPurchaseRequest(user.id, itemType, itemId, requestNum);
 
             // 2. Build WhatsApp Message
-            const adminPhone = "919961206583"; // Placeholder, can be configured later or in DB
+            const adminPhone = "919207010098"; // Placeholder, can be configured later or in DB
             const userName = profile?.full_name || user.email;
 
             const message = `Hi Admin!\n\nI want to request access to a ${itemType === 'bundle' ? 'Bundle' : 'Mock Test'}.\n` +
