@@ -232,17 +232,17 @@ const MockTestBundleView = () => {
                             const SubjectIcon = getSubjectIcon(test.subject || test.name);
 
                             return (
-                                <Grid item xs={12} sm={6} md={3} key={test.id} sx={{ display: 'flex' }}>
+                                <Grid item xs={12} sm={6} md={3} key={test.id} sx={{ display: 'flex', height: 380 }}>
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
                                         whileHover={{ y: -8, scale: 1.01 }}
-                                        style={{ width: '100%', display: 'flex', height: '100%' }}
+                                        style={{ width: '100%', display: 'flex' }}
                                     >
                                         <Card sx={{
                                             width: '100%',
-                                            height: '100%',
+                                            height: 380,
                                             display: 'flex',
                                             flexDirection: 'column',
                                             borderRadius: 6,
