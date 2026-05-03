@@ -313,7 +313,7 @@ const MockTestInterface = () => {
     // Helper component for status shapes
     const StatusShape = ({ status, label }) => {
         if (status === 'not-visited') return <Box sx={{ width: 30, height: 26, bgcolor: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600 }}>{label}</Box>;
-        if (status === 'not-answered') return <Box sx={{ width: 32, height: 26, bgcolor: '#2196f3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#fff', clipPath: 'polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%)' }}>{label}</Box>;
+        if (status === 'not-answered') return <Box sx={{ width: 32, height: 26, bgcolor: '#f44336', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#fff', clipPath: 'polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%)' }}>{label}</Box>;
         if (status === 'answered') return <Box sx={{ width: 32, height: 26, bgcolor: '#2ecc71', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#fff', clipPath: 'polygon(20% 0%, 80% 0%, 100% 50%, 80% 100%, 20% 100%, 0% 50%)' }}>{label}</Box>;
         if (status === 'marked') return <Box sx={{ width: 28, height: 28, bgcolor: '#9b59b6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 600, color: '#fff' }}>{label}</Box>;
         if (status === 'answered-marked') return (
