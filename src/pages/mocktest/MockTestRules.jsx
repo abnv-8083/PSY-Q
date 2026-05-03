@@ -80,11 +80,11 @@ const MockTestRules = () => {
                                     <Typography variant="body2">You have answered the question.</Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1.5 }}>
-                                    <Box sx={{ width: 26, height: 26, bgcolor: '#d81b60', borderRadius: '50%', flexShrink: 0 }} />
+                                    <Box sx={{ width: 26, height: 26, bgcolor: '#9b59b6', borderRadius: '50%', flexShrink: 0 }} />
                                     <Typography variant="body2">You have NOT answered the question, but have marked the question for review.</Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5, gap: 1.5 }}>
-                                    <Box sx={{ width: 26, height: 26, bgcolor: '#d81b60', borderRadius: '50%', position: 'relative', flexShrink: 0 }}>
+                                    <Box sx={{ width: 26, height: 26, bgcolor: '#9b59b6', borderRadius: '50%', position: 'relative', flexShrink: 0 }}>
                                         <Box sx={{ width: 8, height: 8, bgcolor: '#4caf50', borderRadius: '50%', position: 'absolute', bottom: 2, right: 2 }} />
                                     </Box>
                                     <Typography variant="body2">The question(s) "Answered and Marked for Review" will be considered for evaluation.</Typography>
