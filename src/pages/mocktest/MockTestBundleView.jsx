@@ -238,11 +238,11 @@ const MockTestBundleView = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
                                         whileHover={{ y: -8, scale: 1.01 }}
-                                        style={{ width: '100%', display: 'flex' }}
+                                        style={{ width: '100%', display: 'flex', height: '100%' }}
                                     >
                                         <Card sx={{
                                             width: '100%',
-                                            minHeight: 320,
+                                            height: '100%',
                                             display: 'flex',
                                             flexDirection: 'column',
                                             borderRadius: 6,
@@ -317,11 +317,15 @@ const MockTestBundleView = () => {
                                                     <Typography variant="h6" sx={{
                                                         fontWeight: 900,
                                                         lineHeight: 1.2,
-                                                        minHeight: 48,
+                                                        height: 56,
                                                         color: 'white',
-                                                        fontSize: '1.15rem',
+                                                        fontSize: '1.1rem',
                                                         letterSpacing: '-0.01em',
-                                                        textShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                                                        textShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden',
                                                     }}>
                                                         {test.name}
                                                     </Typography>
