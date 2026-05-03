@@ -8,8 +8,9 @@ import { fetchTests, fetchUserAttempts, fetchUserAccess } from '../../api/testsA
 import { fetchBundleById } from '../../api/bundlesApi';
 import { fetchUserPurchaseRequests } from '../../api/purchaseRequestsApi';
 import {
-    Clock, ChevronRight, Target,
-    ArrowLeft, CheckCircle, Library
+    Clock, Target, Award, Play, Zap,
+    ArrowLeft, CheckCircle, Library, Brain, Users, FlaskConical,
+    BarChart3, Activity, Heart, BookOpen, Sparkles
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
@@ -31,6 +32,18 @@ const COLORS = {
 
 const FONTS = {
     primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
+};
+
+const getSubjectIcon = (subjectName) => {
+    const name = subjectName?.toLowerCase() || '';
+    if (name.includes('psych')) return Brain;
+    if (name.includes('socio')) return Users;
+    if (name.includes('scien')) return FlaskConical;
+    if (name.includes('math') || name.includes('stat')) return BarChart3;
+    if (name.includes('hist') || name.includes('cultur')) return Library;
+    if (name.includes('clini')) return Activity;
+    if (name.includes('counsel')) return Heart;
+    return BookOpen;
 };
 
 const MockTestBundleView = () => {
@@ -216,6 +229,7 @@ const MockTestBundleView = () => {
                             const isFirstAttempt = attemptCount === 0;
                             const hasAccess = isFirstAttempt || accessedTestIds.has(test.id) || test.price === 0;
                             const isPending = pendingTestIds.has(test.id);
+                            const SubjectIcon = getSubjectIcon(test.subject || test.name);
 
                             return (
                                 <Grid item xs={12} sm={6} md={3} key={test.id} sx={{ display: 'flex' }}>
@@ -223,88 +237,185 @@ const MockTestBundleView = () => {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
+                                        whileHover={{ y: -8, scale: 1.01 }}
                                         style={{ width: '100%', display: 'flex' }}
                                     >
                                         <Card sx={{
                                             width: '100%',
+                                            minHeight: 320,
                                             display: 'flex',
                                             flexDirection: 'column',
-                                            borderRadius: 4,
-                                            boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
-                                            border: `1px solid ${COLORS.border}`,
-                                            transition: 'all 0.3s ease',
+                                            borderRadius: 6,
+                                            background: `linear-gradient(135deg, ${COLORS.accent} 0%, #9d174d 100%)`,
+                                            boxShadow: `0 15px 35px ${alpha(COLORS.accent, 0.2)}`,
+                                            transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            color: 'white',
+                                            border: `1px solid ${alpha('#ffffff', 0.2)}`,
                                             '&:hover': {
-                                                transform: 'translateY(-6px)',
-                                                boxShadow: '0 15px 30px rgba(0,0,0,0.08)',
-                                                borderColor: alpha(COLORS.accent, 0.3)
+                                                boxShadow: `0 25px 50px ${alpha(COLORS.accent, 0.4)}`,
+                                                '& .card-icon-bg': {
+                                                    transform: 'scale(1.2) rotate(-15deg)',
+                                                    opacity: 0.12
+                                                }
                                             }
                                         }}>
-                                            <Box sx={{ p: 3, pb: 2, borderBottom: `1px dashed ${COLORS.border}`, position: 'relative' }}>
-                                                {attemptCount > 0 && (
-                                                    <Chip
-                                                        label={`Attempted: ${attemptCount}`}
-                                                        size="small"
-                                                        sx={{
-                                                            position: 'absolute', top: 16, right: 16,
-                                                            bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success,
-                                                            fontWeight: 800, fontSize: '0.7rem'
-                                                        }}
-                                                        icon={<CheckCircle size={14} />}
-                                                    />
-                                                )}
-                                                <Typography variant="caption" sx={{ color: COLORS.accent, fontWeight: 800, letterSpacing: 0.5, mb: 1, display: 'block' }}>
-                                                    {test.subject || 'Mock Test'}
-                                                </Typography>
-                                                <Typography variant="h6" sx={{ fontWeight: 800, color: COLORS.primary, lineHeight: 1.3, mb: 1 }}>
-                                                    {test.name}
-                                                </Typography>
-                                                
-                                                <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: COLORS.secondary }}>
-                                                        <Clock size={14} />
-                                                        <Typography variant="caption" sx={{ fontWeight: 600 }}>{test.duration} min</Typography>
+                                            <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1 }}>
+                                                {/* Decorative Icon */}
+                                                <Box className="card-icon-bg" sx={{
+                                                    position: 'absolute',
+                                                    right: -10,
+                                                    top: 15,
+                                                    opacity: 0.08,
+                                                    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    pointerEvents: 'none',
+                                                    zIndex: 0
+                                                }}>
+                                                    {React.createElement(SubjectIcon, { size: 130, color: 'white', strokeWidth: 1 })}
+                                                </Box>
+
+                                                <Stack spacing={1.5} sx={{ position: 'relative', zIndex: 1 }}>
+                                                    {/* Header Info */}
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <Box sx={{
+                                                            px: 1.2,
+                                                            py: 0.4,
+                                                            bgcolor: alpha('#ffffff', 0.15),
+                                                            backdropFilter: 'blur(4px)',
+                                                            borderRadius: 1.5,
+                                                            border: `1px solid ${alpha('#ffffff', 0.2)}`
+                                                        }}>
+                                                            <Typography variant="overline" sx={{
+                                                                color: 'white',
+                                                                fontWeight: 900,
+                                                                letterSpacing: 1.5,
+                                                                fontSize: '0.6rem'
+                                                            }}>
+                                                                {(test.subject || 'Psychology').toUpperCase()}
+                                                            </Typography>
+                                                        </Box>
+
+                                                        {attemptCount > 0 && (
+                                                            <Chip
+                                                                icon={<CheckCircle size={12} color="white" />}
+                                                                label="SOLVED"
+                                                                size="small"
+                                                                sx={{
+                                                                    bgcolor: '#10b981',
+                                                                    color: 'white',
+                                                                    fontWeight: 900,
+                                                                    fontSize: '0.55rem',
+                                                                    height: 20,
+                                                                    borderRadius: 1.5,
+                                                                    '& .MuiChip-icon': { color: 'white' }
+                                                                }}
+                                                            />
+                                                        )}
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: COLORS.secondary }}>
-                                                        <Target size={14} />
-                                                        <Typography variant="caption" sx={{ fontWeight: 600 }}>{test.questions?.length || 0} Qs</Typography>
+
+                                                    <Typography variant="h6" sx={{
+                                                        fontWeight: 900,
+                                                        lineHeight: 1.2,
+                                                        minHeight: 48,
+                                                        color: 'white',
+                                                        fontSize: '1.15rem',
+                                                        letterSpacing: '-0.01em',
+                                                        textShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                                                    }}>
+                                                        {test.name}
+                                                    </Typography>
+
+                                                    {/* Compact Glass Stats Grid */}
+                                                    <Box sx={{
+                                                        display: 'grid',
+                                                        gridTemplateColumns: 'repeat(2, 1fr)',
+                                                        gap: 1,
+                                                        bgcolor: alpha('#000000', 0.1),
+                                                        p: 1.5,
+                                                        borderRadius: 3.5,
+                                                        border: `1px solid ${alpha('#ffffff', 0.1)}`,
+                                                    }}>
+                                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                                            <Target size={14} color="white" strokeWidth={2.5} />
+                                                            <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem' }}>
+                                                                {test.total_questions || test.questions?.length || 0} Qs
+                                                            </Typography>
+                                                        </Stack>
+                                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                                            <Clock size={14} color="white" strokeWidth={2.5} />
+                                                            <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem' }}>
+                                                                {test.duration}m
+                                                            </Typography>
+                                                        </Stack>
+                                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                                            <Award size={14} color="white" strokeWidth={2.5} />
+                                                            <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem' }}>
+                                                                {test.total_questions || test.questions?.length || 0} Mks
+                                                            </Typography>
+                                                        </Stack>
+                                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                                            <Typography variant="caption" sx={{
+                                                                fontWeight: 900,
+                                                                fontSize: '0.75rem',
+                                                                bgcolor: 'white',
+                                                                color: COLORS.accent,
+                                                                px: 0.8,
+                                                                borderRadius: 1
+                                                            }}>
+                                                                {test.price === 0 ? 'FREE' : `₹${test.price}`}
+                                                            </Typography>
+                                                        </Stack>
+                                                    </Box>
+
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 0.9 }}>
+                                                        <Sparkles size={12} color="white" />
+                                                        <Typography variant="caption" sx={{
+                                                            fontWeight: 700,
+                                                            color: 'white',
+                                                            fontSize: '0.7rem',
+                                                        }}>
+                                                            Video Solutions Included
+                                                        </Typography>
                                                     </Box>
                                                 </Stack>
-                                            </Box>
-                                            
-                                            <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1, bgcolor: '#fafafa' }}>
-                                                <Typography variant="body2" sx={{ color: COLORS.secondary, mb: 3, flexGrow: 1, fontSize: '0.85rem' }}>
-                                                    {test.description || 'Test your knowledge with this comprehensive mock exam.'}
-                                                </Typography>
-                                                
+                                            </CardContent>
+
+                                            <Box sx={{ p: 2.5, pt: 0, position: 'relative', zIndex: 1 }}>
                                                 <Button
                                                     fullWidth
-                                                    variant={hasAccess ? "contained" : "outlined"}
+                                                    variant="contained"
                                                     onClick={() => handleStartTest(test.subject_id, test.id, test.price)}
                                                     disabled={isPending}
-                                                    endIcon={!hasAccess && !isPending && <ChevronRight size={18} />}
+                                                    startIcon={hasAccess ? <Play size={18} fill="currentColor" /> : isPending ? <Clock size={18} /> : <Zap size={18} />}
                                                     sx={{
-                                                        borderRadius: 2.5,
-                                                        py: 1.2,
-                                                        fontWeight: 800,
+                                                        bgcolor: 'white',
+                                                        color: COLORS.accent,
+                                                        fontWeight: 900,
+                                                        borderRadius: 3.5,
                                                         textTransform: 'none',
-                                                        boxShadow: hasAccess ? `0 8px 16px ${alpha(COLORS.accent, 0.2)}` : 'none',
-                                                        bgcolor: hasAccess ? COLORS.accent : 'transparent',
-                                                        color: hasAccess ? 'white' : COLORS.primary,
-                                                        borderColor: hasAccess ? 'transparent' : COLORS.border,
+                                                        boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+                                                        py: 1.5,
+                                                        fontSize: '0.9rem',
                                                         '&:hover': {
-                                                            bgcolor: hasAccess ? COLORS.accentHover : alpha(COLORS.accent, 0.05),
-                                                            borderColor: hasAccess ? 'transparent' : COLORS.accent,
-                                                            color: hasAccess ? 'white' : COLORS.accent
-                                                        }
+                                                            bgcolor: alpha('#ffffff', 0.9),
+                                                            transform: 'translateY(-2px)',
+                                                            boxShadow: '0 12px 28px rgba(0,0,0,0.25)',
+                                                        },
+                                                        '&:disabled': {
+                                                            bgcolor: alpha('#ffffff', 0.4),
+                                                            color: alpha(COLORS.accent, 0.4)
+                                                        },
+                                                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                                                     }}
                                                 >
                                                     {hasAccess
-                                                        ? (attemptCount > 0 ? 'Retake Test' : 'Start Test')
+                                                        ? (attemptCount > 0 ? 'Re-Attempt' : 'Start Preparation')
                                                         : isPending
-                                                            ? 'Access Pending'
-                                                            : `Unlock (₹${test.price || 0})`}
+                                                            ? 'Processing...'
+                                                            : (isFirstAttempt ? 'Try Free' : `Unlock - ₹${test.price || 0}`)}
                                                 </Button>
-                                            </CardContent>
+                                            </Box>
                                         </Card>
                                     </motion.div>
                                 </Grid>
