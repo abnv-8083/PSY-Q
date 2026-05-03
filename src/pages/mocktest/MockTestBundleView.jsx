@@ -232,7 +232,7 @@ const MockTestBundleView = () => {
                             const SubjectIcon = getSubjectIcon(test.subject || test.name);
 
                             return (
-                                <Grid item xs={12} sm={6} md={3} key={test.id} sx={{ display: 'flex', height: 380 }}>
+                                <Grid item xs={12} sm={6} md={3} key={test.id} sx={{ display: 'flex' }}>
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -243,6 +243,8 @@ const MockTestBundleView = () => {
                                         <Card sx={{
                                             width: '100%',
                                             height: 380,
+                                            minHeight: 380,
+                                            maxHeight: 380,
                                             display: 'flex',
                                             flexDirection: 'column',
                                             borderRadius: 6,
@@ -261,7 +263,7 @@ const MockTestBundleView = () => {
                                                 }
                                             }
                                         }}>
-                                            <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1, overflow: 'hidden' }}>
+                                            <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                                                 {/* Decorative Icon */}
                                                 <Box className="card-icon-bg" sx={{
                                                     position: 'absolute',
@@ -275,7 +277,7 @@ const MockTestBundleView = () => {
                                                     {React.createElement(SubjectIcon, { size: 130, color: 'white', strokeWidth: 1 })}
                                                 </Box>
 
-                                                <Stack spacing={1.5} sx={{ position: 'relative', zIndex: 1 }}>
+                                                <Stack spacing={1} sx={{ position: 'relative', zIndex: 1, overflow: 'hidden' }}>
                                                     {/* Header Info */}
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <Box sx={{
