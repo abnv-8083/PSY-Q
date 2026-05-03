@@ -261,7 +261,7 @@ const MockTestBundleView = () => {
                                                 }
                                             }
                                         }}>
-                                            <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1 }}>
+                                            <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1, overflow: 'hidden' }}>
                                                 {/* Decorative Icon */}
                                                 <Box className="card-icon-bg" sx={{
                                                     position: 'absolute',
@@ -316,16 +316,18 @@ const MockTestBundleView = () => {
 
                                                     <Typography variant="h6" sx={{
                                                         fontWeight: 900,
-                                                        lineHeight: 1.2,
-                                                        height: 56,
+                                                        lineHeight: 1.25,
+                                                        minHeight: 44,
                                                         color: 'white',
-                                                        fontSize: '1.1rem',
+                                                        fontSize: '1.05rem',
                                                         letterSpacing: '-0.01em',
                                                         textShadow: '0 2px 10px rgba(0,0,0,0.1)',
                                                         display: '-webkit-box',
                                                         WebkitLineClamp: 2,
                                                         WebkitBoxOrient: 'vertical',
                                                         overflow: 'hidden',
+                                                        wordBreak: 'break-word',
+                                                        overflowWrap: 'break-word',
                                                     }}>
                                                         {test.name}
                                                     </Typography>
