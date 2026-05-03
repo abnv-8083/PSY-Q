@@ -244,6 +244,8 @@ const HeroSection = ({ navigate }) => {
                         }}>
                             <AnimatedCounter end={150} label="FULL TESTS" suffix="+" />
                             <AnimatedCounter end={6} label="PRACTICE QUESTIONS" suffix="K+" />
+                            <AnimatedCounter end={2} label="EXPLANATION" suffix="K+" />
+                            <AnimatedCounter end={2} label="TOTAL USERS" suffix="K+" />
                             <AnimatedCounter end={120} label="HOURS OF MOCKS" suffix="+" />
                             <AnimatedCounter end={100} label="TOPIC WISE TESTS" suffix="+" />
                         </Box>
