@@ -26,6 +26,15 @@ const MockTestRules = () => {
                     return;
                 }
 
+                // Trial Limit Check for Guests
+                if (!user && test.is_free_trial) {
+                    const attempts = parseInt(localStorage.getItem(`psyq_trial_${testId}`) || '0');
+                    if (attempts >= (test.free_trial_limit || 1)) {
+                        navigate('/student/signin');
+                        return;
+                    }
+                }
+
                 setTestDetails({
                     name: test.name,
                     duration: test.duration,

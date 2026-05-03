@@ -128,8 +128,10 @@ const MockTestBundleView = () => {
             return;
         }
 
-        const isFirstAttempt = !attempts[testId] || attempts[testId] === 0;
-        const hasAccess = isFirstAttempt || accessedTestIds.has(testId) || price === 0;
+        const test = tests.find(t => t.id === testId);
+        const userAttempts = attempts[testId] || 0;
+        const hasFreeTrialAccess = test?.is_free_trial && userAttempts < (test?.free_trial_limit || 1);
+        const hasAccess = hasFreeTrialAccess || accessedTestIds.has(testId) || price === 0;
 
         if (hasAccess) {
             const sId = subjectId || 'bundle';
@@ -221,8 +223,8 @@ const MockTestBundleView = () => {
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
                         {tests.map((test, index) => {
                             const attemptCount = attempts[test.id] || 0;
-                            const isFirstAttempt = attemptCount === 0;
-                            const hasAccess = isFirstAttempt || accessedTestIds.has(test.id) || test.price === 0;
+                            const hasFreeTrialAccess = test.is_free_trial && attemptCount < (test.free_trial_limit || 1);
+                            const hasAccess = hasFreeTrialAccess || accessedTestIds.has(test.id) || test.price === 0;
                             const isPending = pendingTestIds.has(test.id);
                             const SubjectIcon = getSubjectIcon(test.subject || test.name);
 
@@ -351,7 +353,7 @@ const MockTestBundleView = () => {
                                                         <Stack direction="row" alignItems="center" spacing={1}>
                                                             <Award size={14} color="white" strokeWidth={2.5} />
                                                             <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem' }}>
-                                                                {test.total_questions || test.questions?.length || 0} Mks
+                                                                {(test.total_questions || test.questions?.length || 0) * 2} Mks
                                                             </Typography>
                                                         </Stack>
                                                         <Stack direction="row" alignItems="center" spacing={1}>
@@ -415,7 +417,7 @@ const MockTestBundleView = () => {
                                                         ? (attemptCount > 0 ? 'Re-Attempt' : 'Start Preparation')
                                                         : isPending
                                                             ? 'Processing...'
-                                                            : (isFirstAttempt ? 'Try Free' : `Unlock - ₹${test.price || 0}`)}
+                                                            : (hasFreeTrialAccess ? 'Try Free' : `Unlock - ₹${test.price || 0}`)}
                                                 </Button>
                                             </Box>
                                         </Card>

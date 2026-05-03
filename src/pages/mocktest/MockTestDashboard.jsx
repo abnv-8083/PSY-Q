@@ -150,12 +150,12 @@ const MockTestDashboard = () => {
         }
 
         // --- FREE TRIAL POLICY ---
-        // First attempt of any test is free.
-        const isFirstAttempt = !attempts[testId] || attempts[testId] === 0;
+        const test = currentSubject?.tests?.find(t => t.id === testId);
+        const userAttempts = attempts[testId] || 0;
+        const hasFreeTrialAccess = test?.is_free_trial && userAttempts < (test?.free_trial_limit || 1);
 
         // Check if user has access
-        const hasAccess = isFirstAttempt || accessedTestIds.has(testId) || price === 0;
-
+        const hasAccess = hasFreeTrialAccess || accessedTestIds.has(testId) || price === 0;
 
         if (hasAccess) {
             navigate(`/academic/mocktest/${subjectId}/${testId}/rules`);
@@ -593,7 +593,7 @@ const MockTestDashboard = () => {
                                                     variant="contained"
                                                     onClick={() => handleStartTest(test.subject_id || currentSubject?.id, test.id, test.price)}
                                                     disabled={pendingTestIds.has(test.id)}
-                                                    startIcon={(accessedTestIds.has(test.id) || (!attempts[test.id] || attempts[test.id] === 0)) ? <Play size={18} fill="currentColor" /> : pendingTestIds.has(test.id) ? <Clock size={18} /> : <Zap size={18} />}
+                                                    startIcon={(accessedTestIds.has(test.id) || (test.is_free_trial && (!attempts[test.id] || attempts[test.id] < (test.free_trial_limit || 1)))) ? <Play size={18} fill="currentColor" /> : pendingTestIds.has(test.id) ? <Clock size={18} /> : <Zap size={18} />}
                                                     sx={{
                                                         bgcolor: 'white',
                                                         color: COLORS.accent,
@@ -619,7 +619,7 @@ const MockTestDashboard = () => {
                                                         ? (attempts[test.id] > 0 ? 'Re-Attempt' : 'Start Preparation')
                                                         : (pendingTestIds.has(test.id)
                                                             ? 'Processing...'
-                                                            : ((!attempts[test.id] || attempts[test.id] === 0) 
+                                                            : ((test.is_free_trial && (!attempts[test.id] || attempts[test.id] < (test.free_trial_limit || 1))) 
                                                                 ? 'Try Free'
                                                                 : (test.price > 0 ? `Unlock - ₹${test.price}` : 'Access Now')))}
                                                 </Button>

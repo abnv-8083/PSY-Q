@@ -248,7 +248,7 @@ const MockTestInterface = () => {
 
     const handleFinalSubmit = async (gName = null) => {
         const score = questions.reduce((acc, q, idx) => {
-            return answers[idx] === q.correctKey ? acc + 1 : acc;
+            return answers[idx] === q.correctKey ? acc + 2 : acc;
         }, 0);
 
         try {
@@ -265,7 +265,7 @@ const MockTestInterface = () => {
                 is_guest: !user,
                 test_id: testId,
                 score,
-                total_marks: questions.length,
+                total_marks: questions.length * 2,
                 answers: formattedAnswers,
                 time_spent: (test?.duration || 100) * 60 - timeLeft,
                 status: 'completed'
@@ -278,7 +278,7 @@ const MockTestInterface = () => {
             }
 
             navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
-                state: { score, total: questions.length, answers, questions, guestName: gName || guestNameInput }
+                state: { score, total: questions.length * 2, answers, questions, guestName: gName || guestNameInput }
             });
         } catch (err) {
             console.error("Submission failed:", err);
