@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Box, Container, Typography, Grid, Card, CardContent, Button, Chip,
-    Stack, useTheme, useMediaQuery, Skeleton, alpha
+    Box, Container, Typography, Card, CardContent, Button, Chip,
+    Stack, useTheme, useMediaQuery, Skeleton, alpha, Grid
 } from '@mui/material';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { fetchTests, fetchUserAttempts, fetchUserAccess } from '../../api/testsApi';
@@ -69,8 +69,7 @@ const MockTestBundleView = () => {
         const loadBundleData = async () => {
             try {
                 setLoading(true);
-                
-                // Fetch bundle details
+
                 const bundleData = await fetchBundleById(bundleId);
                 if (!bundleData) {
                     navigate('/academic/mocktest/bundles');
@@ -78,17 +77,15 @@ const MockTestBundleView = () => {
                 }
                 setBundle(bundleData);
 
-                // Fetch all tests and filter by bundle's test IDs
                 const allTestsData = await fetchTests();
                 const bundleTestIds = new Set((bundleData.tests || []).map(t => typeof t === 'object' ? (t.id || t._id) : t));
                 const filteredTests = (allTestsData || [])
                     .filter(test => bundleTestIds.has(test._id || test.id))
                     .map(test => ({ ...test, id: test._id || test.id }))
                     .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
-                
+
                 setTests(filteredTests);
 
-                // Fetch user access data if logged in
                 const userId = user?._id || user?.id;
                 if (userId) {
                     const [attemptData, accessIdsArr, pendingReqs] = await Promise.all([
@@ -105,7 +102,7 @@ const MockTestBundleView = () => {
                     setAttempts(attemptMap);
 
                     setAccessedTestIds(new Set(accessIdsArr || []));
-                    
+
                     if (pendingReqs) {
                         const pendingIds = pendingReqs
                             .filter(r => r.status === 'pending')
@@ -135,8 +132,6 @@ const MockTestBundleView = () => {
         const hasAccess = isFirstAttempt || accessedTestIds.has(testId) || price === 0;
 
         if (hasAccess) {
-            // For bundle view, we might not have a reliable subjectId if test belongs to a deleted subject.
-            // But tests usually have subject_id. Let's pass the first part as subjectId if available, or 'bundle'
             const sId = subjectId || 'bundle';
             navigate(`/academic/mocktest/${sId}/${testId}/rules`);
         } else if (pendingTestIds.has(testId)) {
@@ -167,14 +162,14 @@ const MockTestBundleView = () => {
                 overflow: 'hidden'
             }}>
                 <Container maxWidth="lg">
-                    <Button 
-                        startIcon={<ArrowLeft size={18} />} 
+                    <Button
+                        startIcon={<ArrowLeft size={18} />}
                         onClick={() => navigate('/academic/mocktest/bundles')}
                         sx={{ color: 'rgba(255,255,255,0.7)', mb: 3, '&:hover': { color: 'white' }, textTransform: 'none' }}
                     >
                         Back to Bundles
                     </Button>
-                    
+
                     {loading ? (
                         <Box>
                             <Skeleton variant="text" width={200} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
@@ -199,23 +194,23 @@ const MockTestBundleView = () => {
                         </motion.div>
                     )}
                 </Container>
-                
+
                 {/* Decorative Elements */}
                 <Box sx={{ position: 'absolute', right: '-5%', top: '20%', opacity: 0.05, color: 'white', display: { xs: 'none', md: 'block' } }}>
                     <Library size={300} strokeWidth={1} />
                 </Box>
             </Box>
 
-            {/* Test Grid */}
+            {/* Test Cards */}
             <Container maxWidth="xl" sx={{ mt: 6, pb: 10 }}>
                 {loading ? (
-                    <Grid container spacing={3}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
                         {[1, 2, 3, 4].map(i => (
-                            <Grid item xs={12} sm={6} md={3} key={i}>
-                                <Skeleton variant="rounded" sx={{ borderRadius: 3, width: '100%', height: 320 }} />
-                            </Grid>
+                            <Box key={i} sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(25% - 18px)' }, minWidth: 240 }}>
+                                <Skeleton variant="rounded" sx={{ borderRadius: 6, width: '100%', height: 320 }} />
+                            </Box>
                         ))}
-                    </Grid>
+                    </Box>
                 ) : tests.length === 0 ? (
                     <Box sx={{ textAlign: 'center', py: 10, bgcolor: 'white', borderRadius: 4, border: `1px dashed ${COLORS.border}` }}>
                         <Library size={48} color={COLORS.secondary} style={{ opacity: 0.5, marginBottom: '16px' }} />
@@ -223,7 +218,7 @@ const MockTestBundleView = () => {
                         <Typography variant="body2" sx={{ color: COLORS.secondary }}>This package currently has no assigned tests.</Typography>
                     </Box>
                 ) : (
-                    <Grid container spacing={3}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
                         {tests.map((test, index) => {
                             const attemptCount = attempts[test.id] || 0;
                             const isFirstAttempt = attemptCount === 0;
@@ -232,19 +227,21 @@ const MockTestBundleView = () => {
                             const SubjectIcon = getSubjectIcon(test.subject || test.name);
 
                             return (
-                                <Grid item xs={12} sm={6} md={3} key={test.id} sx={{ display: 'flex' }}>
+                                <Box key={test.id} sx={{
+                                    width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(25% - 18px)' },
+                                    minWidth: 240,
+                                    maxWidth: { xs: '100%', sm: 'none' }
+                                }}>
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.05 }}
                                         whileHover={{ y: -8, scale: 1.01 }}
-                                        style={{ width: '100%', display: 'flex' }}
+                                        style={{ height: '100%', width: '100%' }}
                                     >
                                         <Card sx={{
-                                            width: '100%',
-                                            height: 380,
-                                            minHeight: 380,
-                                            maxHeight: 380,
+                                            height: '100%',
+                                            minHeight: 320,
                                             display: 'flex',
                                             flexDirection: 'column',
                                             borderRadius: 6,
@@ -263,7 +260,7 @@ const MockTestBundleView = () => {
                                                 }
                                             }
                                         }}>
-                                            <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                                            <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1 }}>
                                                 {/* Decorative Icon */}
                                                 <Box className="card-icon-bg" sx={{
                                                     position: 'absolute',
@@ -277,8 +274,8 @@ const MockTestBundleView = () => {
                                                     {React.createElement(SubjectIcon, { size: 130, color: 'white', strokeWidth: 1 })}
                                                 </Box>
 
-                                                <Stack spacing={1} sx={{ position: 'relative', zIndex: 1, overflow: 'hidden' }}>
-                                                    {/* Header Info */}
+                                                <Stack spacing={1.5} sx={{ position: 'relative', zIndex: 1 }}>
+                                                    {/* Subject Badge + Solved Chip */}
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <Box sx={{
                                                             px: 1.2,
@@ -316,25 +313,20 @@ const MockTestBundleView = () => {
                                                         )}
                                                     </Box>
 
+                                                    {/* Test Name */}
                                                     <Typography variant="h6" sx={{
                                                         fontWeight: 900,
-                                                        lineHeight: 1.25,
-                                                        minHeight: 44,
+                                                        lineHeight: 1.2,
+                                                        minHeight: 48,
                                                         color: 'white',
-                                                        fontSize: '1.05rem',
+                                                        fontSize: '1.15rem',
                                                         letterSpacing: '-0.01em',
-                                                        textShadow: '0 2px 10px rgba(0,0,0,0.1)',
-                                                        display: '-webkit-box',
-                                                        WebkitLineClamp: 2,
-                                                        WebkitBoxOrient: 'vertical',
-                                                        overflow: 'hidden',
-                                                        wordBreak: 'break-word',
-                                                        overflowWrap: 'break-word',
+                                                        textShadow: '0 2px 10px rgba(0,0,0,0.1)'
                                                     }}>
                                                         {test.name}
                                                     </Typography>
 
-                                                    {/* Compact Glass Stats Grid */}
+                                                    {/* Glass Stats Grid */}
                                                     <Box sx={{
                                                         display: 'grid',
                                                         gridTemplateColumns: 'repeat(2, 1fr)',
@@ -376,6 +368,7 @@ const MockTestBundleView = () => {
                                                         </Stack>
                                                     </Box>
 
+                                                    {/* Video Solutions */}
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 0.9 }}>
                                                         <Sparkles size={12} color="white" />
                                                         <Typography variant="caption" sx={{
@@ -389,6 +382,7 @@ const MockTestBundleView = () => {
                                                 </Stack>
                                             </CardContent>
 
+                                            {/* CTA Button */}
                                             <Box sx={{ p: 2.5, pt: 0, position: 'relative', zIndex: 1 }}>
                                                 <Button
                                                     fullWidth
@@ -426,10 +420,10 @@ const MockTestBundleView = () => {
                                             </Box>
                                         </Card>
                                     </motion.div>
-                                </Grid>
+                                </Box>
                             );
                         })}
-                    </Grid>
+                    </Box>
                 )}
             </Container>
 
