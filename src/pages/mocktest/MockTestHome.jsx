@@ -242,11 +242,10 @@ const HeroSection = ({ navigate }) => {
                             borderTop: `1px solid ${alpha(COLORS.border, 0.5)}`,
                             justifyContent: 'center'
                         }}>
-                            <AnimatedCounter end={50} label="FULL TESTS" suffix="+" />
-                            <AnimatedCounter end={12} label="YEARS OF PYQs" suffix="+" />
-                            <AnimatedCounter end={5} label="PRACTICE QUESTIONS" suffix="K+" />
-                            <AnimatedCounter end={2} label="TOTAL EXPLANATIONS" suffix="K+" />
-                            <AnimatedCounter end={2} label="TOTAL USERS" suffix="K+" />
+                            <AnimatedCounter end={150} label="FULL TESTS" suffix="+" />
+                            <AnimatedCounter end={6} label="PRACTICE QUESTIONS" suffix="K+" />
+                            <AnimatedCounter end={120} label="HOURS OF MOCKS" suffix="+" />
+                            <AnimatedCounter end={100} label="TOPIC WISE TESTS" suffix="+" />
                         </Box>
 
                         <Box sx={{ mt: 8, mb: 2 }}>
