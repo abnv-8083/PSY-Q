@@ -43,6 +43,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filter, setFilter] = useState('all');
     const [sortBy, setSortBy] = useState('default');
+    const [gridCols, setGridCols] = useState(1);
 
     // Modern Dialog State
     const [dialog, setDialog] = useState({
@@ -471,6 +472,27 @@ const QuestionBank = ({ subject, test, onBack }) => {
                                 <MenuItem value="text_desc" sx={{ fontWeight: 700 }}>Question Z-A</MenuItem>
                             </Select>
                         </FormControl>
+
+                        <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 160 } }}>
+                            <InputLabel id="grid-select-label" sx={{ fontWeight: 700, color: COLORS.textLight }}>Grid View</InputLabel>
+                            <Select
+                                labelId="grid-select-label"
+                                value={gridCols}
+                                label="Grid View"
+                                onChange={(e) => setGridCols(e.target.value)}
+                                sx={{
+                                    borderRadius: 4,
+                                    bgcolor: 'white',
+                                    fontWeight: 700,
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: COLORS.accent },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: COLORS.accent, borderWidth: 2 }
+                                }}
+                            >
+                                <MenuItem value={1} sx={{ fontWeight: 700 }}>1 Column</MenuItem>
+                                <MenuItem value={2} sx={{ fontWeight: 700 }}>2 Columns</MenuItem>
+                            </Select>
+                        </FormControl>
                     </Box>
                 </Box>
 
@@ -499,7 +521,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
                                 return 0;
                             })
                             .map((q, idx) => (
-                            <Grid item xs={12} key={q.id}>
+                            <Grid item xs={12} md={gridCols === 1 ? 12 : 6} key={q.id}>
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
