@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, Button, TextField, Paper, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, FormLabel, RadioGroup, FormControlLabel, Radio, Divider, Grid, Avatar, Fab, Alert, alpha } from '@mui/material';
+import { Box, Typography, Button, TextField, Paper, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, FormLabel, RadioGroup, FormControlLabel, Radio, Divider, Grid, Avatar, Fab, Alert, alpha, Select, MenuItem, FormControl, InputLabel, InputAdornment } from '@mui/material';
 import { fetchTestQuestions } from '../../api/testsApi';
 import { createQuestion, updateQuestion, deleteQuestion } from '../../api/questionsApi';
 import ModernDialog from '../../components/ModernDialog';
-import { Plus, Trash2, ChevronLeft, HelpCircle, CheckCircle2, MessageSquare, FileUp, Loader2, Pencil, Circle, ArrowUp } from 'lucide-react';
+import { Plus, Trash2, ChevronLeft, HelpCircle, CheckCircle2, MessageSquare, FileUp, Loader2, Pencil, Circle, ArrowUp, Search, Filter, ArrowUpDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { extractTextFromPDF, parseQuestionsFromText } from '../../utils/pdfParser';
 
@@ -38,6 +38,11 @@ const QuestionBank = ({ subject, test, onBack }) => {
     const [navHidden, setNavHidden] = useState(false);
     const [lastScrollTop, setLastScrollTop] = useState(0);
     const contentRef = useRef(null);
+
+    // Search, Filter and Sort State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filter, setFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('default');
 
     // Modern Dialog State
     const [dialog, setDialog] = useState({
@@ -374,15 +379,126 @@ const QuestionBank = ({ subject, test, onBack }) => {
             </Box>
 
             <Box id="question-content" ref={contentRef} sx={{ flex: 1, overflow: 'auto', p: { xs: 3, md: 6 }, bgcolor: '#f8fafc' }}>
-                <Box sx={{ mb: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -0.5 }}>
-                        All Questions <Chip label={questions.length} size="small" sx={{ ml: 1, fontWeight: 900, bgcolor: COLORS.primary, color: 'white' }} />
+                <Box sx={{
+                    mb: 6,
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
+                    gap: 3,
+                    alignItems: { xs: 'stretch', md: 'center' },
+                    justifyContent: 'space-between'
+                }}>
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -0.5, display: 'flex', alignItems: 'center' }}>
+                        All Questions <Chip label={questions.filter(q => {
+                            const query = searchQuery.trim().toLowerCase();
+                            if (query) {
+                                const textMatch = q.text && q.text.toLowerCase().includes(query);
+                                const explanationMatch = q.explanation && q.explanation.toLowerCase().includes(query);
+                                const optionMatch = q.options && q.options.some(opt => opt && opt.toLowerCase().includes(query));
+                                if (!textMatch && !explanationMatch && !optionMatch) return false;
+                            }
+                            if (filter === 'with_explanation' && !q.explanation) return false;
+                            if (filter === 'without_explanation' && q.explanation) return false;
+                            return true;
+                        }).length} size="small" sx={{ ml: 1, fontWeight: 900, bgcolor: COLORS.primary, color: 'white' }} />
                     </Typography>
+
+                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, flex: { md: 1 }, justifyContent: 'flex-end', maxWidth: { md: '65%' } }}>
+                        <TextField
+                            placeholder="Search questions..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            size="small"
+                            sx={{
+                                minWidth: { xs: '100%', sm: 260 },
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 4,
+                                    bgcolor: 'white',
+                                    fontWeight: 700,
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: COLORS.accent },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: COLORS.accent, borderWidth: 2 }
+                                }
+                            }}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Search size={18} color={COLORS.textLight} />
+                                    </InputAdornment>
+                                )
+                            }}
+                        />
+
+                        <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 180 } }}>
+                            <InputLabel id="filter-select-label" sx={{ fontWeight: 700, color: COLORS.textLight }}>Filter</InputLabel>
+                            <Select
+                                labelId="filter-select-label"
+                                value={filter}
+                                label="Filter"
+                                onChange={(e) => setFilter(e.target.value)}
+                                sx={{
+                                    borderRadius: 4,
+                                    bgcolor: 'white',
+                                    fontWeight: 700,
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: COLORS.accent },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: COLORS.accent, borderWidth: 2 }
+                                }}
+                            >
+                                <MenuItem value="all" sx={{ fontWeight: 700 }}>All Questions</MenuItem>
+                                <MenuItem value="with_explanation" sx={{ fontWeight: 700 }}>With Explanations</MenuItem>
+                                <MenuItem value="without_explanation" sx={{ fontWeight: 700 }}>Without Explanations</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 180 } }}>
+                            <InputLabel id="sort-select-label" sx={{ fontWeight: 700, color: COLORS.textLight }}>Sort By</InputLabel>
+                            <Select
+                                labelId="sort-select-label"
+                                value={sortBy}
+                                label="Sort By"
+                                onChange={(e) => setSortBy(e.target.value)}
+                                sx={{
+                                    borderRadius: 4,
+                                    bgcolor: 'white',
+                                    fontWeight: 700,
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
+                                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: COLORS.accent },
+                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: COLORS.accent, borderWidth: 2 }
+                                }}
+                            >
+                                <MenuItem value="default" sx={{ fontWeight: 700 }}>Default Order</MenuItem>
+                                <MenuItem value="text_asc" sx={{ fontWeight: 700 }}>Question A-Z</MenuItem>
+                                <MenuItem value="text_desc" sx={{ fontWeight: 700 }}>Question Z-A</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Box>
                 </Box>
 
                 <Grid container spacing={4}>
                     <AnimatePresence>
-                        {questions.map((q, idx) => (
+                        {questions
+                            .filter(q => {
+                                const query = searchQuery.trim().toLowerCase();
+                                if (query) {
+                                    const textMatch = q.text && q.text.toLowerCase().includes(query);
+                                    const explanationMatch = q.explanation && q.explanation.toLowerCase().includes(query);
+                                    const optionMatch = q.options && q.options.some(opt => opt && opt.toLowerCase().includes(query));
+                                    if (!textMatch && !explanationMatch && !optionMatch) return false;
+                                }
+                                if (filter === 'with_explanation' && !q.explanation) return false;
+                                if (filter === 'without_explanation' && q.explanation) return false;
+                                return true;
+                            })
+                            .sort((a, b) => {
+                                if (sortBy === 'text_asc') {
+                                    return (a.text || '').localeCompare(b.text || '');
+                                }
+                                if (sortBy === 'text_desc') {
+                                    return (b.text || '').localeCompare(a.text || '');
+                                }
+                                return 0;
+                            })
+                            .map((q, idx) => (
                             <Grid item xs={12} key={q.id}>
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
@@ -484,6 +600,29 @@ const QuestionBank = ({ subject, test, onBack }) => {
                         ))}
                     </AnimatePresence>
                 </Grid>
+
+                {questions.length > 0 && questions.filter(q => {
+                    const query = searchQuery.trim().toLowerCase();
+                    if (query) {
+                        const textMatch = q.text && q.text.toLowerCase().includes(query);
+                        const explanationMatch = q.explanation && q.explanation.toLowerCase().includes(query);
+                        const optionMatch = q.options && q.options.some(opt => opt && opt.toLowerCase().includes(query));
+                        if (!textMatch && !explanationMatch && !optionMatch) return false;
+                    }
+                    if (filter === 'with_explanation' && !q.explanation) return false;
+                    if (filter === 'without_explanation' && q.explanation) return false;
+                    return true;
+                }).length === 0 && (
+                    <Box sx={{ py: 12, textAlign: 'center' }}>
+                        <Box sx={{ mb: 4, display: 'inline-flex', p: 3, bgcolor: 'rgba(0,0,0,0.03)', borderRadius: '50%' }}>
+                            <Search size={64} color={COLORS.textLight} />
+                        </Box>
+                        <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1.5 }}>No Match Found</Typography>
+                        <Typography variant="body1" sx={{ color: COLORS.textLight, maxWidth: 400, mx: 'auto' }}>
+                            We couldn't find any questions matching your current search, filter, and sort parameters.
+                        </Typography>
+                    </Box>
+                )}
 
                 {questions.length === 0 && (
                     <Box sx={{ py: 12, textAlign: 'center' }}>
