@@ -434,7 +434,7 @@ const MockTestBundles = () => {
                         {[
                             { icon: <ShieldCheck size={32} />, title: "Secure Checkout", desc: "Encrypted payments" },
                             { icon: <Zap size={32} />, title: "Instant Access", desc: "Start practicing immediately" },
-                            { icon: <Sparkles size={32} />, title: "Lifetime Validity", desc: "No recurring fees" }
+                            { icon: <Sparkles size={32} />, title: "Unlimited attempts", desc: "Practice without limits" }
                         ].map((item, i) => (
                             <Grid item xs={12} sm={4} key={i}>
                                 <Stack alignItems="center" textAlign="center" spacing={1}>
