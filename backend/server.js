@@ -463,7 +463,7 @@ app.put('/api/questions/:id', async (req, res) => {
 
 app.delete('/api/questions/:id', async (req, res) => {
   try {
-    const question = await Question.findByIdAndRemove(req.params.id);
+    const question = await Question.findByIdAndDelete(req.params.id);
     if (question) {
         await Test.findByIdAndUpdate(question.test_id, { $inc: { total_questions: -1 } });
     }
