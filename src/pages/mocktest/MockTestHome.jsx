@@ -470,7 +470,10 @@ const MockTestHome = () => {
             try {
                 // Fetch Tests (Limit 6 for carousel)
                 const testsData = await fetchTests();
-                if (testsData) setTests(testsData.slice(0, 6));
+                if (testsData) {
+                    const publishedTests = testsData.filter(t => t.is_published !== false);
+                    setTests(publishedTests.slice(0, 6));
+                }
 
                 // Fetch Bundles using the API for calculated fields
                 const bundlesData = await fetchBundles();

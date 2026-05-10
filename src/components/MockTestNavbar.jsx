@@ -49,7 +49,7 @@ const MockTestNavbar = () => {
     const navItems = [
         { label: 'Home', path: '/academic/mocktest' },
         { label: 'Practice Tests', path: '/academic/mocktest/dashboard' },
-        { label: 'Bundles', path: '/academic/mocktest/bundles' }
+        { label: 'Purchase Bundle', path: '/academic/mocktest/bundles' }
     ];
 
     const handleNavigate = (path) => {
@@ -104,15 +104,31 @@ const MockTestNavbar = () => {
                                 <Button
                                     key={item.label}
                                     onClick={() => handleNavigate(item.path)}
+                                    disableRipple
                                     sx={{
                                         color: isActive(item.path) ? COLORS.accent : COLORS.text,
                                         fontWeight: isActive(item.path) ? 700 : 500,
                                         textTransform: 'none',
                                         fontSize: '0.9rem',
                                         px: 1.5,
+                                        position: 'relative',
+                                        bgcolor: 'transparent !important',
+                                        '&::after': {
+                                            content: '""',
+                                            position: 'absolute',
+                                            bottom: 4,
+                                            left: '10%',
+                                            width: isActive(item.path) ? '80%' : '0%',
+                                            height: '2px',
+                                            bgcolor: COLORS.accent,
+                                            transition: 'width 0.3s ease-in-out',
+                                            borderRadius: '2px'
+                                        },
                                         '&:hover': {
-                                            bgcolor: `${COLORS.accent}10`,
-                                            color: COLORS.accent
+                                            color: COLORS.accent,
+                                            '&::after': {
+                                                width: '80%'
+                                            }
                                         }
                                     }}
                                 >
@@ -277,13 +293,34 @@ const MockTestNavbar = () => {
                             key={item.label}
                             onClick={() => handleNavigate(item.path)}
                             size="small"
+                            disableRipple
                             sx={{
                                 color: isActive(item.path) ? COLORS.accent : COLORS.text,
                                 fontWeight: isActive(item.path) ? 700 : 600,
                                 textTransform: 'none',
                                 minWidth: 'max-content',
                                 fontSize: '0.8rem',
-                                opacity: isActive(item.path) ? 1 : 0.7
+                                opacity: isActive(item.path) ? 1 : 0.7,
+                                position: 'relative',
+                                bgcolor: 'transparent !important',
+                                '&::after': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: '10%',
+                                    width: isActive(item.path) ? '80%' : '0%',
+                                    height: '2px',
+                                    bgcolor: COLORS.accent,
+                                    transition: 'width 0.3s ease-in-out',
+                                    borderRadius: '2px'
+                                },
+                                '&:hover': {
+                                    color: COLORS.accent,
+                                    opacity: 1,
+                                    '&::after': {
+                                        width: '80%'
+                                    }
+                                }
                             }}
                         >
                             {item.label}
