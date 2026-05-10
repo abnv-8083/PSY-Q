@@ -141,7 +141,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
 
         try {
             const payload = {
-                test_id: test.id,
+                test_id: test.id || test._id,
                 text: newQ.text,
                 options: mongoOptions,
                 correct_answer: mongoCorrectAnswer,
@@ -252,7 +252,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
                 const mongoCorrectAnswer = `opt_${q.correctKey}`;
 
                 return createQuestion({
-                    test_id: test.id,
+                    test_id: test.id || test._id,
                     text: q.text,
                     options: mongoOptions,
                     correct_answer: mongoCorrectAnswer,
