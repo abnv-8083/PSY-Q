@@ -636,14 +636,7 @@ const MockTestHome = () => {
                                 </Grid>
                             </Grid>
 
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 'auto' }}>
-                                <Box sx={{ p: 0.8, bgcolor: alpha('#ffffff', 0.2), borderRadius: 1.5 }}>
-                                    <Sparkles size={14} color="white" />
-                                </Box>
-                                <Typography variant="caption" sx={{ fontWeight: 800, color: 'white', fontSize: '0.75rem', opacity: 0.9 }}>
-                                    Expert Explanation in English
-                                </Typography>
-                            </Box>
+
                         </Stack>
                     </CardContent>
 

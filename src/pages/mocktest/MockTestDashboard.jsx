@@ -574,16 +574,7 @@ const MockTestDashboard = () => {
                                                         </Stack>
                                                     </Box>
 
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, opacity: 0.9 }}>
-                                                        <Sparkles size={12} color="white" />
-                                                        <Typography variant="caption" sx={{ 
-                                                            fontWeight: 700, 
-                                                            color: 'white',
-                                                            fontSize: '0.7rem',
-                                                        }}>
-                                                            Video Solutions Included
-                                                        </Typography>
-                                                    </Box>
+
                                                 </Stack>
                                             </CardContent>
 
