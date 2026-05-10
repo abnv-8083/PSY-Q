@@ -49,9 +49,7 @@ const GuestCheckout = () => {
     if (!orderData || !user) return null;
 
     const price = Number(orderData.price) || 0;
-    const calculateTax = (p) => Math.round(p * 0.18); // 18% GST example
-    const tax = calculateTax(price);
-    const total = price + tax;
+    const total = price;
 
     const handleSendRequest = async () => {
         setIsProcessing(true);
@@ -111,10 +109,7 @@ const GuestCheckout = () => {
                     <Typography color="textSecondary">Price</Typography>
                     <Typography sx={{ fontWeight: 600 }}>₹{price}</Typography>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
-                    <Typography color="textSecondary">GST (18%)</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>₹{tax}</Typography>
-                </Box>
+
                 <Divider sx={{ my: 2 }} />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="h6" sx={{ fontWeight: 800 }}>Total Amount</Typography>
