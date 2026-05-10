@@ -646,10 +646,9 @@ const MockTestHome = () => {
                             variant="contained"
                             onClick={() => {
                                 if (test.is_free_trial) {
-                                    // Navigate directly to rules for free trial
                                     navigate(`/academic/mocktest/psychology/${test._id || test.id}/rules`);
                                 } else {
-                                    navigate('/academic/mocktest/dashboard');
+                                    navigate('/academic/mocktest/bundles');
                                 }
                             }}
                             endIcon={<ArrowRight size={18} />}
@@ -670,7 +669,7 @@ const MockTestHome = () => {
                                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
                         >
-                            {test.is_free_trial ? 'Try Free Trial' : (isFree ? 'Try for Free' : 'Unlock Access Now')}
+                            {test.is_free_trial ? 'Try Free Trial' : (isFree ? 'Try for Free' : 'Unlock to Access')}
                         </Button>
                     </Box>
                 </Card>

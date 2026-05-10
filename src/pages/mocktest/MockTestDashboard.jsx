@@ -163,14 +163,7 @@ const MockTestDashboard = () => {
             // Already pending, do nothing or show a small toast, but button is disabled anyway
             return;
         } else {
-            navigate('/academic/mocktest/checkout', {
-                state: {
-                    type: 'test',
-                    testId: testId,
-                    name: currentSubject?.tests?.find(t => t.id === testId)?.name || 'Mock Test',
-                    price: price
-                }
-            });
+            navigate('/academic/mocktest/bundles');
         }
     };
 
@@ -612,7 +605,7 @@ const MockTestDashboard = () => {
                                                             ? 'Processing...'
                                                             : ((test.is_free_trial && (!attempts[test.id] || attempts[test.id] < (test.free_trial_limit || 1))) 
                                                                 ? 'Try Free'
-                                                                : (test.price > 0 ? `Unlock - ₹${test.price}` : 'Access Now')))}
+                                                                : (test.price > 0 ? `Unlock to Access` : 'Access Now')))}
                                                 </Button>
                                             </Box>
                                         </Card>

@@ -141,10 +141,10 @@ const MockTestBundleView = () => {
         } else {
             navigate('/academic/mocktest/checkout', {
                 state: {
-                    type: 'test',
-                    testId: testId,
-                    name: tests.find(t => t.id === testId)?.name || 'Mock Test',
-                    price: price
+                    type: 'bundle',
+                    bundleId: bundle._id || bundle.id,
+                    name: bundle.name || 'Mock Test Bundle',
+                    price: bundle.price
                 }
             });
         }
@@ -407,7 +407,7 @@ const MockTestBundleView = () => {
                                                         ? (attemptCount > 0 ? 'Re-Attempt' : 'Start Preparation')
                                                         : isPending
                                                             ? 'Processing...'
-                                                            : (hasFreeTrialAccess ? 'Try Free' : `Unlock - ₹${test.price || 0}`)}
+                                                            : (hasFreeTrialAccess ? 'Try Free' : `Unlock to Access`)}
                                                 </Button>
                                             </Box>
                                         </Card>
