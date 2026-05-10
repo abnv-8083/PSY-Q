@@ -248,6 +248,7 @@ const HeroSection = ({ navigate }) => {
                             <AnimatedCounter end={2} label="TOTAL USERS" suffix="K+" />
                             <AnimatedCounter end={120} label="HOURS OF MOCKS" suffix="+" />
                             <AnimatedCounter end={100} label="TOPIC WISE TESTS" suffix="+" />
+                            <AnimatedCounter end={10} label="YEARS OF PYQ" suffix="+" />
                         </Box>
 
                         <Box sx={{ mt: 8, mb: 2 }}>
