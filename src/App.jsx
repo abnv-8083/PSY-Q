@@ -30,6 +30,7 @@ import MockTestInterface from './pages/mocktest/MockTestInterface';
 import MockTestRules from './pages/mocktest/MockTestRules';
 import ResultAnalytics from './pages/mocktest/ResultAnalytics';
 import GuestCheckout from './pages/mocktest/GuestCheckout';
+import MyBundles from './pages/mocktest/MyBundles';
 
 // Student Sections
 import StudentProfile from './pages/student/StudentProfile';
@@ -83,6 +84,11 @@ function AnimatedRoutes() {
         <Route path="/academic/mocktest/checkout" element={
           <ProtectedRoute>
             <GuestCheckout />
+          </ProtectedRoute>
+        } />
+        <Route path="/academic/mocktest/my-bundles" element={
+          <ProtectedRoute>
+            <MyBundles />
           </ProtectedRoute>
         } />
         <Route path="/academic/mocktest/:subjectId/:testId/results" element={<ResultAnalytics />} />

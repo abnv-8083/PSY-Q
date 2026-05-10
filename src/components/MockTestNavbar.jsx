@@ -49,7 +49,8 @@ const MockTestNavbar = () => {
     const navItems = [
         { label: 'Home', path: '/academic/mocktest' },
         { label: 'Practice Tests', path: '/academic/mocktest/dashboard' },
-        { label: 'Purchase Bundle', path: '/academic/mocktest/bundles' }
+        { label: 'Purchase Bundle', path: '/academic/mocktest/bundles' },
+        ...(user ? [{ label: 'My Bundles', path: '/academic/mocktest/my-bundles' }] : [])
     ];
 
     const handleNavigate = (path) => {

@@ -356,18 +356,6 @@ const MockTestBundleView = () => {
                                                                 {(test.total_questions || test.questions?.length || 0) * 2} Mks
                                                             </Typography>
                                                         </Stack>
-                                                        <Stack direction="row" alignItems="center" spacing={1}>
-                                                            <Typography variant="caption" sx={{
-                                                                fontWeight: 900,
-                                                                fontSize: '0.75rem',
-                                                                bgcolor: 'white',
-                                                                color: COLORS.accent,
-                                                                px: 0.8,
-                                                                borderRadius: 1
-                                                            }}>
-                                                                {test.price === 0 ? 'FREE' : `₹${test.price}`}
-                                                            </Typography>
-                                                        </Stack>
                                                     </Box>
 
 
