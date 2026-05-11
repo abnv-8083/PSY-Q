@@ -84,15 +84,21 @@ export const reorderBundles = async (bundles) => {
  * @returns {Promise<Object>} Created/updated link record
  */
 export const addTestToBundle = async (bundleId, testId) => {
-    // Note: the backend handles bundles with a test collection list usually,
-    // or we'll update the bundle.tests array.
-    // For now, let's keep it simple: Add testId to bundle.tests array via PUT.
     const bundleRes = await fetch(`${API_URL}/bundles/${bundleId}`);
     const bundleResJson = await bundleRes.json();
     const bundle = bundleResJson.data;
-    
-    const updatedTests = [...(bundle.tests || []), testId];
-    return updateBundle(bundleId, { tests: updatedTests });
+
+    // Extract plain IDs from populated objects or raw ID strings
+    const existingIds = (bundle.tests || []).map(t =>
+        (typeof t === 'object' ? (t._id || t.id) : t).toString()
+    );
+
+    // Add only if not already present
+    if (!existingIds.includes(testId.toString())) {
+        existingIds.push(testId);
+    }
+
+    return updateBundle(bundleId, { tests: existingIds });
 };
 
 /**
@@ -104,9 +110,13 @@ export const removeTestFromBundle = async (bundleId, testId) => {
     const bundleRes = await fetch(`${API_URL}/bundles/${bundleId}`);
     const bundleResJson = await bundleRes.json();
     const bundle = bundleResJson.data;
-    
-    const updatedTests = (bundle.tests || []).filter(t => t !== testId);
-    return updateBundle(bundleId, { tests: updatedTests });
+
+    // Extract plain IDs from populated objects or raw ID strings, then filter out the target
+    const updatedIds = (bundle.tests || [])
+        .map(t => (typeof t === 'object' ? (t._id || t.id) : t).toString())
+        .filter(id => id !== testId.toString());
+
+    return updateBundle(bundleId, { tests: updatedIds });
 };
 
 /**

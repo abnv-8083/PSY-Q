@@ -78,14 +78,13 @@ const BundleManagement = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            // Fetch bundles with tests
             const bundlesData = await fetchBundles();
             setBundles(bundlesData);
 
-            // Fetch all available tests
             const testsData = await fetchAvailableTests();
             setTests(testsData);
 
+            return bundlesData; // return so callers can use fresh data
         } catch (error) {
             console.error("Error fetching bundle data:", error);
             setDialog({
@@ -223,7 +222,9 @@ const BundleManagement = () => {
     };
 
     const handleToggleTest = async (testId) => {
-        const isCurrentlyIncluded = editingBundle.tests.some(t => t.id === testId);
+        const isCurrentlyIncluded = editingBundle.tests.some(
+            t => (t.id || t._id || t).toString() === testId.toString()
+        );
 
         try {
             if (isCurrentlyIncluded) {
@@ -232,13 +233,11 @@ const BundleManagement = () => {
                 await addTestToBundle(editingBundle.id, testId);
             }
 
-            // Refresh data
-            await fetchData();
-
-            // Update editing bundle to reflect changes
-            const updatedBundle = bundles.find(b => b.id === editingBundle.id);
-            if (updatedBundle) {
-                setEditingBundle(updatedBundle);
+            // Refresh data and update editingBundle with fresh data
+            const freshBundles = await fetchData();
+            if (freshBundles) {
+                const updatedBundle = freshBundles.find(b => b.id === editingBundle.id);
+                if (updatedBundle) setEditingBundle(updatedBundle);
             }
         } catch (error) {
             console.error("Error toggling test:", error);
