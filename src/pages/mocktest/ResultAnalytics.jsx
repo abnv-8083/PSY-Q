@@ -415,15 +415,17 @@ const ResultAnalytics = () => {
                                         })}
                                     </Grid>
 
-                                    <Box sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: `1px solid ${COLORS.border}` }}>
-                                        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1, color: COLORS.accent }}>
-                                            <Star size={18} fill={COLORS.accent} />
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>Expert Explanation</Typography>
-                                        </Stack>
-                                        <Typography variant="body2" sx={{ color: COLORS.secondary, lineHeight: 1.6 }}>
-                                            {q.explanation || "Detailed explanation for this answer will be available soon in our premium guide."}
-                                        </Typography>
-                                    </Box>
+                                    {q.explanation ? (
+                                        <Box sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: `1px solid ${COLORS.border}` }}>
+                                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1, color: COLORS.accent }}>
+                                                <Star size={18} fill={COLORS.accent} />
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>Expert Explanation</Typography>
+                                            </Stack>
+                                            <Typography variant="body2" sx={{ color: COLORS.secondary, lineHeight: 1.6 }}>
+                                                {q.explanation}
+                                            </Typography>
+                                        </Box>
+                                    ) : null}
                                 </AccordionDetails>
                             </Accordion>
                         );
