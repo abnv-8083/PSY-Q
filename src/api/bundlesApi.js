@@ -119,6 +119,26 @@ export const updateBundleFeatures = async (bundleId, features) => {
     return updateBundle(bundleId, { features });
 };
 
+export const createBundle = async (bundleData) => {
+    const response = await fetch(`${API_URL}/admin/bundles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bundleData)
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    return { ...result.data, id: result.data._id || result.data.id };
+};
+
+export const deleteBundle = async (bundleId) => {
+    const response = await fetch(`${API_URL}/admin/bundles/${bundleId}`, {
+        method: 'DELETE'
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    return result;
+};
+
 /**
  * Get all tests available (placeholder for consistency)
  */

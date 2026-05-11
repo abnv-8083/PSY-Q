@@ -3,7 +3,7 @@ import { Box, Typography, Paper, Grid, TextField, Button, IconButton, Divider, D
 import ModernDialog from '../../components/ModernDialog';
 import { Package, BookOpen, CheckCircle, Edit, Save, X, Plus, Trash2, TrendingDown, GripVertical, ChevronRight, Search, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchBundles, updateBundle, addTestToBundle, removeTestFromBundle, updateBundleFeatures, fetchAvailableTests, reorderBundles } from '../../api/bundlesApi';
+import { fetchBundles, updateBundle, addTestToBundle, removeTestFromBundle, updateBundleFeatures, fetchAvailableTests, reorderBundles, createBundle, deleteBundle } from '../../api/bundlesApi';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
 
@@ -33,6 +33,16 @@ const BundleManagement = () => {
     // New test management state
     const [testSearchQuery, setTestSearchQuery] = useState('');
     const [testTab, setTestTab] = useState(0); // 0: Selected, 1: All
+
+    // Create bundle state
+    const [openCreateDialog, setOpenCreateDialog] = useState(false);
+    const [createForm, setCreateForm] = useState({
+        name: '',
+        description: '',
+        bundle_type: 'BASIC',
+        regular_price: '',
+        offer_price: ''
+    });
 
     // Details form state
     const [detailsForm, setDetailsForm] = useState({
@@ -314,6 +324,48 @@ const BundleManagement = () => {
         }
     };
 
+    const handleCreateBundle = async () => {
+        if (!createForm.name.trim() || !createForm.description.trim() || !createForm.regular_price) {
+            setDialog({ open: true, title: 'Validation Error', message: 'Name, description and regular price are required.', type: 'warning' });
+            return;
+        }
+        try {
+            await createBundle({
+                name: createForm.name.trim(),
+                description: createForm.description.trim(),
+                bundle_type: createForm.bundle_type,
+                regular_price: Number(createForm.regular_price),
+                offer_price: createForm.offer_price ? Number(createForm.offer_price) : null,
+                is_active: true,
+                display_order: bundles.length
+            });
+            setOpenCreateDialog(false);
+            setCreateForm({ name: '', description: '', bundle_type: 'BASIC', regular_price: '', offer_price: '' });
+            setDialog({ open: true, title: 'Bundle Created!', message: 'New bundle has been created successfully.', type: 'success' });
+            fetchData();
+        } catch (error) {
+            setDialog({ open: true, title: 'Create Failed', message: `Failed to create bundle: ${error.message}`, type: 'error' });
+        }
+    };
+
+    const handleDeleteBundle = (bundle) => {
+        setDialog({
+            open: true,
+            title: 'Delete Bundle?',
+            message: `Are you sure you want to delete "${bundle.name}"? This cannot be undone.`,
+            type: 'confirm',
+            onConfirm: async () => {
+                try {
+                    await deleteBundle(bundle.id);
+                    setDialog({ open: true, title: 'Deleted', message: 'Bundle deleted successfully.', type: 'success', onConfirm: null });
+                    fetchData();
+                } catch (error) {
+                    setDialog({ open: true, title: 'Delete Failed', message: `Failed to delete: ${error.message}`, type: 'error', onConfirm: null });
+                }
+            }
+        });
+    };
+
     // New functional components for background effects
     const Blob = ({ style }) => (
         <Box sx={{
@@ -349,6 +401,28 @@ const BundleManagement = () => {
                         Configure pricing and content for your premium subscriptions
                     </Typography>
                 </Box>
+            </Box>
+
+            {/* Add Bundle Button */}
+            <Box sx={{ position: 'relative', zIndex: 1, mb: 4, display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                    variant="contained"
+                    startIcon={<Plus size={18} />}
+                    onClick={() => setOpenCreateDialog(true)}
+                    sx={{
+                        bgcolor: COLORS.accent,
+                        borderRadius: '14px',
+                        fontWeight: 800,
+                        px: 3,
+                        py: 1.5,
+                        textTransform: 'none',
+                        fontSize: '0.95rem',
+                        boxShadow: `0 8px 24px ${alpha(COLORS.accent, 0.3)}`,
+                        '&:hover': { bgcolor: COLORS.accentHover }
+                    }}
+                >
+                    Add New Bundle
+                </Button>
             </Box>
 
             {loading ? (
@@ -644,6 +718,21 @@ const BundleManagement = () => {
                                                                         )}
                                                                     </Box>
                                                                 </Box>
+                                                                {/* Delete Button */}
+                                                                <Box sx={{ position: 'absolute', top: 12, right: 12, zIndex: 3 }}>
+                                                                    <IconButton
+                                                                        size="small"
+                                                                        onClick={() => handleDeleteBundle(bundle)}
+                                                                        sx={{
+                                                                            color: '#ef4444',
+                                                                            bgcolor: alpha('#ef4444', 0.1),
+                                                                            '&:hover': { bgcolor: '#ef4444', color: 'white' },
+                                                                            transition: 'all 0.2s'
+                                                                        }}
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </IconButton>
+                                                                </Box>
                                                             </Paper>
                                                         </motion.div>
                                                     </Box>
@@ -927,6 +1016,60 @@ const BundleManagement = () => {
                 <DialogActions sx={{ p: 3, px: 4, bgcolor: '#f8fafc', borderTop: `1px solid ${COLORS.border}` }}>
                     <Button onClick={() => setOpenDetailsDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: '12px' }}>Cancel</Button>
                     <Button variant="contained" onClick={handleSaveDetails} sx={{ bgcolor: COLORS.primary, borderRadius: '12px', fontWeight: 800, px: 4, py: 1.2, boxShadow: '0 8px 20px rgba(0,0,0,0.15)', '&:hover': { bgcolor: '#0f172a' } }}>Save Changes</Button>
+                </DialogActions>
+            </Dialog>
+            {/* Create Bundle Dialog */}
+            <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)} fullWidth maxWidth="sm" PaperProps={{ sx: { borderRadius: '24px', overflow: 'hidden' } }}>
+                <DialogTitle sx={{ fontWeight: 900, fontSize: '1.75rem', color: COLORS.primary, background: 'linear-gradient(to right, #f8fafc, #fff)', p: 4, pb: 2 }}>
+                    Create New Bundle
+                    <Typography sx={{ color: COLORS.accent, fontWeight: 700, mt: 0.5, fontSize: '1rem' }}>Fill in the details below</Typography>
+                </DialogTitle>
+                <DialogContent sx={{ px: 4, pb: 4 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 2 }}>
+                        <TextField
+                            fullWidth label="Bundle Name"
+                            value={createForm.name}
+                            onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px', fontWeight: 700 } }}
+                            required
+                        />
+                        <TextField
+                            fullWidth label="Description" multiline rows={3}
+                            value={createForm.description}
+                            onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px' } }}
+                            required
+                        />
+                        <TextField
+                            select fullWidth label="Bundle Tier"
+                            value={createForm.bundle_type}
+                            onChange={(e) => setCreateForm({ ...createForm, bundle_type: e.target.value })}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px', fontWeight: 700 } }}
+                        >
+                            <MenuItem value="BASIC">BASIC</MenuItem>
+                            <MenuItem value="ADVANCED">ADVANCED</MenuItem>
+                            <MenuItem value="PREMIUM">PREMIUM</MenuItem>
+                        </TextField>
+                        <TextField
+                            fullWidth label="Regular Price" type="number"
+                            value={createForm.regular_price}
+                            onChange={(e) => setCreateForm({ ...createForm, regular_price: e.target.value })}
+                            InputProps={{ startAdornment: <InputAdornment position="start"><Typography sx={{ fontWeight: 800, color: COLORS.primary }}>₹</Typography></InputAdornment> }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px', fontWeight: 700 } }}
+                            required
+                        />
+                        <TextField
+                            fullWidth label="Offer Price (optional)" type="number"
+                            value={createForm.offer_price}
+                            onChange={(e) => setCreateForm({ ...createForm, offer_price: e.target.value })}
+                            InputProps={{ startAdornment: <InputAdornment position="start"><Typography sx={{ fontWeight: 800, color: COLORS.accent }}>₹</Typography></InputAdornment> }}
+                            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px' } }}
+                        />
+                    </Box>
+                </DialogContent>
+                <DialogActions sx={{ p: 3, px: 4, bgcolor: '#f8fafc', borderTop: `1px solid ${COLORS.border}` }}>
+                    <Button onClick={() => setOpenCreateDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: '12px' }}>Cancel</Button>
+                    <Button variant="contained" onClick={handleCreateBundle} sx={{ bgcolor: COLORS.accent, borderRadius: '12px', fontWeight: 800, px: 4, py: 1.2, boxShadow: `0 8px 20px ${alpha(COLORS.accent, 0.3)}`, '&:hover': { bgcolor: COLORS.accentHover } }}>Create Bundle</Button>
                 </DialogActions>
             </Dialog>
 
