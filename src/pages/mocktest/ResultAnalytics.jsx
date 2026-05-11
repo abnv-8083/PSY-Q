@@ -425,7 +425,14 @@ const ResultAnalytics = () => {
                                                 {q.explanation}
                                             </Typography>
                                         </Box>
-                                    ) : null}
+                                    ) : (
+                                        <Box sx={{ p: 3, bgcolor: '#f8fafc', borderRadius: 4, border: `1px dashed ${COLORS.border}` }}>
+                                            <Stack direction="row" spacing={1} alignItems="center" sx={{ color: COLORS.textLight }}>
+                                                <Star size={18} />
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: COLORS.textLight }}>No Explanation</Typography>
+                                            </Stack>
+                                        </Box>
+                                    )}
                                 </AccordionDetails>
                             </Accordion>
                         );
