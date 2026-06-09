@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import { CheckCircle, XCircle, Clock, Search, Filter } from 'lucide-react';
 import { fetchAllPurchaseRequests, updatePurchaseRequestStatus } from '../../api/purchaseRequestsApi';
+import Loader from '../../components/Loader';
 
 const COLORS = {
     primary: '#1e293b',
@@ -119,7 +120,7 @@ const PurchaseRequests = () => {
         return matchesStatus && matchesSearch;
     });
 
-    if (loading) return <Box sx={{ p: 4, textAlign: 'center' }}><CircularProgress /></Box>;
+    if (loading) return <Loader fullScreen text="Loading Purchase Requests..." />;
 
     return (
         <Box sx={{ p: 4 }}>

@@ -40,6 +40,7 @@ import { useSession } from '../../contexts/SessionContext';
 import { fetchTestById, fetchTestQuestions, submitResult } from '../../api/testsApi';
 
 import ModernDialog from '../../components/ModernDialog';
+import Loader from '../../components/Loader';
 
 // --- Constants (Shared with MockTestHome) ---
 const COLORS = {
@@ -305,7 +306,7 @@ const MockTestInterface = () => {
         return 'not-visited';
     };
 
-    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><CircularProgress /></Box>;
+    if (loading) return <Loader fullScreen text="Loading Mock Test..." />;
     if (error) return <Box sx={{ p: 4, textAlign: 'center' }}><Typography color="error">{error}</Typography></Box>;
 
     const currentQuestion = questions[currentIdx];

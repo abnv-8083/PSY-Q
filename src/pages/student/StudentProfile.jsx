@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
+import Loader from '../../components/Loader';
 
 const COLORS = {
     primary: '#1e293b',
@@ -143,11 +144,7 @@ const StudentProfile = () => {
     };
 
     if (sessionLoading || loading) {
-        return (
-            <Box sx={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <CircularProgress sx={{ color: COLORS.accent }} />
-            </Box>
-        );
+        return <Loader fullScreen text="Loading Profile..." />;
     }
 
     return (
