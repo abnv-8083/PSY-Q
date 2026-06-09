@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import MockTestNavbar from '../../components/MockTestNavbar';
+import Loader from '../../components/Loader';
 import Footer from '../../components/Footer';
 import NotificationsCarousel from '../../components/NotificationsCarousel';
 import { fetchBundles } from '../../api/bundlesApi';
@@ -445,8 +446,8 @@ const Carousel = ({ title, items, renderItem, type = 'default' }) => {
                         </Box>
                     ))}
                     {items.length === 0 && (
-                        <Box sx={{ width: '100%', py: 4, textAlign: 'center' }}>
-                            <Typography color="text.secondary">Loading items...</Typography>
+                        <Box sx={{ width: '100%', py: 4, display: 'flex', justifyContent: 'center' }}>
+                            <Loader text="Loading items..." />
                         </Box>
                     )}
                 </Box>
@@ -732,8 +733,16 @@ const MockTestHome = () => {
                                 pb: 1,
                             }}
                         >
-                            {bundles
-                                .map((bundle, index) => (
+                            {loading ? (
+                                <Box sx={{ width: '100%', py: 8 }}>
+                                    <Loader text="Loading Packages..." />
+                                </Box>
+                            ) : bundles.length === 0 ? (
+                                <Box sx={{ width: '100%', py: 8, textAlign: 'center' }}>
+                                    <Typography variant="h6" color="text.secondary">No packages currently available.</Typography>
+                                </Box>
+                            ) : (
+                                bundles.map((bundle, index) => (
                                     <Box
                                         key={bundle.id}
                                         sx={{

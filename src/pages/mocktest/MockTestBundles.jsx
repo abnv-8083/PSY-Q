@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fetchUserAccess } from '../../api/testsApi';
 import { fetchUserPurchaseRequests } from '../../api/purchaseRequestsApi';
 import MockTestNavbar from '../../components/MockTestNavbar';
+import Loader from '../../components/Loader';
 import Footer from '../../components/Footer';
 import { useSession } from '../../contexts/SessionContext';
 import { fetchBundles } from '../../api/bundlesApi';
@@ -185,13 +186,13 @@ const MockTestBundles = () => {
             {/* Main Content */}
             <Container maxWidth="xl" sx={{ mt: -6, pb: 12, position: 'relative', zIndex: 2, px: { xs: 2, md: 4 } }}>
                 {loading ? (
-                    <Grid container spacing={3}>
-                        {[1, 2, 3].map((i) => (
-                            <Grid item xs={12} md={4} key={i}>
-                                <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 6 }} />
-                            </Grid>
-                        ))}
-                    </Grid>
+                    <Box sx={{ py: 10 }}>
+                        <Loader text="Loading Packages..." />
+                    </Box>
+                ) : bundles.length === 0 ? (
+                    <Box sx={{ py: 10, textAlign: 'center' }}>
+                        <Typography variant="h6" color="text.secondary">No packages currently available.</Typography>
+                    </Box>
                 ) : (
                     <Grid container spacing={3} alignItems="stretch" justifyContent="center">
                         {bundles.map((bundle, index) => (

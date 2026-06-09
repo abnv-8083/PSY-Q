@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
+import Loader from '../../components/Loader';
 
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
@@ -179,6 +180,15 @@ const MockTestDashboard = () => {
         return matchesYear && matchesSearch;
     });
 
+    if (loading || sessionLoading) {
+        return (
+            <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd', fontFamily: FONTS.primary }}>
+                <MockTestNavbar />
+                <Loader fullScreen text="Loading Dashboard..." />
+            </Box>
+        );
+    }
+
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd', fontFamily: FONTS.primary }}>
             <MockTestNavbar />
@@ -300,12 +310,9 @@ const MockTestDashboard = () => {
                             '&::-webkit-scrollbar': { display: 'none' },
                             flexGrow: 1
                         }}>
-                            {loading ? (
-                                [1, 2, 3].map(i => <Skeleton key={i} variant="rounded" width={120} height={40} sx={{ borderRadius: 2 }} />)
-                            ) : (
-                                subjects.map((subject) => (
-                                    <Button
-                                        key={subject.id}
+                            {subjects.map((subject) => (
+                                <Button
+                                    key={subject.id}
                                         onClick={() => {
                                             setSelectedSubject(subject.id);
                                             setSelectedYear('All'); // Reset year when subject changes
@@ -329,12 +336,12 @@ const MockTestDashboard = () => {
                                         {subject.name}
                                     </Button>
                                 ))
-                            )}
+                            }
                         </Box>
                     </Box>
 
                     {/* Year Filter Chips */}
-                    {!loading && years.length > 1 && (
+                    {years.length > 1 && (
                         <>
                             <Divider sx={{ my: 0.5 }} />
                             <Box sx={{
@@ -372,15 +379,7 @@ const MockTestDashboard = () => {
                     )}
                 </Paper>
 
-                {loading ? (
-                    <Grid container spacing={3}>
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                            <Grid item xs={12} sm={6} md={3} key={i}>
-                                <Skeleton variant="rounded" sx={{ borderRadius: 3, width: '100%', height: 320 }} />
-                            </Grid>
-                        ))}
-                    </Grid>
-                ) : !currentSubject ? (
+                {!currentSubject ? (
                     <Box sx={{ textAlign: 'center', py: 10 }}>
                         <Typography variant="h6" sx={{ color: COLORS.textLight }}>No tests available.</Typography>
                     </Box>

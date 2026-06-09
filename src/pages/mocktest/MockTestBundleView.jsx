@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
+import Loader from '../../components/Loader';
 
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
@@ -150,6 +151,15 @@ const MockTestBundleView = () => {
         }
     };
 
+    if (loading || sessionLoading) {
+        return (
+            <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd', fontFamily: FONTS.primary }}>
+                <MockTestNavbar />
+                <Loader fullScreen text="Loading Bundle..." />
+            </Box>
+        );
+    }
+
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd', fontFamily: FONTS.primary }}>
             <MockTestNavbar />
@@ -172,29 +182,22 @@ const MockTestBundleView = () => {
                         Back to Bundles
                     </Button>
 
-                    {loading ? (
-                        <Box>
-                            <Skeleton variant="text" width={200} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.1)' }} />
-                            <Skeleton variant="text" width="60%" height={80} sx={{ bgcolor: 'rgba(255,255,255,0.1)', mt: 1 }} />
-                        </Box>
-                    ) : (
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                <Box sx={{ p: 1, bgcolor: alpha(COLORS.accent, 0.2), borderRadius: 2, display: 'flex', border: `1px solid ${alpha(COLORS.accent, 0.5)}` }}>
-                                    <Library size={24} color={COLORS.accent} />
-                                </Box>
-                                <Typography variant="subtitle1" sx={{ color: COLORS.accent, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>
-                                    Bundle View
-                                </Typography>
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                            <Box sx={{ p: 1, bgcolor: alpha(COLORS.accent, 0.2), borderRadius: 2, display: 'flex', border: `1px solid ${alpha(COLORS.accent, 0.5)}` }}>
+                                <Library size={24} color={COLORS.accent} />
                             </Box>
-                            <Typography variant="h3" sx={{ fontWeight: 900, mb: 1, letterSpacing: -1, maxWidth: 800 }}>
-                                {bundle?.name}
+                            <Typography variant="subtitle1" sx={{ color: COLORS.accent, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>
+                                Bundle View
                             </Typography>
-                            <Typography variant="h6" sx={{ opacity: 0.8, fontWeight: 500, maxWidth: 600 }}>
-                                {bundle?.description || 'Access all premium mock tests included in this package.'}
-                            </Typography>
-                        </motion.div>
-                    )}
+                        </Box>
+                        <Typography variant="h3" sx={{ fontWeight: 900, mb: 1, letterSpacing: -1, maxWidth: 800 }}>
+                            {bundle?.name}
+                        </Typography>
+                        <Typography variant="h6" sx={{ opacity: 0.8, fontWeight: 500, maxWidth: 600 }}>
+                            {bundle?.description || 'Access all premium mock tests included in this package.'}
+                        </Typography>
+                    </motion.div>
                 </Container>
 
                 {/* Decorative Elements */}
@@ -205,15 +208,7 @@ const MockTestBundleView = () => {
 
             {/* Test Cards */}
             <Container maxWidth="xl" sx={{ mt: 6, pb: 10 }}>
-                {loading ? (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
-                        {[1, 2, 3, 4].map(i => (
-                            <Box key={i} sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(25% - 18px)' }, minWidth: 240 }}>
-                                <Skeleton variant="rounded" sx={{ borderRadius: 6, width: '100%', height: 320 }} />
-                            </Box>
-                        ))}
-                    </Box>
-                ) : tests.length === 0 ? (
+                {tests.length === 0 ? (
                     <Box sx={{ textAlign: 'center', py: 10, bgcolor: 'white', borderRadius: 4, border: `1px dashed ${COLORS.border}` }}>
                         <Library size={48} color={COLORS.secondary} style={{ opacity: 0.5, marginBottom: '16px' }} />
                         <Typography variant="h6" sx={{ color: COLORS.primary, fontWeight: 700 }}>No tests in this bundle.</Typography>
