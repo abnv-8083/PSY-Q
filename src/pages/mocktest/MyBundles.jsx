@@ -6,6 +6,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchBundles } from '../../api/bundlesApi';
 import { fetchUserPurchaseRequests } from '../../api/purchaseRequestsApi';
+import { fetchUserAccess } from '../../api/testsApi';
 import {
     Library, ChevronRight, ShoppingBag, Lock, Package, ArrowRight
 } from 'lucide-react';
@@ -55,17 +56,19 @@ const MyBundles = () => {
                 setLoading(true);
                 const userId = user._id || user.id;
 
-                const [allBundles, purchaseReqs] = await Promise.all([
+                const [allBundles, purchaseReqs, accessIds] = await Promise.all([
                     fetchBundles(),
-                    fetchUserPurchaseRequests(userId)
+                    fetchUserPurchaseRequests(userId),
+                    fetchUserAccess(userId)
                 ]);
 
                 // Get approved bundle IDs
-                const approvedBundleIds = new Set(
-                    (purchaseReqs || [])
+                const approvedBundleIds = new Set([
+                    ...(purchaseReqs || [])
                         .filter(r => r.status === 'approved' && r.item_type === 'bundle')
-                        .map(r => r.item_id)
-                );
+                        .map(r => r.item_id),
+                    ...(accessIds || [])
+                ]);
 
                 // Filter bundles user has purchased
                 const owned = (allBundles || []).filter(b =>
