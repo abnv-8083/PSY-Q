@@ -967,7 +967,7 @@ const MockTestHome = () => {
                                             </Card>
                                         </motion.div>
                                     </Box>
-                                ))}
+                                )))}
                         </Box>
                     </Box>
                 </Container>
