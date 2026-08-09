@@ -38,7 +38,7 @@ const FeatureCards = () => {
     {
       title: "Academic",
       description: "Comprehensive academic support and competitive exam preparation.",
-      link: "/academic-support",
+      link: "/ugc-net-preparation",
       image: "/images/academic.webp"
     },
     {

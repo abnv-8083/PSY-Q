@@ -61,6 +61,8 @@ function AnimatedRoutes() {
         <Route path="/contact" element={<Layout><Contact /></Layout>} />
         <Route path="/therapists" element={<Layout><Therapists /></Layout>} />
         <Route path="/therapists/:id" element={<Layout><TherapistProfile /></Layout>} />
+        <Route path="/therapy-services" element={<Layout><Therapists /></Layout>} />
+        <Route path="/therapy-services/:id" element={<Layout><TherapistProfile /></Layout>} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/soon" element={<Layout><Soon /></Layout>} />
@@ -71,6 +73,7 @@ function AnimatedRoutes() {
         <Route path="/child-rehabilitation" element={<Layout><ChildRehabilitation /></Layout>} />
         <Route path="/sports-mental-health" element={<Layout><SportsMentalHealth /></Layout>} />
         <Route path="/academic-support" element={<Layout><Academic /></Layout>} />
+        <Route path="/ugc-net-preparation" element={<Layout><Academic /></Layout>} />
         <Route path="/calicut-guide" element={<Layout><CalicutGuide /></Layout>} />
         <Route path="/policies" element={<Layout><Policies /></Layout>} />
 

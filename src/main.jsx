@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import theme from './theme'
+import { HelmetProvider } from 'react-helmet-async'
 
 // Register service worker for caching
 if ('serviceWorker' in navigator) {
@@ -14,9 +15,11 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <App />
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <App />
+      </ThemeProvider>
+    </HelmetProvider>
   </StrictMode>,
 )

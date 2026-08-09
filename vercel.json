@@ -1,8 +1,36 @@
 {
-    "rewrites": [
+  "redirects": [
+    {
+      "source": "/therapists",
+      "destination": "/therapy-services",
+      "permanent": true
+    },
+    {
+      "source": "/therapists/(.*)",
+      "destination": "/therapy-services/$1",
+      "permanent": true
+    },
+    {
+      "source": "/academic-support",
+      "destination": "/ugc-net-preparation",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.(jpg|jpeg|png|webp|avif|svg|css|js)",
+      "headers": [
         {
-            "source": "/(.*)",
-            "destination": "/index.html"
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
-    ]
+      ]
+    }
+  ]
 }

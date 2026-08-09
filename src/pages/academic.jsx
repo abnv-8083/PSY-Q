@@ -1,5 +1,6 @@
 import { Box, Container, Typography, Grid, Card, CardContent } from '@mui/material';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const Academic = () => {
   const guides = [
@@ -17,8 +18,25 @@ const Academic = () => {
     }
   ];
 
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    "name": "PSY-Q Learning",
+    "url": "https://www.psyqlearning.com/ugc-net-preparation",
+    "department": guides.map(guide => ({
+      "@type": "Course",
+      "name": guide.title,
+      "description": guide.description.replace('\n', '')
+    }))
+  };
+
   return (
     <Box>
+      <SEO 
+        title="Academic Support"
+        description="Comprehensive psychology courses and UGC NET Exam Preparation guides expertly curated for your studies."
+        schema={schema}
+      />
       {/* Hero Section */}
       <Box
         sx={{

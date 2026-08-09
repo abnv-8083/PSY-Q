@@ -127,6 +127,8 @@ const OldBookingModal = ({ isOpen, therapist, onClose }) => {
   )
 }
 
+import SEO from '../components/SEO'
+
 // Main Therapists component
 export default function Therapists() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -140,8 +142,33 @@ export default function Therapists() {
       therapist.specializations.some((spec) => spec.toLowerCase().includes(searchQuery.toLowerCase())),
   )
 
+  const medicalSchema = {
+    "@context": "https://schema.org",
+    "@type": "MedicalBusiness",
+    "name": "PSY-Q Therapy Services",
+    "url": "https://www.psyqlearning.com/therapy-services",
+    "description": "Online therapy and counseling services targeting the Malayalam-speaking community. Book a session with certified psychologists.",
+    "medicalSpecialty": [
+      "Psychiatric",
+      "Psychological"
+    ],
+    "availableService": therapists.map(t => ({
+      "@type": "MedicalTherapy",
+      "name": t.title,
+      "provider": {
+        "@type": "Physician",
+        "name": t.name
+      }
+    }))
+  };
+
   return (
     <>
+      <SEO 
+        title="Our Therapists"
+        description="Find and book sessions with top-rated, certified therapists. Mental well-being support tailored for you."
+        schema={medicalSchema}
+      />
       <style>{`
         @media (max-width: 640px) {
           .mobile-card {
