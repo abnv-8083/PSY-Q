@@ -26,8 +26,8 @@
     "pdfjs-dist": "^5.4.530",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.9.4",
-    "react-helmet-async": "^2.0.5",
     "recharts": "^3.7.0",
     "resend": "^6.7.0"
   },
