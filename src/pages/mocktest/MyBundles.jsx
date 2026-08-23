@@ -263,15 +263,15 @@ const MyBundles = () => {
                     </motion.div>
                 ) : (
                     <AnimatePresence>
-                        <Grid container spacing={3} justifyContent="center">
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center' }}>
                             {purchasedBundles.map((bundle, index) => (
-                                <Grid item xs={12} sm={6} md={4} key={bundle.id || bundle._id} sx={{ display: 'flex' }}>
+                                <Box key={bundle.id || bundle._id} sx={{ width: { xs: '100%', sm: 'calc(50% - 12px)', md: 'calc(33.333% - 16px)' }, minWidth: 280 }}>
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: index * 0.07 }}
                                         whileHover={{ y: -6, scale: 1.01 }}
-                                        style={{ height: '100%', width: '100%' }}
+                                        style={{ height: '100%' }}
                                     >
                                         <Card sx={{
                                             width: '100%',
@@ -399,9 +399,9 @@ const MyBundles = () => {
                                             </CardContent>
                                         </Card>
                                     </motion.div>
-                                </Grid>
+                                </Box>
                             ))}
-                        </Grid>
+                        </Box>
                     </AnimatePresence>
                 )}
             </Container>
