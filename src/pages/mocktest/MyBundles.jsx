@@ -14,7 +14,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
-import Loader from '../../components/Loader';
 
 const COLORS = {
     primary: '#1e293b',
@@ -87,11 +86,80 @@ const MyBundles = () => {
         if (!sessionLoading) loadData();
     }, [user, sessionLoading]);
 
+    const SkeletonBundleCard = () => (
+        <Card sx={{
+            height: '100%',
+            borderRadius: 4,
+            background: `linear-gradient(135deg, ${alpha(COLORS.accent, 0.08)} 0%, ${alpha('#9d174d', 0.06)} 100%)`,
+            border: `1px solid ${COLORS.border}`,
+            overflow: 'hidden',
+            position: 'relative'
+        }}>
+            {/* Shimmer overlay */}
+            <Box sx={{
+                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
+                animation: 'shimmer 1.5s ease-in-out infinite',
+                '@keyframes shimmer': {
+                    '0%': { transform: 'translateX(-100%)' },
+                    '100%': { transform: 'translateX(100%)' }
+                },
+                zIndex: 1
+            }} />
+            <CardContent sx={{ p: 3 }}>
+                <Stack spacing={2}>
+                    {/* Top badges row */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Skeleton variant="rounded" width={70} height={24} sx={{ borderRadius: 1.5 }} />
+                        <Skeleton variant="rounded" width={55} height={20} sx={{ borderRadius: 1.5 }} />
+                    </Box>
+                    {/* Title */}
+                    <Skeleton variant="text" width="70%" height={28} sx={{ borderRadius: 1 }} />
+                    {/* Description */}
+                    <Skeleton variant="text" width="90%" height={16} />
+                    <Skeleton variant="text" width="60%" height={16} />
+                    {/* Tests count bar */}
+                    <Skeleton variant="rounded" width="100%" height={40} sx={{ borderRadius: 2 }} />
+                    {/* Button */}
+                    <Skeleton variant="rounded" width="100%" height={44} sx={{ borderRadius: 2.5 }} />
+                </Stack>
+            </CardContent>
+        </Card>
+    );
+
     if (loading || sessionLoading) {
         return (
             <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd', fontFamily: FONTS.primary }}>
                 <MockTestNavbar />
-                <Loader fullScreen text="Loading Your Bundles..." />
+                {/* Hero skeleton */}
+                <Box sx={{
+                    bgcolor: COLORS.primary,
+                    pt: { xs: 4, md: 6 },
+                    pb: { xs: 10, md: 12 },
+                    position: 'relative', overflow: 'hidden'
+                }}>
+                    <Container maxWidth="lg">
+                        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" spacing={3}>
+                            <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                                <Skeleton variant="rounded" width={120} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2, mb: 2 }} />
+                                <Skeleton variant="text" width={320} height={48} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }} />
+                                <Skeleton variant="text" width={400} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.08)', borderRadius: 1 }} />
+                            </Box>
+                            <Skeleton variant="rounded" width={120} height={80} sx={{ bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 4 }} />
+                        </Stack>
+                    </Container>
+                </Box>
+                {/* Card skeletons */}
+                <Container maxWidth="lg" sx={{ mt: -6, pb: 10, position: 'relative', zIndex: 1 }}>
+                    <Grid container spacing={3}>
+                        {[1, 2, 3].map(i => (
+                            <Grid item xs={12} sm={6} md={4} key={i}>
+                                <SkeletonBundleCard />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Container>
+                <Footer />
             </Box>
         );
     }
