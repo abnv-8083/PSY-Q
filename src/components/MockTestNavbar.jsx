@@ -59,6 +59,10 @@ const MockTestNavbar = () => {
 
     const isActive = (path) => {
         if (path === '/academic/mocktest' && location.pathname === '/academic/mocktest') return true;
+        // For bundles listing, only match the exact path (not bundle sub-pages like /bundles/:id)
+        if (path === '/academic/mocktest/bundles') {
+            return location.pathname === '/academic/mocktest/bundles';
+        }
         if (path !== '/academic/mocktest' && location.pathname.startsWith(path)) return true;
         return false;
     };
