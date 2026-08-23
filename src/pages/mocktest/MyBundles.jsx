@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
+import Loader from '../../components/Loader';
 
 const COLORS = {
     primary: '#1e293b',
@@ -86,6 +87,15 @@ const MyBundles = () => {
         if (!sessionLoading) loadData();
     }, [user, sessionLoading]);
 
+    if (loading || sessionLoading) {
+        return (
+            <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd', fontFamily: FONTS.primary }}>
+                <MockTestNavbar />
+                <Loader fullScreen text="Loading Your Bundles..." />
+            </Box>
+        );
+    }
+
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd', fontFamily: FONTS.primary }}>
             <MockTestNavbar />
@@ -144,15 +154,7 @@ const MyBundles = () => {
 
             {/* Content */}
             <Container maxWidth="lg" sx={{ mt: -6, pb: 10, position: 'relative', zIndex: 1 }}>
-                {loading ? (
-                    <Grid container spacing={3}>
-                        {[1, 2, 3].map(i => (
-                            <Grid item xs={12} sm={6} md={4} key={i}>
-                                <Skeleton variant="rounded" sx={{ borderRadius: 4, height: 220 }} />
-                            </Grid>
-                        ))}
-                    </Grid>
-                ) : purchasedBundles.length === 0 ? (
+                {purchasedBundles.length === 0 ? (
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                         <Box sx={{
                             textAlign: 'center',
