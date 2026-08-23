@@ -20,6 +20,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchTestById } from '../../api/testsApi';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
+import Loader from '../../components/Loader';
 
 // --- Constants (Shared with MockTestHome) ---
 const COLORS = {
@@ -38,15 +39,19 @@ const GeneralInstructions = () => {
     const { subjectId, testId } = useParams();
     const navigate = useNavigate();
     const [testDetails, setTestDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [agreed, setAgreed] = useState(false);
 
     useEffect(() => {
         const fetchTestDetails = async () => {
             try {
+                setLoading(true);
                 const test = await fetchTestById(testId);
                 setTestDetails(test);
             } catch (err) {
                 console.error("Error fetching test details:", err);
+            } finally {
+                setLoading(false);
             }
         };
         fetchTestDetails();
@@ -57,6 +62,15 @@ const GeneralInstructions = () => {
             navigate(`/academic/mocktest/${subjectId}/${testId}/exam`);
         }
     };
+
+    if (loading) {
+        return (
+            <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#fbfcfd' }}>
+                <MockTestNavbar />
+                <Loader fullScreen text="Loading Instructions..." />
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: '#fbfcfd' }}>

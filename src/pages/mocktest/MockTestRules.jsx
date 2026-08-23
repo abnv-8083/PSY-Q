@@ -4,11 +4,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchTestById } from '../../api/testsApi';
 import { useSession } from '../../contexts/SessionContext';
 import MockTestNavbar from '../../components/MockTestNavbar';
+import Loader from '../../components/Loader';
 
 const MockTestRules = () => {
     const { subjectId, testId } = useParams();
     const navigate = useNavigate();
     const [testDetails, setTestDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [agreed, setAgreed] = useState(false);
     const { user, loading: sessionLoading } = useSession();
 
@@ -18,6 +20,7 @@ const MockTestRules = () => {
 
         const fetchTestDetails = async () => {
             try {
+                setLoading(true);
                 const test = await fetchTestById(testId);
                 
                 // Auth check for non-free tests
@@ -43,6 +46,8 @@ const MockTestRules = () => {
                 });
             } catch (error) {
                 console.error("Error fetching test details:", error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchTestDetails();
@@ -53,6 +58,15 @@ const MockTestRules = () => {
             navigate(`/academic/mocktest/${subjectId}/${testId}/exam`);
         }
     };
+
+    if (loading || sessionLoading) {
+        return (
+            <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff' }}>
+                <MockTestNavbar />
+                <Loader fullScreen text="Loading Test Rules..." />
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#ffffff', color: '#000000', pb: 8 }}>

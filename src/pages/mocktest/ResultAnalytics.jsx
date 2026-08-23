@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box, Container, Typography, Paper, Grid, Button, Divider,
-    Accordion, AccordionSummary, AccordionDetails, Chip, CircularProgress,
+    Accordion, AccordionSummary, AccordionDetails, Chip,
     Stack, alpha
 } from '@mui/material';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -15,6 +15,7 @@ import { fetchTestQuestions, fetchLatestResult } from '../../api/testsApi';
 
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
+import Loader from '../../components/Loader';
 
 // --- Constants (Shared with MockTestHome) ---
 const COLORS = {
@@ -133,9 +134,9 @@ const ResultAnalytics = () => {
 
 
     if (loading) return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: 2, bgcolor: '#fbfcfd' }}>
-            <CircularProgress size={60} thickness={4} sx={{ color: COLORS.accent }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.secondary }}>Analyzing Your Performance...</Typography>
+        <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd' }}>
+            <MockTestNavbar />
+            <Loader fullScreen text="Analyzing Your Performance..." />
         </Box>
     );
 
