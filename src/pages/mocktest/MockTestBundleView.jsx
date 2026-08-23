@@ -131,6 +131,7 @@ const MockTestBundleView = () => {
 
         const test = tests.find(t => t.id === testId);
         const userAttempts = attempts[testId] || 0;
+        const hasFreeTrialAccess = test?.is_free_trial && userAttempts < (test?.free_trial_limit || 1);
         const hasBundleAccess = bundle && (accessedTestIds.has(bundle._id) || accessedTestIds.has(bundle.id));
         const isBundlePending = bundle && (pendingTestIds.has(bundle._id) || pendingTestIds.has(bundle.id));
         const hasAccess = hasFreeTrialAccess || accessedTestIds.has(testId) || hasBundleAccess || price === 0;
