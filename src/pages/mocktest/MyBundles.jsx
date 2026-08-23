@@ -275,6 +275,8 @@ const MyBundles = () => {
                                     >
                                         <Card sx={{
                                             height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
                                             borderRadius: 4,
                                             background: `linear-gradient(135deg, ${COLORS.accent} 0%, #9d174d 100%)`,
                                             boxShadow: `0 15px 35px ${alpha(COLORS.accent, 0.2)}`,
@@ -298,8 +300,8 @@ const MyBundles = () => {
                                                 <Library size={140} color="white" strokeWidth={1} />
                                             </Box>
 
-                                            <CardContent sx={{ p: 3, position: 'relative', zIndex: 1 }}>
-                                                <Stack spacing={2}>
+                                            <CardContent sx={{ p: 3, position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                                <Stack spacing={2} sx={{ flexGrow: 1 }}>
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                         <Box sx={{
                                                             px: 1.5, py: 0.5,
@@ -335,18 +337,20 @@ const MyBundles = () => {
                                                         {bundle.name}
                                                     </Typography>
 
-                                                    {bundle.description && (
-                                                        <Typography variant="caption" sx={{
+                                                    <Typography
+                                                        variant="caption"
+                                                        sx={{
                                                             color: alpha('#ffffff', 0.75),
                                                             fontWeight: 500,
                                                             display: '-webkit-box',
                                                             WebkitLineClamp: 2,
                                                             WebkitBoxOrient: 'vertical',
-                                                            overflow: 'hidden'
-                                                        }}>
-                                                            {bundle.description}
-                                                        </Typography>
-                                                    )}
+                                                            overflow: 'hidden',
+                                                            minHeight: 36
+                                                        }}
+                                                    >
+                                                        {bundle.description || '\u00A0'}
+                                                    </Typography>
 
                                                     <Box sx={{
                                                         display: 'flex',
@@ -363,29 +367,31 @@ const MyBundles = () => {
                                                         </Typography>
                                                     </Box>
 
-                                                    <Button
-                                                        fullWidth
-                                                        variant="contained"
-                                                        endIcon={<ChevronRight size={18} />}
-                                                        sx={{
-                                                            bgcolor: 'white',
-                                                            color: COLORS.accent,
-                                                            fontWeight: 900,
-                                                            borderRadius: 2.5,
-                                                            textTransform: 'none',
-                                                            py: 1.2,
-                                                            fontSize: '0.9rem',
-                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                                                            '&:hover': {
-                                                                bgcolor: alpha('#ffffff', 0.9),
-                                                                transform: 'translateY(-1px)',
-                                                                boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
-                                                            },
-                                                            transition: 'all 0.3s ease'
-                                                        }}
-                                                    >
-                                                        Start Practicing
-                                                    </Button>
+                                                    <Box sx={{ mt: 'auto' }}>
+                                                        <Button
+                                                            fullWidth
+                                                            variant="contained"
+                                                            endIcon={<ChevronRight size={18} />}
+                                                            sx={{
+                                                                bgcolor: 'white',
+                                                                color: COLORS.accent,
+                                                                fontWeight: 900,
+                                                                borderRadius: 2.5,
+                                                                textTransform: 'none',
+                                                                py: 1.2,
+                                                                fontSize: '0.9rem',
+                                                                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                                                '&:hover': {
+                                                                    bgcolor: alpha('#ffffff', 0.9),
+                                                                    transform: 'translateY(-1px)',
+                                                                    boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+                                                                },
+                                                                transition: 'all 0.3s ease'
+                                                            }}
+                                                        >
+                                                            Start Practicing
+                                                        </Button>
+                                                    </Box>
                                                 </Stack>
                                             </CardContent>
                                         </Card>
