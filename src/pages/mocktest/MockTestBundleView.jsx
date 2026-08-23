@@ -131,13 +131,14 @@ const MockTestBundleView = () => {
 
         const test = tests.find(t => t.id === testId);
         const userAttempts = attempts[testId] || 0;
-        const hasFreeTrialAccess = test?.is_free_trial && userAttempts < (test?.free_trial_limit || 1);
-        const hasAccess = hasFreeTrialAccess || accessedTestIds.has(testId) || price === 0;
+        const hasBundleAccess = bundle && (accessedTestIds.has(bundle._id) || accessedTestIds.has(bundle.id));
+        const isBundlePending = bundle && (pendingTestIds.has(bundle._id) || pendingTestIds.has(bundle.id));
+        const hasAccess = hasFreeTrialAccess || accessedTestIds.has(testId) || hasBundleAccess || price === 0;
 
         if (hasAccess) {
             const sId = subjectId || 'bundle';
             navigate(`/academic/mocktest/${sId}/${testId}/rules`);
-        } else if (pendingTestIds.has(testId)) {
+        } else if (pendingTestIds.has(testId) || isBundlePending) {
             return;
         } else {
             navigate('/academic/mocktest/checkout', {
@@ -219,8 +220,10 @@ const MockTestBundleView = () => {
                         {tests.map((test, index) => {
                             const attemptCount = attempts[test.id] || 0;
                             const hasFreeTrialAccess = test.is_free_trial && attemptCount < (test.free_trial_limit || 1);
-                            const hasAccess = hasFreeTrialAccess || accessedTestIds.has(test.id) || test.price === 0;
-                            const isPending = pendingTestIds.has(test.id);
+                            const hasBundleAccess = bundle && (accessedTestIds.has(bundle._id) || accessedTestIds.has(bundle.id));
+                            const hasAccess = hasFreeTrialAccess || accessedTestIds.has(test.id) || hasBundleAccess || test.price === 0;
+                            const isBundlePending = bundle && (pendingTestIds.has(bundle._id) || pendingTestIds.has(bundle.id));
+                            const isPending = pendingTestIds.has(test.id) || isBundlePending;
                             const SubjectIcon = getSubjectIcon(test.subject || test.name);
 
                             return (

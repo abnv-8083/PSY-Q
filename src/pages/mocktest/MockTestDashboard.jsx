@@ -8,7 +8,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchSubjects } from '../../api/subjectsApi';
 import { fetchTests, fetchUserAttempts, fetchUserAccess } from '../../api/testsApi';
-import { fetchBundleById } from '../../api/bundlesApi';
+import { fetchBundles } from '../../api/bundlesApi';
 import { fetchUserPurchaseRequests } from '../../api/purchaseRequestsApi';
 import {
     BookOpen, Clock, ChevronRight, Target, Play, Calendar,
@@ -70,9 +70,10 @@ const MockTestDashboard = () => {
         const fetchData = async (userId) => {
             try {
                 // Fetch Subjects and Tests via API
-                const [subjectsData, allTestsData] = await Promise.all([
+                const [subjectsData, allTestsData, bundlesData] = await Promise.all([
                     fetchSubjects(),
-                    fetchTests()
+                    fetchTests(),
+                    fetchBundles()
                 ]);
 
                 // Map tests to subjects
@@ -114,14 +115,30 @@ const MockTestDashboard = () => {
                     });
                     setAttempts(attemptMap);
 
-                    setAccessedTestIds(new Set(accessIdsArr || []));
+                    const baseAccessIds = new Set(accessIdsArr || []);
+                    const allAccessIds = new Set(baseAccessIds);
                     
+                    const basePendingIds = new Set();
                     if (pendingReqs) {
-                        const pendingIds = pendingReqs
-                            .filter(r => r.status === 'pending')
-                            .map(r => r.item_id);
-                        setPendingTestIds(new Set(pendingIds));
+                        pendingReqs.forEach(r => {
+                            if (r.status === 'pending') basePendingIds.add(r.item_id);
+                        });
                     }
+                    const allPendingIds = new Set(basePendingIds);
+
+                    // Add tests from owned/pending bundles
+                    bundlesData?.forEach(bundle => {
+                        const bId = bundle._id || bundle.id;
+                        if (baseAccessIds.has(bId)) {
+                            bundle.tests?.forEach(t => allAccessIds.add(t._id || t.id));
+                        }
+                        if (basePendingIds.has(bId)) {
+                            bundle.tests?.forEach(t => allPendingIds.add(t._id || t.id));
+                        }
+                    });
+
+                    setAccessedTestIds(allAccessIds);
+                    setPendingTestIds(allPendingIds);
                 }
 
                 // Remove bundle fetching since we have a dedicated page now
