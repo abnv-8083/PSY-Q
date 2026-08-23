@@ -183,9 +183,9 @@ const MockTestBundles = () => {
                 </Container>
             </Box>
 
-            {/* Main Content */}
-            <Container maxWidth="xl" sx={{ mt: -6, pb: 12, position: 'relative', zIndex: 2, px: { xs: 2, md: 4 } }}>
-                {loading ? (
+            {/* Loading skeleton — sits below hero without overlap */}
+            {loading && (
+                <Container maxWidth="xl" sx={{ pt: 8, pb: 12, px: { xs: 2, md: 4 } }}>
                     <Grid container spacing={3} alignItems="stretch" justifyContent="center">
                         {[1, 2, 3].map(i => (
                             <Grid item xs={12} md={4} key={i} sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -194,15 +194,16 @@ const MockTestBundles = () => {
                                     maxWidth: '400px',
                                     borderRadius: '48px',
                                     border: `1px solid ${COLORS.border}`,
-                                    background: `linear-gradient(135deg, ${alpha(COLORS.accent, 0.06)} 0%, ${alpha('#9d174d', 0.04)} 100%)`,
+                                    background: 'white',
                                     overflow: 'hidden',
-                                    position: 'relative'
+                                    position: 'relative',
+                                    boxShadow: '0 20px 50px rgba(0,0,0,0.06)'
                                 }}>
                                     {/* Shimmer overlay */}
                                     <Box sx={{
                                         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                                        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%)',
-                                        animation: 'shimmer 1.5s ease-in-out infinite',
+                                        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
+                                        animation: 'shimmer 1.8s ease-in-out infinite',
                                         '@keyframes shimmer': {
                                             '0%': { transform: 'translateX(-100%)' },
                                             '100%': { transform: 'translateX(100%)' }
@@ -213,27 +214,27 @@ const MockTestBundles = () => {
                                         <Stack spacing={2.5}>
                                             {/* Badge + icon */}
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                <Skeleton variant="rounded" width={60} height={60} sx={{ borderRadius: '20px' }} />
-                                                <Skeleton variant="rounded" width={100} height={28} sx={{ borderRadius: '14px' }} />
+                                                <Skeleton variant="rounded" width={60} height={60} sx={{ borderRadius: '20px', bgcolor: alpha(COLORS.accent, 0.08) }} />
+                                                <Skeleton variant="rounded" width={100} height={28} sx={{ borderRadius: '14px', bgcolor: alpha(COLORS.accent, 0.1) }} />
                                             </Box>
                                             {/* Title */}
-                                            <Skeleton variant="text" width="75%" height={36} sx={{ borderRadius: 1 }} />
+                                            <Skeleton variant="text" width="75%" height={36} sx={{ borderRadius: 1, bgcolor: alpha(COLORS.primary, 0.08) }} />
                                             {/* Description */}
-                                            <Skeleton variant="text" width="90%" height={16} />
-                                            <Skeleton variant="text" width="65%" height={16} />
+                                            <Skeleton variant="text" width="90%" height={16} sx={{ bgcolor: alpha(COLORS.primary, 0.06) }} />
+                                            <Skeleton variant="text" width="65%" height={16} sx={{ bgcolor: alpha(COLORS.primary, 0.06) }} />
                                             {/* Features */}
                                             {[1, 2, 3].map(j => (
-                                                <Skeleton key={j} variant="rounded" width="100%" height={40} sx={{ borderRadius: 3.5 }} />
+                                                <Skeleton key={j} variant="rounded" width="100%" height={40} sx={{ borderRadius: 3.5, bgcolor: alpha(COLORS.primary, 0.05) }} />
                                             ))}
                                             {/* Price section */}
                                             <Box sx={{
                                                 mt: 1, p: 3, borderRadius: '35px',
-                                                bgcolor: 'white',
-                                                boxShadow: '0 15px 35px rgba(0,0,0,0.1)'
+                                                bgcolor: '#fbfcfd',
+                                                border: `1px solid ${COLORS.border}`
                                             }}>
-                                                <Skeleton variant="text" width="40%" height={14} sx={{ mb: 1 }} />
-                                                <Skeleton variant="text" width="55%" height={40} sx={{ borderRadius: 1, mb: 2 }} />
-                                                <Skeleton variant="rounded" width="100%" height={52} sx={{ borderRadius: '20px' }} />
+                                                <Skeleton variant="text" width="40%" height={14} sx={{ mb: 1, bgcolor: alpha(COLORS.primary, 0.06) }} />
+                                                <Skeleton variant="text" width="55%" height={40} sx={{ borderRadius: 1, mb: 2, bgcolor: alpha(COLORS.primary, 0.08) }} />
+                                                <Skeleton variant="rounded" width="100%" height={52} sx={{ borderRadius: '20px', bgcolor: alpha(COLORS.accent, 0.08) }} />
                                             </Box>
                                         </Stack>
                                     </CardContent>
@@ -241,7 +242,13 @@ const MockTestBundles = () => {
                             </Grid>
                         ))}
                     </Grid>
-                ) : bundles.length === 0 ? (
+                </Container>
+            )}
+
+            {/* Main Content */}
+            {!loading && (
+            <Container maxWidth="xl" sx={{ mt: -6, pb: 12, position: 'relative', zIndex: 2, px: { xs: 2, md: 4 } }}>
+                {bundles.length === 0 ? (
                     <Box sx={{ py: 10, textAlign: 'center' }}>
                         <Typography variant="h6" color="text.secondary">No packages currently available.</Typography>
                     </Box>
@@ -479,6 +486,7 @@ const MockTestBundles = () => {
                     </Grid>
                 )}
             </Container>
+            )}
 
             {/* Features Bar */}
             <Box sx={{ bgcolor: alpha(COLORS.primary, 0.02), py: 8, borderTop: `1px solid ${COLORS.border}` }}>
