@@ -90,16 +90,17 @@ const MyBundles = () => {
         <Card sx={{
             height: '100%',
             borderRadius: 4,
-            background: `linear-gradient(135deg, ${alpha(COLORS.accent, 0.08)} 0%, ${alpha('#9d174d', 0.06)} 100%)`,
+            bgcolor: 'white',
             border: `1px solid ${COLORS.border}`,
             overflow: 'hidden',
-            position: 'relative'
+            position: 'relative',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.04)'
         }}>
             {/* Shimmer overlay */}
             <Box sx={{
                 position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)',
-                animation: 'shimmer 1.5s ease-in-out infinite',
+                background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
+                animation: 'shimmer 1.8s ease-in-out infinite',
                 '@keyframes shimmer': {
                     '0%': { transform: 'translateX(-100%)' },
                     '100%': { transform: 'translateX(100%)' }
@@ -110,18 +111,18 @@ const MyBundles = () => {
                 <Stack spacing={2}>
                     {/* Top badges row */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Skeleton variant="rounded" width={70} height={24} sx={{ borderRadius: 1.5 }} />
-                        <Skeleton variant="rounded" width={55} height={20} sx={{ borderRadius: 1.5 }} />
+                        <Skeleton variant="rounded" width={70} height={24} sx={{ borderRadius: 1.5, bgcolor: alpha(COLORS.accent, 0.08) }} />
+                        <Skeleton variant="rounded" width={55} height={20} sx={{ borderRadius: 1.5, bgcolor: alpha(COLORS.success, 0.12) }} />
                     </Box>
                     {/* Title */}
-                    <Skeleton variant="text" width="70%" height={28} sx={{ borderRadius: 1 }} />
+                    <Skeleton variant="text" width="70%" height={28} sx={{ borderRadius: 1, bgcolor: alpha(COLORS.primary, 0.08) }} />
                     {/* Description */}
-                    <Skeleton variant="text" width="90%" height={16} />
-                    <Skeleton variant="text" width="60%" height={16} />
+                    <Skeleton variant="text" width="90%" height={16} sx={{ bgcolor: alpha(COLORS.primary, 0.06) }} />
+                    <Skeleton variant="text" width="60%" height={16} sx={{ bgcolor: alpha(COLORS.primary, 0.06) }} />
                     {/* Tests count bar */}
-                    <Skeleton variant="rounded" width="100%" height={40} sx={{ borderRadius: 2 }} />
+                    <Skeleton variant="rounded" width="100%" height={40} sx={{ borderRadius: 2, bgcolor: alpha(COLORS.primary, 0.05) }} />
                     {/* Button */}
-                    <Skeleton variant="rounded" width="100%" height={44} sx={{ borderRadius: 2.5 }} />
+                    <Skeleton variant="rounded" width="100%" height={44} sx={{ borderRadius: 2.5, bgcolor: alpha(COLORS.accent, 0.08) }} />
                 </Stack>
             </CardContent>
         </Card>
