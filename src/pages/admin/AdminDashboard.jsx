@@ -159,84 +159,109 @@ const AdminDashboard = () => {
                 open={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
                 sx={{
-                    width: sidebarOpen ? 280 : (isMobile ? 0 : 80),
+                    width: sidebarOpen ? 272 : 72,
                     flexShrink: 0,
                     '& .MuiDrawer-paper': {
-                        width: sidebarOpen ? 280 : (isMobile ? 0 : 80),
+                        width: sidebarOpen ? 272 : 72,
                         boxSizing: 'border-box',
-                        background: `linear-gradient(180deg, ${COLORS.primary} 0%, #0f172a 100%)`,
+                        background: `linear-gradient(180deg, #0f172a 0%, #1e293b 100%)`,
                         borderRight: 'none',
-                        transition: 'width 0.3s',
-                        boxShadow: '4px 0 20px rgba(0,0,0,0.1)'
+                        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                        overflowX: 'hidden',
+                        overflowY: 'auto',
+                        '&::-webkit-scrollbar': { width: 0 },
+                        scrollbarWidth: 'none',
                     },
                 }}
             >
-                {/* Header */}
-                <Box sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                    {sidebarOpen && (
-                        <Typography variant="h5" sx={{
-                            fontWeight: 900,
-                            background: `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)`,
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text'
-                        }}>
-                            Admin Panel
-                        </Typography>
-                    )}
+                {/* Header + Toggle */}
+                <Box sx={{
+                    px: sidebarOpen ? 2.5 : 0,
+                    py: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: sidebarOpen ? 'space-between' : 'center',
+                    minHeight: 64,
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                }}>
+                    {sidebarOpen ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box sx={{
+                                width: 36, height: 36, borderRadius: '12px',
+                                background: `linear-gradient(135deg, ${COLORS.accent}, #ec4899)`,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                flexShrink: 0,
+                            }}>
+                                <LayoutDashboard size={18} color="#fff" />
+                            </Box>
+                            <Typography variant="subtitle1" sx={{
+                                fontWeight: 900, color: '#fff', fontSize: '1.05rem', letterSpacing: -0.3
+                            }}>
+                                Admin Panel
+                            </Typography>
+                        </Box>
+                    ) : null}
                     <IconButton
                         onClick={() => setSidebarOpen(!sidebarOpen)}
+                        size="small"
                         sx={{
-                            bgcolor: 'rgba(255,255,255,0.1)',
-                            color: '#fff',
-                            '&:hover': {
-                                bgcolor: 'rgba(255,255,255,0.2)',
-                                transform: 'scale(1.1)'
-                            }
+                            width: 36, height: 36,
+                            bgcolor: 'rgba(255,255,255,0.06)',
+                            color: '#94a3b8',
+                            '&:hover': { bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' },
+                            transition: 'all 0.2s',
                         }}
                     >
-                        <Menu size={20} />
+                        <Menu size={18} />
                     </IconButton>
                 </Box>
 
                 {/* Navigation */}
-                <List sx={{ px: 2, py: 3, flexGrow: 1 }}>
+                <List sx={{ px: 1.5, py: 2, flexGrow: 1 }}>
                     {menuItems.map((item) => {
                         const Icon = item.icon;
                         const active = isActive(item.path, item.exact);
 
                         return (
-                            <ListItem key={item.path} disablePadding sx={{ mb: 1 }}>
+                            <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
                                 <ListItemButton
                                     onClick={() => handleNavigation(item.path)}
+                                    title={!sidebarOpen ? item.label : undefined}
                                     sx={{
                                         borderRadius: 2,
-                                        py: 1.5,
-                                        px: 2,
-                                        background: active ? `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)` : 'transparent',
-                                        color: active ? '#fff' : '#cbd5e1',
-                                        fontWeight: active ? 700 : 500,
-                                        boxShadow: active ? `0 8px 16px ${alpha(COLORS.accent, 0.3)}` : 'none',
+                                        py: 1.2,
+                                        px: sidebarOpen ? 2 : 0,
+                                        justifyContent: sidebarOpen ? 'initial' : 'center',
+                                        minHeight: 44,
+                                        background: active
+                                            ? `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)`
+                                            : 'transparent',
+                                        color: active ? '#fff' : '#94a3b8',
+                                        boxShadow: active ? `0 4px 12px ${alpha(COLORS.accent, 0.35)}` : 'none',
+                                        transition: 'all 0.2s',
                                         '&:hover': {
-                                            bgcolor: active ? undefined : 'rgba(255,255,255,0.05)',
-                                            color: '#fff'
+                                            bgcolor: active ? undefined : 'rgba(255,255,255,0.06)',
+                                            color: '#fff',
                                         }
                                     }}
                                 >
-                                    <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
-                                        <Icon size={22} />
+                                    <ListItemIcon sx={{
+                                        minWidth: 0,
+                                        mr: sidebarOpen ? 1.5 : 0,
+                                        justifyContent: 'center',
+                                        color: 'inherit',
+                                    }}>
+                                        <Icon size={20} strokeWidth={active ? 2.5 : 2} />
                                     </ListItemIcon>
                                     {sidebarOpen && (
-                                        <>
-                                            <ListItemText
-                                                primary={item.label}
-                                                primaryTypographyProps={{
-                                                    fontWeight: active ? 700 : 600,
-                                                    fontSize: '0.95rem'
-                                                }}
-                                            />
-                                            {active && <ChevronRight size={18} />}
-                                        </>
+                                        <ListItemText
+                                            primary={item.label}
+                                            primaryTypographyProps={{
+                                                fontWeight: active ? 700 : 500,
+                                                fontSize: '0.875rem',
+                                                noWrap: true,
+                                            }}
+                                        />
                                     )}
                                 </ListItemButton>
                             </ListItem>
@@ -244,91 +269,83 @@ const AdminDashboard = () => {
                     })}
                 </List>
 
-                {/* User Section */}
-                <Box sx={{ p: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                {/* User + Logout */}
+                <Box sx={{ px: 1.5, pb: 2, borderTop: '1px solid rgba(255,255,255,0.06)', pt: 2 }}>
                     {sidebarOpen && user && (
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                mb: 2,
-                                p: 2,
-                                background: 'rgba(255,255,255,0.05)',
-                                backdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255,255,255,0.1)',
-                                borderRadius: 2
-                            }}
-                        >
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Avatar
-                                    sx={{
-                                        width: 40,
-                                        height: 40,
-                                        background: `linear-gradient(135deg, ${COLORS.accent} 0%, #ec4899 100%)`
-                                    }}
-                                >
-                                    <User size={20} />
-                                </Avatar>
-                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                    <Typography variant="body2" sx={{ color: '#fff', fontWeight: 700, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {user.email}
-                                    </Typography>
-                                    <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.75rem', textTransform: 'capitalize' }}>
-                                        {user.role?.replace('_', ' ') || 'Administrator'}
-                                    </Typography>
-                                </Box>
+                        <Box sx={{
+                            mb: 1.5, mx: 0.5, p: 1.5, borderRadius: 2,
+                            bgcolor: 'rgba(255,255,255,0.04)',
+                            display: 'flex', alignItems: 'center', gap: 1.2,
+                        }}>
+                            <Avatar
+                                sx={{
+                                    width: 34, height: 34, flexShrink: 0,
+                                    background: `linear-gradient(135deg, ${COLORS.accent}, #ec4899)`,
+                                    fontSize: '0.8rem', fontWeight: 700,
+                                }}
+                            >
+                                {user.email?.charAt(0)?.toUpperCase() || 'A'}
+                            </Avatar>
+                            <Box sx={{ minWidth: 0, flex: 1 }}>
+                                <Typography variant="body2" sx={{ color: '#e2e8f0', fontWeight: 600, fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {user.email}
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.65rem', textTransform: 'capitalize' }}>
+                                    {user.role?.replace('_', ' ') || 'Admin'}
+                                </Typography>
                             </Box>
-                        </Paper>
+                        </Box>
                     )}
                     <ListItemButton
                         onClick={handleLogout}
+                        title={!sidebarOpen ? 'Logout' : undefined}
                         sx={{
-                            borderRadius: 3,
-                            py: 1.5,
-                            px: 2,
-                            bgcolor: 'rgba(239, 68, 68, 0.1)',
-                            color: '#fca5a5',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
-                            fontWeight: 700,
-                            '&:hover': {
-                                bgcolor: '#ef4444',
-                                color: '#fff'
-                            }
+                            borderRadius: 2,
+                            py: 1.2,
+                            px: sidebarOpen ? 2 : 0,
+                            justifyContent: sidebarOpen ? 'initial' : 'center',
+                            minHeight: 44,
+                            color: '#f87171',
+                            '&:hover': { bgcolor: 'rgba(239,68,68,0.15)', color: '#fca5a5' },
+                            transition: 'all 0.2s',
                         }}
                     >
-                        <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
-                            <LogOut size={20} />
+                        <ListItemIcon sx={{ minWidth: 0, mr: sidebarOpen ? 1.5 : 0, justifyContent: 'center', color: 'inherit' }}>
+                            <LogOut size={18} />
                         </ListItemIcon>
-                        {sidebarOpen && <ListItemText primary="Logout" primaryTypographyProps={{ fontWeight: 700, fontSize: '0.95rem' }} />}
+                        {sidebarOpen && (
+                            <ListItemText primary="Logout" primaryTypographyProps={{ fontWeight: 600, fontSize: '0.875rem' }} />
+                        )}
                     </ListItemButton>
                 </Box>
             </Drawer>
 
             {/* Mobile Header (Hamburger Menu) */}
-            {isMobile && (
+            {isMobile && !sidebarOpen && (
                 <Box sx={{
-                    position: 'absolute',
-                    top: 16,
-                    left: 16,
-                    zIndex: 10
+                    position: 'fixed',
+                    top: 12,
+                    left: 12,
+                    zIndex: 1300,
                 }}>
                     <IconButton
                         onClick={() => setSidebarOpen(true)}
+                        size="small"
                         sx={{
                             bgcolor: COLORS.primary,
                             color: '#fff',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                            '&:hover': {
-                                bgcolor: COLORS.accent
-                            }
+                            width: 40, height: 40,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                            '&:hover': { bgcolor: COLORS.accent },
                         }}
                     >
-                        <Menu size={24} />
+                        <Menu size={20} />
                     </IconButton>
                 </Box>
             )}
 
             {/* Main Content */}
-            <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', width: isMobile ? '100%' : 'auto', pt: isMobile ? 8 : 0 }}>
+            <Box component="main" sx={{ flexGrow: 1, overflow: 'auto', width: isMobile ? '100%' : 'auto' }}>
                 <Routes>
                     <Route
                         path="/"
