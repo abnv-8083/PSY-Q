@@ -354,62 +354,103 @@ const MockTestHome = () => {
         const IconComponent = getSubjectIcon(test.name);
 
         return (
-            <motion.div whileHover={{ y: -5 }} style={{ height: '100%' }}>
+            <motion.div whileHover={{ y: -6 }} style={{ height: '100%' }}>
                 <Card sx={{
-                    height: '100%', borderRadius: 6,
-                    background: `linear-gradient(135deg, ${COLORS.accent} 0%, #9d174d 100%)`,
-                    boxShadow: `0 15px 35px ${alpha(COLORS.accent, 0.2)}`,
+                    height: '100%', borderRadius: 5,
+                    background: `linear-gradient(160deg, ${COLORS.accent} 0%, #a8174e 50%, #7c1242 100%)`,
+                    boxShadow: `0 12px 32px ${alpha(COLORS.accent, 0.25)}`,
                     display: 'flex', flexDirection: 'column', position: 'relative',
                     overflow: 'hidden', color: 'white',
-                    border: `1px solid ${alpha('#ffffff', 0.2)}`,
-                    transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    border: 'none',
+                    transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                     '&:hover': {
-                        transform: 'translateY(-8px)',
-                        boxShadow: `0 25px 50px ${alpha(COLORS.accent, 0.4)}`,
-                        '& .card-icon-bg': { transform: 'scale(1.2) rotate(-15deg)', opacity: 0.12 }
+                        boxShadow: `0 20px 50px ${alpha(COLORS.accent, 0.45)}`,
+                        '& .card-deco': { transform: 'scale(1.15) rotate(-10deg)', opacity: 0.1 }
                     }
                 }}>
-                    <CardContent sx={{ p: 2.5, flexGrow: 1, position: 'relative', zIndex: 1 }}>
-                        <Box className="card-icon-bg" sx={{
-                            position: 'absolute', right: -10, top: 15, opacity: 0.08,
-                            transition: 'all 0.6s', pointerEvents: 'none', zIndex: 0
-                        }}>
-                            {React.createElement(IconComponent, { size: 120, color: 'white', strokeWidth: 1 })}
-                        </Box>
+                    {/* Subtle decorative circle */}
+                    <Box className="card-deco" sx={{
+                        position: 'absolute', right: -30, top: -30, width: 140, height: 140,
+                        borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.06)',
+                        transition: 'all 0.6s ease', pointerEvents: 'none'
+                    }} />
+                    <Box className="card-deco" sx={{
+                        position: 'absolute', right: 20, bottom: -20, width: 80, height: 80,
+                        borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.04)',
+                        transition: 'all 0.6s ease', pointerEvents: 'none'
+                    }} />
 
-                        <Stack spacing={2} sx={{ position: 'relative', zIndex: 1, height: '100%' }}>
-                            <Box>
-                                <Box sx={{
-                                    display: 'inline-flex', px: 1.2, py: 0.4,
-                                    bgcolor: alpha('#ffffff', 0.15), backdropFilter: 'blur(4px)',
-                                    borderRadius: 1.5, mb: 1, border: `1px solid ${alpha('#ffffff', 0.2)}`
-                                }}>
-                                    <Typography variant="overline" sx={{ color: 'white', fontWeight: 900, letterSpacing: 1.5, fontSize: '0.6rem' }}>
-                                        UGC-NET PAPER 2 PSYCHOLOGY
-                                    </Typography>
-                                </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 900, color: 'white', lineHeight: 1.2, fontSize: '1.2rem' }}>
-                                    {test.name}
+                    <CardContent sx={{ p: 2.5, pb: 1.5, flexGrow: 1, position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column' }}>
+                        {/* Top row: icon + year badge */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                            <Box sx={{
+                                width: 44, height: 44, borderRadius: '14px',
+                                bgcolor: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                border: '1px solid rgba(255,255,255,0.15)'
+                            }}>
+                                {React.createElement(IconComponent, { size: 22, color: 'white', strokeWidth: 2 })}
+                            </Box>
+                            <Box sx={{
+                                px: 1.5, py: 0.5, borderRadius: '10px',
+                                bgcolor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
+                                border: '1px solid rgba(255,255,255,0.2)'
+                            }}>
+                                <Typography sx={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: 1 }}>
+                                    {test.year || 'NEW'}
                                 </Typography>
                             </Box>
+                        </Box>
 
-                            <Grid container spacing={1} sx={{ mb: 0.5 }}>
-                                <Grid item xs={6}>
-                                    <Box sx={{ p: 1.2, borderRadius: 3, bgcolor: alpha('#000000', 0.15), backdropFilter: 'blur(10px)', border: `1px solid ${alpha('#ffffff', 0.1)}`, textAlign: 'center' }}>
-                                        <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.7), fontWeight: 800, display: 'block', mb: 0.2, fontSize: '0.7rem' }}>QUESTIONS</Typography>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: 'white', lineHeight: 1 }}>{test.total_questions || 0}</Typography>
+                        {/* Test name */}
+                        <Typography variant="h6" sx={{
+                            fontWeight: 800, lineHeight: 1.2, fontSize: '1.15rem',
+                            mb: 0.5, letterSpacing: '-0.01em'
+                        }}>
+                            {test.name}
+                        </Typography>
+
+                        {/* Subject tag */}
+                        <Typography sx={{
+                            fontSize: '0.72rem', fontWeight: 600,
+                            color: 'rgba(255,255,255,0.6)', mb: 2.5, textTransform: 'uppercase',
+                            letterSpacing: 0.5
+                        }}>
+                            Psychology · Paper 2
+                        </Typography>
+
+                        {/* Spacer */}
+                        <Box sx={{ flexGrow: 1 }} />
+
+                        {/* Stats row */}
+                        <Box sx={{
+                            display: 'flex', gap: 1, mb: 2
+                        }}>
+                            {[
+                                { icon: <Target size={13} />, label: 'Qs', value: test.total_questions || 0 },
+                                { icon: <Clock size={13} />, label: 'Min', value: test.duration || 0 },
+                                { icon: <Award size={13} />, label: 'Mks', value: (test.total_questions || 0) * 2 },
+                            ].map((stat, i) => (
+                                <Box key={i} sx={{
+                                    flex: 1, py: 1, px: 0.8, borderRadius: 2,
+                                    bgcolor: 'rgba(255,255,255,0.08)', textAlign: 'center',
+                                    border: '1px solid rgba(255,255,255,0.06)'
+                                }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.3, mb: 0.3 }}>
+                                        <Box sx={{ color: 'rgba(255,255,255,0.6)' }}>{stat.icon}</Box>
+                                        <Typography sx={{ fontSize: '0.6rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+                                            {stat.label}
+                                        </Typography>
                                     </Box>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Box sx={{ p: 1.2, borderRadius: 3, bgcolor: alpha('#000000', 0.15), backdropFilter: 'blur(10px)', border: `1px solid ${alpha('#ffffff', 0.1)}`, textAlign: 'center' }}>
-                                        <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.7), fontWeight: 800, display: 'block', mb: 0.2, fontSize: '0.7rem' }}>DURATION</Typography>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: 'white', lineHeight: 1 }}>{test.duration}m</Typography>
-                                    </Box>
-                                </Grid>
-                            </Grid>
-                        </Stack>
+                                    <Typography sx={{ fontSize: '0.95rem', fontWeight: 800, lineHeight: 1 }}>
+                                        {stat.value}
+                                    </Typography>
+                                </Box>
+                            ))}
+                        </Box>
                     </CardContent>
 
+                    {/* CTA */}
                     <Box sx={{ p: 2.5, pt: 0, position: 'relative', zIndex: 1 }}>
                         <Button
                             fullWidth variant="contained"
@@ -420,16 +461,16 @@ const MockTestHome = () => {
                                     navigate('/academic/mocktest/bundles');
                                 }
                             }}
-                            endIcon={<ArrowRight size={18} />}
+                            endIcon={<ArrowRight size={16} />}
                             sx={{
-                                bgcolor: 'white', color: COLORS.accent, fontWeight: 900, borderRadius: 3,
-                                textTransform: 'none', py: 1.5, fontSize: '0.9rem',
-                                boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-                                '&:hover': { bgcolor: alpha('#ffffff', 0.9), transform: 'translateY(-2px)' },
-                                transition: 'all 0.4s'
+                                bgcolor: 'white', color: COLORS.accent, fontWeight: 800, borderRadius: 2.5,
+                                textTransform: 'none', py: 1.3, fontSize: '0.85rem',
+                                boxShadow: '0 6px 16px rgba(0,0,0,0.12)',
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.92)', boxShadow: '0 8px 24px rgba(0,0,0,0.18)', transform: 'translateY(-1px)' },
+                                transition: 'all 0.25s'
                             }}
                         >
-                            {test.is_free_trial ? 'Try Free Trial' : (isFree ? 'Try for Free' : 'Unlock to Access')}
+                            {test.is_free_trial ? 'Start Free Trial' : (isFree ? 'Try Free' : 'Unlock Access')}
                         </Button>
                     </Box>
                 </Card>
