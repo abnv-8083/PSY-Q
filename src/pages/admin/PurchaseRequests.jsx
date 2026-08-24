@@ -7,15 +7,10 @@ import {
     Select, FormControl, InputLabel, Grid
 } from '@mui/material';
 import { CheckCircle, XCircle, Clock, Search, Filter } from 'lucide-react';
+import { COLORS } from '../../theme/adminTheme';
 import { fetchAllPurchaseRequests, updatePurchaseRequestStatus } from '../../api/purchaseRequestsApi';
 import Loader from '../../components/Loader';
 
-const COLORS = {
-    primary: '#1e293b',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    border: '#e2e8f0',
-};
 
 const PurchaseRequests = () => {
     const [requests, setRequests] = useState([]);

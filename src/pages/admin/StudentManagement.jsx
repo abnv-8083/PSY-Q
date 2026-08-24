@@ -23,18 +23,9 @@ import {
     User, Search, Trash2, UserCheck,
     Calendar, Phone, Mail, Filter, ArrowUpDown
 } from 'lucide-react';
+import { COLORS } from '../../theme/adminTheme';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const COLORS = {
-    primary: '#1e293b',
-    accent: '#ca0056',
-    background: '#fdf2f8',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#10b981',
-    warning: '#f59e0b',
-    error: '#ef4444'
-};
 
 const StudentManagement = () => {
     const [students, setStudents] = useState([]);

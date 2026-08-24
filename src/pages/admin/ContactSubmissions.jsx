@@ -5,17 +5,10 @@ import {
     DialogActions, Button, TextField, MenuItem, Stack, Avatar, Tooltip, Link
 } from '@mui/material';
 import { Eye, Trash2, Download, ExternalLink, Filter, Search, X, Image as ImageIcon, FileText } from 'lucide-react';
+import { COLORS } from '../../theme/adminTheme';
 import { motion } from 'framer-motion';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-const COLORS = {
-    primary: '#0f172a',
-    accent: '#E91E63',
-    success: '#10b981',
-    warning: '#f59e0b',
-    error: '#ef4444',
-    textLight: '#64748b'
-};
 
 const ContactSubmissions = () => {
     const [submissions, setSubmissions] = useState([]);

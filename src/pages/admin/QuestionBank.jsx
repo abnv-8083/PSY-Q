@@ -4,21 +4,11 @@ import { fetchTestQuestions } from '../../api/testsApi';
 import { createQuestion, updateQuestion, deleteQuestion } from '../../api/questionsApi';
 import ModernDialog from '../../components/ModernDialog';
 import { Plus, Trash2, ChevronLeft, HelpCircle, CheckCircle2, MessageSquare, FileUp, Loader2, Pencil, Circle, ArrowUp, Search, Filter, ArrowUpDown } from 'lucide-react';
+import { COLORS } from '../../theme/adminTheme';
 import { motion, AnimatePresence } from 'framer-motion';
 import { extractTextFromPDF, parseQuestionsFromText } from '../../utils/pdfParser';
 
 // Premium Color Theme
-const COLORS = {
-    primary: '#1e293b',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    accentHover: '#b8003f',
-    background: '#fdf2f8',
-    cardBg: '#FFFFFF',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#10b981'
-};
 
 const QuestionBank = ({ subject, test, onBack }) => {
     const [questions, setQuestions] = useState([]);

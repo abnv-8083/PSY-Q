@@ -30,20 +30,11 @@ import {
     Copy,
     CheckCheck, Search, X
 } from 'lucide-react';
+import { COLORS } from '../../theme/adminTheme';
 import { motion } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
 import axios from 'axios';
 
-const COLORS = {
-    primary: '#1e293b',
-    accent: '#ca0056',
-    background: '#fdf2f8',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#10b981',
-    warning: '#f59e0b',
-    error: '#ef4444'
-};
 
 const ALL_PERMISSION_KEYS = [
     'manageUsers',

@@ -7,18 +7,7 @@ import { fetchBundles, updateBundle, addTestToBundle, removeTestFromBundle, upda
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
 
-// Premium Color Theme
-const COLORS = {
-    primary: '#1e293b',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    accentHover: '#b8003f',
-    background: '#fdf2f8',
-    cardBg: '#FFFFFF',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#10b981'
-};
+import { COLORS } from '../../theme/adminTheme';
 
 const BundleManagement = () => {
     const [bundles, setBundles] = useState([]);

@@ -11,6 +11,7 @@ import {
     BarChart as BarIcon, Target, Zap, LayoutDashboard, Clock, CheckCircle2, 
     AlertCircle, Download, RefreshCw, Layers
 } from 'lucide-react';
+import { COLORS } from '../../theme/adminTheme';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
     ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, 
@@ -20,19 +21,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-const COLORS = {
-    primary: '#0f172a',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    success: '#10b981',
-    warning: '#f59e0b',
-    error: '#ef4444',
-    background: '#f8fafc',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    indigo: '#6366f1',
-    chart: ['#6366f1', '#ca0056', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4']
-};
 
 const CustomTooltip = ({ active, payload, label, prefix = '' }) => {
     if (active && payload && payload.length) {

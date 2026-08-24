@@ -46,23 +46,7 @@ import AdminManagement from './AdminManagement';
 import StudentManagement from './StudentManagement';
 import PurchaseRequests from './PurchaseRequests';
 import { useSession } from '../../contexts/SessionContext';
-
-// Premium Color Theme
-const COLORS = {
-    primary: '#1e293b',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    accentHover: '#b8003f',
-    background: '#fdf2f8',
-    cardBg: '#FFFFFF',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#10b981'
-};
-
-const FONTS = {
-    primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
-};
+import { COLORS, FONTS } from '../../theme/adminTheme';
 
 const AdminDashboard = () => {
     const location = useLocation();

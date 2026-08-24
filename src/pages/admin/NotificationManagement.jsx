@@ -23,6 +23,7 @@ import {
     DialogActions
 } from '@mui/material';
 import { Edit, Trash2, Plus, GripVertical, Image as ImageIcon, Search, AlertCircle } from 'lucide-react';
+import { COLORS } from '../../theme/adminTheme';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
 import {
@@ -36,14 +37,6 @@ import {
 import ModernDialog from '../../components/ModernDialog';
 import { motion } from 'framer-motion';
 
-const COLORS = {
-    primary: '#0f172a',
-    accent: '#ca0056',
-    success: '#10b981',
-    warning: '#f59e0b',
-    error: '#ef4444',
-    textLight: '#64748b'
-};
 
 const NotificationManagement = () => {
     const [notifications, setNotifications] = useState([]);

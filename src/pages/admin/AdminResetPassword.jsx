@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { COLORS } from '../../theme/adminTheme';
 import {
     Box,
     Container,
@@ -17,15 +18,6 @@ import {
 import { Lock, ShieldCheck, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
-
-const COLORS = {
-    primary: '#1e293b',
-    accent: '#ca0056',
-    background: '#fdf2f8',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#10b981'
-};
 
 const AdminResetPassword = () => {
     const [searchParams] = useSearchParams();
