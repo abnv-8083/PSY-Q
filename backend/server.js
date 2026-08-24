@@ -421,6 +421,62 @@ app.delete('/api/tests/:id', async (req, res) => {
   }
 });
 
+// --- Marketing / Promo Routes ---
+
+// Admin: Set marketing schedule for a test
+app.put('/api/admin/tests/:id/marketing', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { marketing_enabled, marketing_start, marketing_end, marketing_slug } = req.body;
+
+    const update = {};
+    if (marketing_enabled !== undefined) update.marketing_enabled = marketing_enabled;
+    if (marketing_start !== undefined) update.marketing_start = marketing_start ? new Date(marketing_start) : null;
+    if (marketing_end !== undefined) update.marketing_end = marketing_end ? new Date(marketing_end) : null;
+    if (marketing_slug !== undefined) update.marketing_slug = marketing_slug || null;
+
+    const test = await Test.findByIdAndUpdate(id, update, { new: true });
+    if (!test) return res.status(404).json({ success: false, message: 'Test not found' });
+
+    res.json({ success: true, data: test });
+  } catch (error) {
+    console.error('Marketing schedule error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Public: Get marketing test by slug — checks if currently free
+app.get('/api/marketing/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const test = await Test.findOne({ marketing_slug: slug, marketing_enabled: true });
+    if (!test) return res.status(404).json({ success: false, message: 'Promo link not found' });
+
+    const now = new Date();
+    const isCurrentlyFree =
+      test.marketing_enabled &&
+      (!test.marketing_start || new Date(test.marketing_start) <= now) &&
+      (!test.marketing_end || new Date(test.marketing_end) >= now);
+
+    res.json({
+      success: true,
+      data: {
+        test_id: test._id,
+        name: test.name,
+        subject: test.subject,
+        duration: test.duration,
+        total_questions: test.total_questions,
+        price: test.price,
+        is_currently_free: isCurrentlyFree,
+        marketing_start: test.marketing_start,
+        marketing_end: test.marketing_end,
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // Bundle Routes
 app.get('/api/bundles', bundleController.getBundles);
 app.get('/api/bundles/:id', bundleController.getBundleById);

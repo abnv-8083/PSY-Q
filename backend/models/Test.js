@@ -6,14 +6,23 @@ const testSchema = new mongoose.Schema({
   bundle_id: { type: String }, // Can link to a Bundle
   subject: { type: String },
   subject_id: { type: String }, // Link to a Subject _id
+  year: { type: Number },
   duration: { type: Number, default: 60 }, // in minutes
   total_questions: { type: Number, default: 0 },
   price: { type: Number, default: 0 },
+  is_published: { type: Boolean, default: true },
   is_active: { type: Boolean, default: true },
   is_free_trial: { type: Boolean, default: false },
   free_trial_limit: { type: Number, default: 1 },
   passing_score: { type: Number, default: 40 },
   display_order: { type: Number, default: 0 },
+
+  // Marketing / Promo fields
+  marketing_enabled: { type: Boolean, default: false },
+  marketing_start: { type: Date },
+  marketing_end: { type: Date },
+  marketing_slug: { type: String, unique: true, sparse: true },
+
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
 }, {

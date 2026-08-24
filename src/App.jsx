@@ -31,6 +31,7 @@ const MockTestRules = lazy(() => import('./pages/mocktest/MockTestRules'));
 const ResultAnalytics = lazy(() => import('./pages/mocktest/ResultAnalytics'));
 const GuestCheckout = lazy(() => import('./pages/mocktest/GuestCheckout'));
 const MyBundles = lazy(() => import('./pages/mocktest/MyBundles'));
+const MarketingLanding = lazy(() => import('./pages/mocktest/MarketingLanding'));
 
 // Student Sections
 import StudentProfile from './pages/student/StudentProfile';
@@ -105,6 +106,7 @@ function AnimatedRoutes() {
           </ProtectedRoute>
         } />
         <Route path="/academic/mocktest/:subjectId/:testId/results" element={<ResultAnalytics />} />
+        <Route path="/free/:slug" element={<MarketingLanding />} />
 
         {/* Student Section */}
         <Route path="/student/signin" element={<StudentSignIn />} />

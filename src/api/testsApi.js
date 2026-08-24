@@ -136,3 +136,33 @@ export const fetchUserAccess = async (userId) => {
     if (!result.success) throw new Error(result.message);
     return result.data;
 };
+
+// ─── Marketing / Promo ───────────────────────────────────────────
+
+/**
+ * Admin: Set marketing schedule for a test
+ * @param {string} testId - Test ID
+ * @param {Object} schedule - { marketing_enabled, marketing_start, marketing_end, marketing_slug }
+ */
+export const setMarketingSchedule = async (testId, schedule) => {
+    const response = await fetch(`${API_URL}/admin/tests/${testId}/marketing`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(schedule)
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    return result.data;
+};
+
+/**
+ * Public: Fetch marketing test info by slug
+ * @param {string} slug - Marketing link slug
+ * @returns {Promise<Object>} Test info with is_currently_free flag
+ */
+export const fetchMarketingTest = async (slug) => {
+    const response = await fetch(`${API_URL}/marketing/${slug}`);
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    return result.data;
+};

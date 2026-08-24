@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, alpha, Switch, Tooltip, LinearProgress, InputAdornment } from '@mui/material';
 import { fetchTests, createTest, updateTest, deleteTest } from '../../api/testsApi';
 import ModernDialog from '../../components/ModernDialog';
-import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle, BookOpen, Gift, DollarSign, Zap, CircleCheck, Search, X } from 'lucide-react';
+import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle, BookOpen, Gift, DollarSign, Zap, CircleCheck, Search, X, Share2, Link, Copy, Check } from 'lucide-react';
+import { setMarketingSchedule } from '../../api/testsApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
@@ -64,6 +65,17 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
     const [isEditMode, setIsEditMode] = useState(false);
     const [editingTest, setEditingTest] = useState(null);
+
+    // Marketing dialog state
+    const [openMarketingDialog, setOpenMarketingDialog] = useState(false);
+    const [marketingTest, setMarketingTest] = useState(null);
+    const [marketingForm, setMarketingForm] = useState({
+        marketing_enabled: false,
+        marketing_start: '',
+        marketing_end: '',
+        marketing_slug: ''
+    });
+    const [slugCopied, setSlugCopied] = useState(false);
 
     // Modern Dialog State
     const [dialog, setDialog] = useState({
@@ -199,6 +211,54 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         setIsEditMode(false);
         setEditingTest(null);
         setNewTest({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
+    };
+
+    // ─── Marketing Handlers ────────────────────────────────────────
+    const handleOpenMarketing = (test) => {
+        setMarketingTest(test);
+        // Generate default slug from test name
+        const defaultSlug = test.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        setMarketingForm({
+            marketing_enabled: test.marketing_enabled || false,
+            marketing_start: test.marketing_start ? new Date(test.marketing_start).toISOString().slice(0, 16) : '',
+            marketing_end: test.marketing_end ? new Date(test.marketing_end).toISOString().slice(0, 16) : '',
+            marketing_slug: test.marketing_slug || defaultSlug
+        });
+        setOpenMarketingDialog(true);
+    };
+
+    const handleSaveMarketing = async () => {
+        try {
+            await setMarketingSchedule(marketingTest.id, {
+                marketing_enabled: marketingForm.marketing_enabled,
+                marketing_start: marketingForm.marketing_start || null,
+                marketing_end: marketingForm.marketing_end || null,
+                marketing_slug: marketingForm.marketing_slug || null
+            });
+            setDialog({ open: true, title: 'Marketing Updated', message: 'Marketing schedule saved successfully!', type: 'success' });
+            setOpenMarketingDialog(false);
+            getTests();
+        } catch (error) {
+            setDialog({ open: true, title: 'Save Failed', message: error.message, type: 'error' });
+        }
+    };
+
+    const getMarketingLink = (slug) => {
+        return `${window.location.origin}/free/${slug}`;
+    };
+
+    const copyMarketingLink = (slug) => {
+        navigator.clipboard.writeText(getMarketingLink(slug));
+        setSlugCopied(true);
+        setTimeout(() => setSlugCopied(false), 2000);
+    };
+
+    const isMarketingActive = (test) => {
+        if (!test.marketing_enabled) return false;
+        const now = new Date();
+        if (test.marketing_start && new Date(test.marketing_start) > now) return false;
+        if (test.marketing_end && new Date(test.marketing_end) < now) return false;
+        return true;
     };
 
     // Computed stats
@@ -533,7 +593,22 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                                                                     </Box>
 
                                                                     {/* Action buttons */}
-                                                                    <Box sx={{ display: 'flex', gap: 1, flexShrink: 0, ml: 1 }}>
+                                                                    <Box sx={{ display: 'flex', gap: 0.8, flexShrink: 0, ml: 1 }}>
+                                                                        <Tooltip title="Marketing / Promo Link">
+                                                                            <IconButton
+                                                                                size="small"
+                                                                                onClick={() => handleOpenMarketing(test)}
+                                                                                sx={{
+                                                                                    bgcolor: isMarketingActive(test) ? alpha('#10b981', 0.12) : alpha('#f59e0b', 0.08),
+                                                                                    color: isMarketingActive(test) ? '#10b981' : '#f59e0b',
+                                                                                    width: 32, height: 32,
+                                                                                    '&:hover': { bgcolor: isMarketingActive(test) ? '#10b981' : '#f59e0b', color: '#fff', transform: 'scale(1.1)' },
+                                                                                    transition: 'all 0.2s',
+                                                                                }}
+                                                                            >
+                                                                                <Share2 size={15} />
+                                                                            </IconButton>
+                                                                        </Tooltip>
                                                                         <Tooltip title="Edit Test">
                                                                             <IconButton
                                                                                 size="small"
@@ -541,8 +616,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                                                                                 sx={{
                                                                                     bgcolor: alpha('#6366f1', 0.08),
                                                                                     color: '#6366f1',
-                                                                                    width: 32,
-                                                                                    height: 32,
+                                                                                    width: 32, height: 32,
                                                                                     '&:hover': { bgcolor: '#6366f1', color: '#fff', transform: 'scale(1.1)' },
                                                                                     transition: 'all 0.2s',
                                                                                 }}
@@ -557,8 +631,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                                                                                 sx={{
                                                                                     bgcolor: alpha('#ef4444', 0.08),
                                                                                     color: '#ef4444',
-                                                                                    width: 32,
-                                                                                    height: 32,
+                                                                                    width: 32, height: 32,
                                                                                     '&:hover': { bgcolor: '#ef4444', color: '#fff', transform: 'scale(1.1)' },
                                                                                     transition: 'all 0.2s',
                                                                                 }}
@@ -987,6 +1060,119 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                 message={dialog.message}
                 type={dialog.type}
             />
+
+            {/* ── Marketing Schedule Dialog ───────────────────────────── */}
+            <Dialog
+                open={openMarketingDialog}
+                onClose={() => setOpenMarketingDialog(false)}
+                fullWidth maxWidth="sm"
+                PaperProps={{ sx: { borderRadius: 5, overflow: 'hidden' } }}
+            >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, px: 4, pt: 4, pb: 3, borderBottom: `1px solid ${COLORS.border}` }}>
+                    <Box sx={{ p: 1.5, borderRadius: 3, background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#fff', display: 'flex' }}>
+                        <Share2 size={20} />
+                    </Box>
+                    <Box>
+                        <DialogTitle sx={{ p: 0, fontWeight: 900, fontSize: '1.3rem', color: COLORS.primary, lineHeight: 1.2 }}>
+                            Marketing Schedule
+                        </DialogTitle>
+                        <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700 }}>
+                            Set a free window for "{marketingTest?.name}"
+                        </Typography>
+                    </Box>
+                </Box>
+
+                <DialogContent sx={{ px: 4, py: 3 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {/* Enable toggle */}
+                        <Box sx={{
+                            p: 2.5, borderRadius: 3.5,
+                            border: `1px solid ${marketingForm.marketing_enabled ? alpha('#f59e0b', 0.3) : COLORS.border}`,
+                            bgcolor: marketingForm.marketing_enabled ? alpha('#f59e0b', 0.04) : '#fafafa',
+                        }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <Gift size={20} color={marketingForm.marketing_enabled ? '#f59e0b' : COLORS.textLight} />
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: COLORS.primary }}>Enable Marketing Link</Typography>
+                                        <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 600 }}>
+                                            Make this test free for anyone with the link
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                                <Switch
+                                    checked={marketingForm.marketing_enabled}
+                                    onChange={(e) => setMarketingForm({ ...marketingForm, marketing_enabled: e.target.checked })}
+                                    sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#f59e0b' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#f59e0b' } }}
+                                />
+                            </Box>
+                        </Box>
+
+                        {/* Slug */}
+                        <TextField
+                            fullWidth label="Custom Link Slug" size="small"
+                            placeholder="e.g. december-2025-free"
+                            value={marketingForm.marketing_slug}
+                            onChange={(e) => setMarketingForm({ ...marketingForm, marketing_slug: e.target.value.replace(/[^a-z0-9-]/g, '') })}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start"><Link size={16} color={COLORS.textLight} /></InputAdornment>,
+                                sx: { borderRadius: 3, fontWeight: 600 }
+                            }}
+                            helperText="Only lowercase letters, numbers, and dashes"
+                        />
+
+                        {/* Date range */}
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <TextField
+                                fullWidth label="Start Date & Time" type="datetime-local" size="small"
+                                value={marketingForm.marketing_start}
+                                onChange={(e) => setMarketingForm({ ...marketingForm, marketing_start: e.target.value })}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                            />
+                            <TextField
+                                fullWidth label="End Date & Time" type="datetime-local" size="small"
+                                value={marketingForm.marketing_end}
+                                onChange={(e) => setMarketingForm({ ...marketingForm, marketing_end: e.target.value })}
+                                InputLabelProps={{ shrink: true }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                            />
+                        </Box>
+
+                        {/* Preview link */}
+                        {marketingForm.marketing_slug && (
+                            <Box sx={{
+                                p: 2, borderRadius: 3, bgcolor: '#f8fafc',
+                                border: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2
+                            }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0, flex: 1 }}>
+                                    <Link size={14} color={COLORS.accent} />
+                                    <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {getMarketingLink(marketingForm.marketing_slug)}
+                                    </Typography>
+                                </Box>
+                                <Button
+                                    size="small" variant="outlined"
+                                    startIcon={slugCopied ? <Check size={14} /> : <Copy size={14} />}
+                                    onClick={() => copyMarketingLink(marketingForm.marketing_slug)}
+                                    sx={{ borderRadius: 2, fontWeight: 700, textTransform: 'none', flexShrink: 0, fontSize: '0.75rem' }}
+                                >
+                                    {slugCopied ? 'Copied!' : 'Copy'}
+                                </Button>
+                            </Box>
+                        )}
+                    </Box>
+                </DialogContent>
+
+                <DialogActions sx={{ px: 4, pb: 4, pt: 1, gap: 1.5 }}>
+                    <Button onClick={() => setOpenMarketingDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: 3, px: 3 }}>Cancel</Button>
+                    <Button variant="contained" onClick={handleSaveMarketing} startIcon={<CircleCheck size={18} />}
+                        sx={{ bgcolor: '#f59e0b', borderRadius: 3, fontWeight: 900, px: 4, py: 1.25, textTransform: 'none', boxShadow: '0 8px 24px rgba(245,158,11,0.35)', '&:hover': { bgcolor: '#d97706' } }}
+                    >
+                        Save Schedule
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
