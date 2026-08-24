@@ -5,6 +5,9 @@ import { fetchTestById } from '../../api/testsApi';
 import { useSession } from '../../contexts/SessionContext';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Loader from '../../components/Loader';
+import { COLORS } from '../../theme/mocktestTheme';
+
+// Removed local COLORS constant - using shared theme
 
 const MockTestRules = () => {
     const { subjectId, testId } = useParams();

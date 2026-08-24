@@ -16,19 +16,7 @@ import { fetchTestQuestions, fetchLatestResult } from '../../api/testsApi';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
 import Loader from '../../components/Loader';
-
-// --- Constants (Shared with MockTestHome) ---
-const COLORS = {
-    primary: '#1e293b',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    accentHover: '#b8003f',
-    background: '#fdf2f8',
-    cardBg: '#FFFFFF',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#10b981'
-};
+import { COLORS } from '../../theme/mocktestTheme';
 
 const ConfettiParticle = ({ side }) => {
     const colors = [COLORS.accent, '#FFD700', COLORS.primary, '#4CAF50', '#FF5722'];
@@ -82,7 +70,7 @@ const ResultAnalytics = () => {
 
             const fetchData = async () => {
                 try {
-                    const qData = await fetchTestQuestions(testId);
+                    const qData = await fetchTestQuestions(testId, { includeAnswers: true });
 
                     if (qData) {
                         const mappedQuestions = qData.map(q => {

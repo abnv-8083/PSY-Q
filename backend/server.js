@@ -362,10 +362,18 @@ app.post('/api/subjects', async (req, res) => {
 
 app.get('/api/tests', async (req, res) => {
   try {
-    const { subjectId } = req.query;
+    const { subjectId, page = 1, limit = 50 } = req.query;
     const filter = subjectId ? { subject_id: subjectId } : {};
-    const tests = await Test.find(filter).sort({ display_order: 1 });
-    res.json({ success: true, data: tests });
+    const skip = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
+    const [tests, total] = await Promise.all([
+      Test.find(filter).sort({ display_order: 1 }).skip(skip).limit(parseInt(limit)),
+      Test.countDocuments(filter)
+    ]);
+    res.json({
+      success: true,
+      data: tests,
+      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -423,8 +431,27 @@ app.post('/api/admin/bundles/reorder', bundleController.reorderBundles);
 
 app.get('/api/tests/:id/questions', async (req, res) => {
   try {
-    const questions = await Question.find({ test_id: req.params.id });
-    res.json({ success: true, data: questions });
+    const { include_answers, page = 1, limit = 100 } = req.query;
+    const filter = { test_id: req.params.id };
+    const skip = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
+
+    // During an exam (default), strip correct answers to prevent cheating.
+    // Only include them when include_answers=true (used by ResultAnalytics).
+    let projection = {};
+    if (include_answers !== 'true') {
+      projection = { correct_key: 0, correct_answer: 0 };
+    }
+
+    const [questions, total] = await Promise.all([
+      Question.find(filter, projection).skip(skip).limit(parseInt(limit)),
+      Question.countDocuments(filter)
+    ]);
+
+    res.json({
+      success: true,
+      data: questions,
+      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -433,8 +460,17 @@ app.get('/api/tests/:id/questions', async (req, res) => {
 // Questions API
 app.get('/api/questions', async (req, res) => {
   try {
-    const questions = await Question.find().limit(100);
-    res.json({ success: true, data: questions });
+    const { page = 1, limit = 50 } = req.query;
+    const skip = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
+    const [questions, total] = await Promise.all([
+      Question.find().skip(skip).limit(parseInt(limit)),
+      Question.countDocuments()
+    ]);
+    res.json({
+      success: true,
+      data: questions,
+      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -473,11 +509,55 @@ app.delete('/api/questions/:id', async (req, res) => {
   }
 });
 
-// Results / Analytics API
+// Results / Analytics API — Server-side score calculation
 app.post('/api/results', async (req, res) => {
   try {
-    const result = new Result(req.body);
+    const { test_id, answers, user_id, guest_name, is_guest, time_spent, status } = req.body;
+
+    // Validate required fields
+    if (!test_id || !Array.isArray(answers)) {
+      return res.status(400).json({ success: false, message: 'test_id and answers array are required' });
+    }
+
+    // Fetch the test to get total marks info
+    const test = await Test.findById(test_id);
+    if (!test) return res.status(404).json({ success: false, message: 'Test not found' });
+
+    // Fetch correct answers from DB and compute score server-side
+    const questionIds = answers.map(a => a.question_id).filter(Boolean);
+    const questions = await Question.find({ _id: { $in: questionIds } });
+    const questionMap = {};
+    questions.forEach(q => { questionMap[q._id.toString()] = q; });
+
+    let serverScore = 0;
+    const scoredAnswers = answers.map(ans => {
+      const question = questionMap[ans.question_id];
+      if (!question) return { ...ans, is_correct: false };
+
+      const correctKey = question.correct_key ?? 0;
+      // selected_option is in format 'opt_0', 'opt_1', etc.
+      const selectedIdx = ans.selected_option ? parseInt(ans.selected_option.split('_')[1]) : -1;
+      const isCorrect = selectedIdx === correctKey;
+      if (isCorrect) serverScore += 2; // 2 marks per correct answer
+
+      return { ...ans, is_correct: isCorrect };
+    });
+
+    const totalMarks = (test.total_questions || questions.length) * 2;
+
+    const result = new Result({
+      user_id: user_id || null,
+      guest_name: guest_name || null,
+      is_guest: is_guest || false,
+      test_id,
+      score: serverScore,
+      total_marks: totalMarks,
+      answers: scoredAnswers,
+      time_spent: time_spent || 0,
+      status: status || 'completed'
+    });
     await result.save();
+
     res.json({ success: true, data: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -497,77 +577,8 @@ app.get('/api/results/latest', async (req, res) => {
   }
 });
 
-app.get('/api/bundles', async (req, res) => {
-  try {
-    const bundles = await Bundle.find().sort({ display_order: 1 });
-    res.json({ success: true, data: bundles });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Native MongoDB Bundle Management
-app.post('/api/bundles', async (req, res) => {
-  try {
-    const bundle = new Bundle(req.body);
-    await bundle.save();
-    res.json({ success: true, data: bundle });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-app.put('/api/bundles/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const bundle = await Bundle.findByIdAndUpdate(id, req.body, { new: true });
-    if (!bundle) return res.status(404).json({ success: false, message: 'Bundle not found' });
-    res.json({ success: true, data: bundle });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-app.delete('/api/bundles/:id', async (req, res) => {
-  try {
-    await Bundle.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'Bundle deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Admin proxy paths for Supabase Bundle updates (Keeping for now but preferring native)
-app.put('/api/admin/bundles/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    // Also update MongoDB if it exists there
-    await Bundle.findByIdAndUpdate(id, req.body).catch(() => {});
-    
-    if (supabase) {
-      const { data, error } = await supabase.from('bundles').update(req.body).eq('id', id).select().single();
-      if (!error) return res.json({ success: true, data });
-    }
-    
-    // Fallback or if already fully on mongo
-    const updated = await Bundle.findById(id);
-    res.json({ success: true, data: updated });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// Admin proxy paths for Supabase Bundle updates (to bypass RLS)
-app.put('/api/admin/bundles/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { data, error } = await supabase.from('bundles').update(req.body).eq('id', id).select().single();
-    if (error) throw error;
-    res.json({ success: true, data });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
+// NOTE: Duplicate GET/POST/PUT/DELETE /api/bundles routes removed —
+// the bundleController-based routes defined above are the canonical ones.
 
 app.post('/api/admin/bundles/:id/tests', async (req, res) => {
   try {

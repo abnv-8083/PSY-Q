@@ -64,8 +64,9 @@ export const updateTest = async (id, testData) => {
  * @param {string} testId - Test ID
  * @returns {Promise<Array>} Questions array
  */
-export const fetchTestQuestions = async (testId) => {
-    const response = await fetch(`${API_URL}/tests/${testId}/questions`);
+export const fetchTestQuestions = async (testId, { includeAnswers = false } = {}) => {
+    const params = includeAnswers ? '?include_answers=true' : '';
+    const response = await fetch(`${API_URL}/tests/${testId}/questions${params}`);
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
     return result.data;

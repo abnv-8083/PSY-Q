@@ -41,19 +41,7 @@ import { fetchTestById, fetchTestQuestions, submitResult } from '../../api/tests
 
 import ModernDialog from '../../components/ModernDialog';
 import Loader from '../../components/Loader';
-
-// --- Constants (Shared with MockTestHome) ---
-const COLORS = {
-    primary: '#1e293b',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    accentHover: '#b8003f',
-    background: '#fdf2f8',
-    cardBg: '#FFFFFF',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#10b981'
-};
+import { COLORS } from '../../theme/mocktestTheme';
 
 const MockTestInterface = () => {
     const { subjectId, testId } = useParams();

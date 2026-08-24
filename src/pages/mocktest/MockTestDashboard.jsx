@@ -21,35 +21,7 @@ import Loader from '../../components/Loader';
 
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
-
-// --- Constants (Shared with MockTestHome) ---
-const COLORS = {
-    primary: '#1e293b',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    accentHover: '#b8003f',
-    background: '#fdf2f8',
-    cardBg: '#FFFFFF',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#6366f1'
-};
-
-const FONTS = {
-    primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
-};
-
-const getSubjectIcon = (subjectName) => {
-    const name = subjectName?.toLowerCase() || '';
-    if (name.includes('psych')) return Brain;
-    if (name.includes('socio')) return Users;
-    if (name.includes('scien')) return FlaskConical;
-    if (name.includes('math') || name.includes('stat')) return BarChart3;
-    if (name.includes('hist') || name.includes('cultur')) return Library;
-    if (name.includes('clini')) return Activity;
-    if (name.includes('counsel')) return Heart;
-    return BookOpen;
-};
+import { COLORS, FONTS, getSubjectIcon } from '../../theme/mocktestTheme';
 
 const MockTestDashboard = () => {
     const [subjects, setSubjects] = useState([]);
@@ -162,8 +134,8 @@ const MockTestDashboard = () => {
 
     const handleStartTest = (subjectId, testId, price) => {
         if (!user) {
-            // Unauthenticated: redirect to login
-            navigate('/student/signin', { state: { from: location } });
+            // Unauthenticated: redirect to login with return URL
+            navigate('/student/signin', { state: { from: '/academic/mocktest/dashboard' } });
             return;
         }
 

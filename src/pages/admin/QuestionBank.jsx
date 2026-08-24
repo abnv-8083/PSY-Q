@@ -94,7 +94,7 @@ const QuestionBank = ({ subject, test, onBack }) => {
         const testId = testIdOverride || test?.id || test?._id;
         if (!testId) return;
         try {
-            const data = await fetchTestQuestions(testId);
+            const data = await fetchTestQuestions(testId, { includeAnswers: true });
 
             // Transform MongoDB format back to simple frontend format if needed
             const formattedQuestions = data.map(q => {

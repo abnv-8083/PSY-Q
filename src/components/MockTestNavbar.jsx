@@ -13,11 +13,7 @@ import {
 import { useSession } from '../contexts/SessionContext';
 
 
-const COLORS = {
-    primary: '#1e293b', // Slate Dark for text/logo
-    accent: '#ca0056',  // Deep Pink from home page
-    text: '#4b5563'    // Gray 600 for nav items
-};
+import { COLORS } from '../theme/mocktestTheme';
 
 const MockTestNavbar = () => {
     const navigate = useNavigate();
@@ -111,7 +107,7 @@ const MockTestNavbar = () => {
                                     onClick={() => handleNavigate(item.path)}
                                     disableRipple
                                     sx={{
-                                        color: isActive(item.path) ? COLORS.accent : COLORS.text,
+                                        color: isActive(item.path) ? COLORS.accent : COLORS.secondary,
                                         fontWeight: isActive(item.path) ? 700 : 500,
                                         textTransform: 'none',
                                         fontSize: '0.9rem',
@@ -177,7 +173,7 @@ const MockTestNavbar = () => {
                                                 <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.primary, maxWidth: 100, noWrap: true }}>
                                                     {user.full_name?.split(' ')[0] || 'User'}
                                                 </Typography>
-                                                <ChevronDown size={14} color={COLORS.text} />
+                                                <ChevronDown size={14} color={COLORS.secondary} />
                                             </>
                                         )}
                                     </Box>
@@ -216,7 +212,7 @@ const MockTestNavbar = () => {
                                         <Typography variant="subtitle2" sx={{ fontWeight: 700, color: COLORS.primary }}>
                                             {user.full_name || 'User'}
                                         </Typography>
-                                        <Typography variant="caption" sx={{ color: COLORS.text }}>
+                                        <Typography variant="caption" sx={{ color: COLORS.secondary }}>
                                             {user.email}
                                         </Typography>
                                     </Box>
@@ -300,7 +296,7 @@ const MockTestNavbar = () => {
                             size="small"
                             disableRipple
                             sx={{
-                                color: isActive(item.path) ? COLORS.accent : COLORS.text,
+                                color: isActive(item.path) ? COLORS.accent : COLORS.secondary,
                                 fontWeight: isActive(item.path) ? 700 : 600,
                                 textTransform: 'none',
                                 minWidth: 'max-content',

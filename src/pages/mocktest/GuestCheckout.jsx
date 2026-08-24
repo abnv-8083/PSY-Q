@@ -24,6 +24,7 @@ import { motion } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
 import { createPurchaseRequest } from '../../api/purchaseRequestsApi';
 import MockTestNavbar from '../../components/MockTestNavbar';
+import { COLORS } from '../../theme/mocktestTheme';
 
 const GuestCheckout = () => {
     const navigate = useNavigate();
@@ -42,7 +43,7 @@ const GuestCheckout = () => {
         }
         // User must be logged in for purchase requests
         if (!user) {
-            navigate('/student/signin', { state: { from: location.pathname } });
+            navigate('/student/signin', { state: { from: '/academic/mocktest/checkout' } });
         }
     }, [orderData, navigate, user]);
 
@@ -63,7 +64,8 @@ const GuestCheckout = () => {
             // Generate a 10-digit request number
             const requestNum = Math.floor(1000000000 + Math.random() * 9000000000).toString();
             
-            const requestRecord = await createPurchaseRequest(user.id, itemType, itemId, requestNum);
+            const userId = user._id || user.id;
+            const requestRecord = await createPurchaseRequest(userId, itemType, itemId, requestNum);
 
             // 2. Build WhatsApp Message
             const adminPhone = "919207010098"; // Placeholder, can be configured later or in DB

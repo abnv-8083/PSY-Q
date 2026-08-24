@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Preloader from './components/Preloader';
@@ -21,16 +21,16 @@ import Academic from './pages/academic';
 import CalicutGuide from './pages/CalicutGuide';
 import Policies from './pages/Policies';
 
-// Mock Test Pages
-import MockTestHome from './pages/mocktest/MockTestHome';
-import MockTestBundles from './pages/mocktest/MockTestBundles';
-import MockTestBundleView from './pages/mocktest/MockTestBundleView';
-import MockTestDashboard from './pages/mocktest/MockTestDashboard';
-import MockTestInterface from './pages/mocktest/MockTestInterface';
-import MockTestRules from './pages/mocktest/MockTestRules';
-import ResultAnalytics from './pages/mocktest/ResultAnalytics';
-import GuestCheckout from './pages/mocktest/GuestCheckout';
-import MyBundles from './pages/mocktest/MyBundles';
+// Mock Test Pages (lazy-loaded for code splitting)
+const MockTestHome = lazy(() => import('./pages/mocktest/MockTestHome'));
+const MockTestBundles = lazy(() => import('./pages/mocktest/MockTestBundles'));
+const MockTestBundleView = lazy(() => import('./pages/mocktest/MockTestBundleView'));
+const MockTestDashboard = lazy(() => import('./pages/mocktest/MockTestDashboard'));
+const MockTestInterface = lazy(() => import('./pages/mocktest/MockTestInterface'));
+const MockTestRules = lazy(() => import('./pages/mocktest/MockTestRules'));
+const ResultAnalytics = lazy(() => import('./pages/mocktest/ResultAnalytics'));
+const GuestCheckout = lazy(() => import('./pages/mocktest/GuestCheckout'));
+const MyBundles = lazy(() => import('./pages/mocktest/MyBundles'));
 
 // Student Sections
 import StudentProfile from './pages/student/StudentProfile';
@@ -50,10 +50,19 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { SessionProvider } from './contexts/SessionContext';
 import NotFound from './pages/NotFound';
 import WhatsAppFloatingButton from './components/WhatsAppFloatingButton';
+import { Box, CircularProgress } from '@mui/material';
+
+// Lazy Suspense fallback for route-level code splitting
+const RouteFallback = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+    <CircularProgress sx={{ color: '#ca0056' }} />
+  </Box>
+);
 
 function AnimatedRoutes() {
   const location = useLocation();
   return (
+    <Suspense fallback={<RouteFallback />}>
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Layout><Home /></Layout>} />
@@ -123,6 +132,7 @@ function AnimatedRoutes() {
         <Route path="*" element={<Layout><NotFound /></Layout>} />
       </Routes>
     </AnimatePresence>
+    </Suspense>
   );
 }
 

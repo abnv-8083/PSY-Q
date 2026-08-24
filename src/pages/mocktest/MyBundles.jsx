@@ -14,22 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '../../contexts/SessionContext';
 import MockTestNavbar from '../../components/MockTestNavbar';
 import Footer from '../../components/Footer';
-
-const COLORS = {
-    primary: '#1e293b',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    accentHover: '#b8003f',
-    background: '#fdf2f8',
-    cardBg: '#FFFFFF',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#10b981',
-};
-
-const FONTS = {
-    primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
-};
+import { COLORS, FONTS } from '../../theme/mocktestTheme';
 
 const MyBundles = () => {
     const navigate = useNavigate();
@@ -44,14 +29,14 @@ const MyBundles = () => {
     }, [location.pathname]);
 
     useEffect(() => {
-        if (!sessionLoading && !user) {
-            navigate('/student/signin', { state: { from: location } });
+        // Wait for session to resolve, then check auth
+        if (sessionLoading) return;
+        if (!user) {
+            navigate('/student/signin', { state: { from: '/academic/mocktest/my-bundles' } });
+            return;
         }
-    }, [user, sessionLoading, navigate, location]);
 
-    useEffect(() => {
         const loadData = async () => {
-            if (!user) return;
             try {
                 setLoading(true);
                 const userId = user._id || user.id;
@@ -83,8 +68,8 @@ const MyBundles = () => {
             }
         };
 
-        if (!sessionLoading) loadData();
-    }, [user, sessionLoading]);
+        loadData();
+    }, [user, sessionLoading, navigate]);
 
     const SkeletonBundleCard = () => (
         <Card sx={{

@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
     Box, Container, Typography, Grid, Card, CardContent, Button, Chip,
-    Stack, useTheme, useMediaQuery, Paper, Skeleton, alpha, IconButton, Avatar, Menu, MenuItem, Divider,
-    Breadcrumbs, Link as MuiLink
+    Stack, useTheme, useMediaQuery, Paper, alpha
 } from '@mui/material';
 import {
     Package, ShoppingBag, CheckCircle, Zap, ShieldCheck,
     ArrowRight, Star, Layers, Sparkles, BookOpen, Clock, Play,
     Crown, Brain, Activity, Heart, Library
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchUserAccess } from '../../api/testsApi';
 import { fetchUserPurchaseRequests } from '../../api/purchaseRequestsApi';
@@ -18,36 +17,12 @@ import Loader from '../../components/Loader';
 import Footer from '../../components/Footer';
 import { useSession } from '../../contexts/SessionContext';
 import { fetchBundles } from '../../api/bundlesApi';
-
-// --- Constants (Inherited from Dashboard) ---
-const COLORS = {
-    primary: '#1e293b',
-    secondary: '#4b5563',
-    accent: '#ca0056',
-    accentHover: '#b8003f',
-    background: '#fdf2f8',
-    cardBg: '#FFFFFF',
-    textLight: '#64748b',
-    border: '#e2e8f0',
-    success: '#6366f1'
-};
-
-const FONTS = {
-    primary: "'Inter', 'Roboto', 'Helvetica Neue', sans-serif",
-};
-
-const getBundleIcon = (bundleName) => {
-    const name = bundleName?.toLowerCase() || '';
-    if (name.includes('premium') || name.includes('pro') || name.includes('elite')) return Crown;
-    if (name.includes('advanced') || name.includes('inter')) return Zap;
-    if (name.includes('psych')) return Brain;
-    if (name.includes('clinical')) return Activity;
-    if (name.includes('counsel')) return Heart;
-    return Package;
-};
+import { COLORS, FONTS, getBundleIcon } from '../../theme/mocktestTheme';
+import MockTestCardSkeleton from '../../components/MockTestCardSkeleton';
 
 const MockTestBundles = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { user, loading: sessionLoading } = useSession();
@@ -100,7 +75,7 @@ const MockTestBundles = () => {
 
     const handleBuyBundle = (bundle) => {
         if (!user) {
-            navigate('/student/signin', { state: { from: location.pathname } });
+            navigate('/student/signin', { state: { from: '/academic/mocktest/bundles' } });
             return;
         }
 
@@ -189,56 +164,7 @@ const MockTestBundles = () => {
                     <Grid container spacing={3} alignItems="stretch" justifyContent="center">
                         {[1, 2, 3].map(i => (
                             <Grid item xs={12} md={4} key={i} sx={{ display: 'flex', justifyContent: 'center' }}>
-                                <Card sx={{
-                                    width: '100%',
-                                    maxWidth: '400px',
-                                    borderRadius: '48px',
-                                    border: `1px solid ${COLORS.border}`,
-                                    background: 'white',
-                                    overflow: 'hidden',
-                                    position: 'relative',
-                                    boxShadow: '0 20px 50px rgba(0,0,0,0.06)'
-                                }}>
-                                    {/* Shimmer overlay */}
-                                    <Box sx={{
-                                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                                        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
-                                        animation: 'shimmer 1.8s ease-in-out infinite',
-                                        '@keyframes shimmer': {
-                                            '0%': { transform: 'translateX(-100%)' },
-                                            '100%': { transform: 'translateX(100%)' }
-                                        },
-                                        zIndex: 1
-                                    }} />
-                                    <CardContent sx={{ p: { xs: 4, md: 5 } }}>
-                                        <Stack spacing={2.5}>
-                                            {/* Badge + icon */}
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                                <Skeleton variant="rounded" width={60} height={60} sx={{ borderRadius: '20px', bgcolor: alpha(COLORS.accent, 0.08) }} />
-                                                <Skeleton variant="rounded" width={100} height={28} sx={{ borderRadius: '14px', bgcolor: alpha(COLORS.accent, 0.1) }} />
-                                            </Box>
-                                            {/* Title */}
-                                            <Skeleton variant="text" width="75%" height={36} sx={{ borderRadius: 1, bgcolor: alpha(COLORS.primary, 0.08) }} />
-                                            {/* Description */}
-                                            <Skeleton variant="text" width="90%" height={16} sx={{ bgcolor: alpha(COLORS.primary, 0.06) }} />
-                                            <Skeleton variant="text" width="65%" height={16} sx={{ bgcolor: alpha(COLORS.primary, 0.06) }} />
-                                            {/* Features */}
-                                            {[1, 2, 3].map(j => (
-                                                <Skeleton key={j} variant="rounded" width="100%" height={40} sx={{ borderRadius: 3.5, bgcolor: alpha(COLORS.primary, 0.05) }} />
-                                            ))}
-                                            {/* Price section */}
-                                            <Box sx={{
-                                                mt: 1, p: 3, borderRadius: '35px',
-                                                bgcolor: '#fbfcfd',
-                                                border: `1px solid ${COLORS.border}`
-                                            }}>
-                                                <Skeleton variant="text" width="40%" height={14} sx={{ mb: 1, bgcolor: alpha(COLORS.primary, 0.06) }} />
-                                                <Skeleton variant="text" width="55%" height={40} sx={{ borderRadius: 1, mb: 2, bgcolor: alpha(COLORS.primary, 0.08) }} />
-                                                <Skeleton variant="rounded" width="100%" height={52} sx={{ borderRadius: '20px', bgcolor: alpha(COLORS.accent, 0.08) }} />
-                                            </Box>
-                                        </Stack>
-                                    </CardContent>
-                                </Card>
+                                <MockTestCardSkeleton variant="bundle" />
                             </Grid>
                         ))}
                     </Grid>

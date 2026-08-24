@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { useSession } from '../contexts/SessionContext';
 import {
     Box,
@@ -56,6 +56,7 @@ const Blob = ({ style }) => (
 
 const StudentSignIn = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { login } = useSession();
 
     const [formData, setFormData] = useState({ email: '', password: '' });
@@ -75,9 +76,10 @@ const StudentSignIn = () => {
         setError('');
         try {
             await login(formData.email, formData.password, 'student');
-            const redirectTo = sessionStorage.getItem('redirectAfterLogin') || '/academic/mocktest/dashboard';
+            // Support both location.state.from (from mocktest pages) and sessionStorage fallback
+            const redirectTo = location.state?.from || sessionStorage.getItem('redirectAfterLogin') || '/academic/mocktest/dashboard';
             sessionStorage.removeItem('redirectAfterLogin');
-            navigate(redirectTo);
+            navigate(redirectTo, { replace: true });
         } catch (error) {
             setError(error.message || 'Failed to sign in');
         } finally {
