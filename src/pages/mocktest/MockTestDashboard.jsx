@@ -173,7 +173,72 @@ const MockTestDashboard = () => {
         return (
             <Box sx={{ minHeight: '100vh', bgcolor: '#fbfcfd', fontFamily: FONTS.primary }}>
                 <MockTestNavbar />
-                <Loader fullScreen text="Loading Dashboard..." />
+
+                {/* Hero skeleton */}
+                <Box sx={{ bgcolor: COLORS.primary, color: 'white', pt: { xs: 4, md: 6 }, pb: { xs: 10, md: 12 }, position: 'relative', overflow: 'hidden' }}>
+                    <Container maxWidth="lg">
+                        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="center" spacing={3}>
+                            <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+                                <Skeleton variant="text" width={280} height={52} sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1, mb: 1 }} />
+                                <Skeleton variant="text" width={400} height={24} sx={{ bgcolor: 'rgba(255,255,255,0.07)', borderRadius: 1 }} />
+                            </Box>
+                            <Skeleton variant="rounded" width={180} height={80} sx={{ bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 4 }} />
+                        </Stack>
+                    </Container>
+                </Box>
+
+                {/* Filter bar + cards skeleton */}
+                <Container maxWidth="xl" sx={{ mt: -6, pb: 10, position: 'relative', zIndex: 1 }}>
+                    {/* Search + subject filter skeleton */}
+                    <Paper sx={{ mb: 5, borderRadius: 4, p: 2, boxShadow: '0 10px 40px rgba(0,0,0,0.05)' }}>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                            <Skeleton variant="rounded" width={300} height={40} sx={{ borderRadius: 3, bgcolor: alpha(COLORS.primary, 0.05) }} />
+                            <Skeleton variant="rounded" width={80} height={36} sx={{ borderRadius: 2, bgcolor: alpha(COLORS.accent, 0.08) }} />
+                            <Skeleton variant="rounded" width={80} height={36} sx={{ borderRadius: 2, bgcolor: alpha(COLORS.primary, 0.05) }} />
+                            <Skeleton variant="rounded" width={80} height={36} sx={{ borderRadius: 2, bgcolor: alpha(COLORS.primary, 0.05) }} />
+                        </Box>
+                    </Paper>
+
+                    {/* Test card skeletons */}
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', px: { xs: 2, md: 4, lg: 8 } }}>
+                        {[1, 2, 3, 4, 5, 6].map(i => (
+                            <Box key={i} sx={{ width: { xs: '100%', sm: 'calc(50% - 24px)', md: 'calc(33.333% - 24px)' }, minWidth: 280 }}>
+                                <Card sx={{
+                                    height: '100%', minHeight: 320, borderRadius: 6,
+                                    border: `1px solid ${COLORS.border}`, background: 'white',
+                                    overflow: 'hidden', position: 'relative',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.04)'
+                                }}>
+                                    {/* Shimmer */}
+                                    <Box sx={{
+                                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                                        background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 50%, transparent 100%)',
+                                        animation: 'shimmer 1.8s ease-in-out infinite',
+                                        '@keyframes shimmer': { '0%': { transform: 'translateX(-100%)' }, '100%': { transform: 'translateX(100%)' } },
+                                        zIndex: 1
+                                    }} />
+                                    <CardContent sx={{ p: 2.5 }}>
+                                        <Stack spacing={1.5}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <Skeleton variant="rounded" width={90} height={22} sx={{ borderRadius: 1.5, bgcolor: alpha(COLORS.accent, 0.08) }} />
+                                                <Skeleton variant="rounded" width={55} height={20} sx={{ borderRadius: 1.5, bgcolor: alpha(COLORS.success, 0.1) }} />
+                                            </Box>
+                                            <Skeleton variant="text" width="80%" height={26} sx={{ borderRadius: 1, bgcolor: alpha(COLORS.primary, 0.08) }} />
+                                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1 }}>
+                                                {[1, 2, 3].map(j => (
+                                                    <Skeleton key={j} variant="rounded" width="100%" height={32} sx={{ borderRadius: 2, bgcolor: alpha(COLORS.primary, 0.05) }} />
+                                                ))}
+                                            </Box>
+                                            <Skeleton variant="rounded" width="100%" height={44} sx={{ borderRadius: 3, bgcolor: alpha(COLORS.accent, 0.08) }} />
+                                        </Stack>
+                                    </CardContent>
+                                </Card>
+                            </Box>
+                        ))}
+                    </Box>
+                </Container>
+
+                <Footer />
             </Box>
         );
     }
