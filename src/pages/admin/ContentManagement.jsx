@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, CircularProgress, Button } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import { ensureSubject } from '../../api/subjectsApi';
 import TestBuilder from './TestBuilder';
 import QuestionBank from './QuestionBank';
+import { PageHeaderSkeleton, CardGridSkeleton } from '../../components/AdminSkeleton';
 
 const CONTENT_VIEW = {
     TESTS: 'tests',
@@ -35,8 +36,9 @@ const ContentManagement = ({ onSubjectChange }) => {
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}>
-                <CircularProgress color="secondary" />
+            <Box sx={{ p: { xs: 3, md: 5 }, minHeight: '100vh' }}>
+                <PageHeaderSkeleton />
+                <CardGridSkeleton count={2} columns={2} />
             </Box>
         );
     }

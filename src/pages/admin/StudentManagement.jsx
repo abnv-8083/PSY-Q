@@ -159,7 +159,7 @@ const StudentManagement = () => {
                     </TableHead>
                     <TableBody>
                         {loading ? (
-                            <TableRow><TableCell colSpan={5} align="center" sx={{ py: 10 }}><CircularProgress color="inherit" /></TableCell></TableRow>
+                            <TableRow><TableCell colSpan={5} align="center" sx={{ py: 10 }}><Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}><CircularProgress size={32} sx={{ color: COLORS.accent }} /><Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>Loading students...</Typography></Box></TableCell></TableRow>
                         ) : filteredAndSortedStudents.length === 0 ? (
                             <TableRow><TableCell colSpan={5} align="center" sx={{ py: 10 }}>No students found</TableCell></TableRow>
                         ) : (

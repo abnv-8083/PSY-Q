@@ -332,7 +332,15 @@ const AdminManagement = () => {
                     </TableHead>
                     <TableBody>
                         {loading ? (
-                            <TableRow><TableCell colSpan={5} align="center"><CircularProgress /></TableCell></TableRow>
+                            <TableRow><TableCell colSpan={5} sx={{ py: 0 }}>
+                                {Array.from({length: 4}).map((_, i) => (
+                                    <Box key={i} sx={{ display: 'flex', gap: 2, py: 2, borderBottom: `1px solid ${COLORS.border}` }}>
+                                        <Skeleton variant="circular" width={40} height={40} sx={{ bgcolor: alpha(COLORS.accent, 0.08) }} />
+                                        <Box sx={{ flex: 1 }}><Skeleton variant="text" width="40%" height={16} /><Skeleton variant="text" width="25%" height={12} /></Box>
+                                        <Skeleton variant="rounded" width={70} height={24} sx={{ borderRadius: 1, bgcolor: alpha(COLORS.primary, 0.05) }} />
+                                    </Box>
+                                ))}
+                            </TableCell></TableRow>
                         ) : filteredAdmins.length === 0 ? (
                             <TableRow><TableCell colSpan={5} align="center">No admins found</TableCell></TableRow>
                         ) : (

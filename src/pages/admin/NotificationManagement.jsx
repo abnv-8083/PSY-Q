@@ -210,8 +210,20 @@ const NotificationManagement = () => {
 
             {/* List */}
             {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                    <CircularProgress sx={{ color: COLORS.accent }} />
+                <Box sx={{ py: 4 }}>
+                    <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                        {[1,2,3].map(i => <Skeleton key={i} variant="rounded" width={120} height={36} sx={{ borderRadius: 2, bgcolor: alpha(COLORS.primary, 0.05) }} />)}
+                    </Box>
+                    {Array.from({length: 3}).map((_, i) => (
+                        <Box key={i} sx={{ p: 3, mb: 2, borderRadius: 3, border: `1px solid ${COLORS.border}`, display: 'flex', gap: 2, alignItems: 'center' }}>
+                            <Skeleton variant="rounded" width={120} height={80} sx={{ borderRadius: 2, bgcolor: alpha(COLORS.primary, 0.05) }} />
+                            <Box sx={{ flex: 1 }}>
+                                <Skeleton variant="text" width="70%" height={20} sx={{ bgcolor: alpha(COLORS.primary, 0.08) }} />
+                                <Skeleton variant="text" width="90%" height={14} sx={{ bgcolor: alpha(COLORS.primary, 0.05) }} />
+                            </Box>
+                            <Skeleton variant="rounded" width={60} height={28} sx={{ borderRadius: 2, bgcolor: alpha(COLORS.primary, 0.05) }} />
+                        </Box>
+                    ))}
                 </Box>
             ) : filteredNotifications.length === 0 ? (
                 <Paper sx={{ textAlign: 'center', py: 8, borderRadius: 5, border: `2px dashed ${COLORS.border}` }}>

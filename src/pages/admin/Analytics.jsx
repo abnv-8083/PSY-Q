@@ -292,9 +292,20 @@ const Analytics = () => {
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-                <CircularProgress thickness={5} size={60} sx={{ color: COLORS.accent }} />
-                <Typography variant="h6" sx={{ fontWeight: 800, color: COLORS.textLight }}>Initializing Intelligence Engine...</Typography>
+            <Box sx={{ p: 4 }}>
+                <Skeleton variant="text" width={300} height={40} sx={{ mb: 1, bgcolor: alpha(COLORS.primary, 0.08) }} />
+                <Skeleton variant="text" width={450} height={18} sx={{ mb: 4, bgcolor: alpha(COLORS.primary, 0.05) }} />
+                <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
+                    {[1,2,3,4].map(i => (
+                        <Paper key={i} elevation={0} sx={{ flex: 1, minWidth: 160, p: 2.5, borderRadius: 4, border: `1px solid ${COLORS.border}` }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Skeleton variant="rounded" width={44} height={44} sx={{ borderRadius: 3, bgcolor: alpha(COLORS.accent, 0.08) }} />
+                                <Box><Skeleton variant="text" width={50} height={28} /><Skeleton variant="text" width={70} height={12} /></Box>
+                            </Box>
+                        </Paper>
+                    ))}
+                </Box>
+                <Skeleton variant="rounded" width="100%" height={300} sx={{ borderRadius: 4, bgcolor: alpha(COLORS.primary, 0.03) }} />
             </Box>
         );
     }

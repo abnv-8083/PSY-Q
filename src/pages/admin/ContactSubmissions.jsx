@@ -165,8 +165,14 @@ const ContactSubmissions = () => {
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} align="center" sx={{ py: 4, color: COLORS.textLight }}>
-                                        Loading submissions...
+                                    <TableCell colSpan={7} sx={{ py: 0 }}>
+                                        {Array.from({length: 5}).map((_, i) => (
+                                            <Box key={i} sx={{ display: 'flex', gap: 2, py: 2, borderBottom: `1px solid ${COLORS.border}` }}>
+                                                <Skeleton variant="circular" width={36} height={36} sx={{ bgcolor: alpha(COLORS.accent, 0.08) }} />
+                                                <Box sx={{ flex: 1 }}><Skeleton variant="text" width="50%" height={16} /><Skeleton variant="text" width="30%" height={12} /></Box>
+                                                <Skeleton variant="text" width={80} height={16} />
+                                            </Box>
+                                        ))}
                                     </TableCell>
                                 </TableRow>
                             ) : filteredSubmissions.length === 0 ? (

@@ -44,8 +44,11 @@ const StatCard = ({ icon: Icon, label, value, color, bg }) => (
     </Box>
 );
 
+import { PageHeaderSkeleton, CardGridSkeleton } from '../../components/AdminSkeleton';
+
 const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [tests, setTests] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [openTestDialog, setOpenTestDialog] = useState(false);
     const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
@@ -81,6 +84,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const getTests = async () => {
         if (!subject || !subject.id) return;
         try {
+            setLoading(true);
             const data = await fetchTests(subject.id);
             setTests(data.map(t => ({ ...t, id: t._id })));
         } catch (error) {
@@ -91,6 +95,8 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                 message: "We couldn't load the tests. Please check your connection and try again.",
                 type: 'error'
             });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -275,6 +281,15 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                 >
                     Go to Content Management
                 </Button>
+            </Box>
+        );
+    }
+
+    if (loading) {
+        return (
+            <Box sx={{ p: { xs: 3, md: 5 }, minHeight: '100vh', background: `linear-gradient(160deg, #fdf2f8 0%, #f8fafc 100%)` }}>
+                <PageHeaderSkeleton />
+                <CardGridSkeleton count={2} columns={2} />
             </Box>
         );
     }

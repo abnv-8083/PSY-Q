@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fetchBundles, updateBundle, addTestToBundle, removeTestFromBundle, updateBundleFeatures, fetchAvailableTests, reorderBundles, createBundle, deleteBundle } from '../../api/bundlesApi';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
 import { StrictModeDroppable } from '../../components/StrictModeDroppable';
+import { CardGridSkeleton, PageHeaderSkeleton } from '../../components/AdminSkeleton';
 
 import { COLORS } from '../../theme/adminTheme';
 
@@ -414,8 +415,9 @@ const BundleManagement = () => {
             </Box>
 
             {loading ? (
-                <Box sx={{ textAlign: 'center', py: 12, position: 'relative', zIndex: 1 }}>
-                    <Typography variant="h6" sx={{ color: COLORS.textLight, fontWeight: 600, animation: 'pulse 2s infinite' }}>Loading your premium packages...</Typography>
+                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                    <PageHeaderSkeleton />
+                    <CardGridSkeleton count={3} columns={3} />
                 </Box>
             ) : (
                 <DragDropContext onDragEnd={handleDragEnd}>
