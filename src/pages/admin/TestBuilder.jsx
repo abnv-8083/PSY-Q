@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, alpha, Switch, Tooltip, LinearProgress, InputAdornment } from '@mui/material';
 import { fetchTests, createTest, updateTest, deleteTest } from '../../api/testsApi';
 import ModernDialog from '../../components/ModernDialog';
-import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle, BookOpen, Gift, DollarSign, Zap, CircleCheck, Search, X, Share2, Link, Copy, Check } from 'lucide-react';
+import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle, BookOpen, Gift, DollarSign, Zap, CircleCheck, Search, X, Share2, Link, Copy, Check, AlertTriangle } from 'lucide-react';
 import { setMarketingSchedule } from '../../api/testsApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
@@ -243,6 +243,31 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         navigator.clipboard.writeText(getMarketingLink(slug));
         setSlugCopied(true);
         setTimeout(() => setSlugCopied(false), 2000);
+    };
+
+    const handleDeleteMarketing = () => {
+        setDialog({
+            open: true,
+            title: 'Delete Marketing Schedule?',
+            message: 'This will remove the promo link and deactivate the free window. The link will stop working immediately.',
+            type: 'confirm',
+            onConfirm: async () => {
+                setDialog(prev => ({ ...prev, open: false }));
+                try {
+                    await setMarketingSchedule(marketingTest.id, {
+                        marketing_enabled: false,
+                        marketing_start: null,
+                        marketing_end: null,
+                        marketing_slug: null
+                    });
+                    setDialog({ open: true, title: 'Schedule Deleted', message: 'Marketing schedule has been removed.', type: 'success' });
+                    setOpenMarketingDialog(false);
+                    getTests();
+                } catch (error) {
+                    setDialog({ open: true, title: 'Delete Failed', message: error.message, type: 'error' });
+                }
+            }
+        });
     };
 
     const isMarketingActive = (test) => {
@@ -1165,13 +1190,31 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                     </Box>
                 </DialogContent>
 
-                <DialogActions sx={{ px: 4, pb: 4, pt: 1, gap: 1.5 }}>
-                    <Button onClick={() => setOpenMarketingDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: 3, px: 3 }}>Cancel</Button>
-                    <Button variant="contained" onClick={handleSaveMarketing} startIcon={<CircleCheck size={18} />}
-                        sx={{ bgcolor: '#f59e0b', borderRadius: 3, fontWeight: 900, px: 4, py: 1.25, textTransform: 'none', boxShadow: '0 8px 24px rgba(245,158,11,0.35)', '&:hover': { bgcolor: '#d97706' } }}
-                    >
-                        Save Schedule
-                    </Button>
+                <DialogActions sx={{ px: 4, pb: 4, pt: 1, gap: 1.5, justifyContent: 'space-between' }}>
+                    <Box>
+                        {marketingTest?.marketing_enabled && (
+                            <Button
+                                variant="outlined"
+                                startIcon={<Trash2 size={16} />}
+                                onClick={handleDeleteMarketing}
+                                sx={{
+                                    fontWeight: 700, color: '#ef4444', borderColor: alpha('#ef4444', 0.3),
+                                    borderRadius: 3, px: 2.5, textTransform: 'none', fontSize: '0.85rem',
+                                    '&:hover': { borderColor: '#ef4444', bgcolor: alpha('#ef4444', 0.05) }
+                                }}
+                            >
+                                Delete
+                            </Button>
+                        )}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                        <Button onClick={() => setOpenMarketingDialog(false)} sx={{ fontWeight: 800, color: COLORS.textLight, borderRadius: 3, px: 3 }}>Cancel</Button>
+                        <Button variant="contained" onClick={handleSaveMarketing} startIcon={<CircleCheck size={18} />}
+                            sx={{ bgcolor: '#f59e0b', borderRadius: 3, fontWeight: 900, px: 4, py: 1.25, textTransform: 'none', boxShadow: '0 8px 24px rgba(245,158,11,0.35)', '&:hover': { bgcolor: '#d97706' } }}
+                        >
+                            Save Schedule
+                        </Button>
+                    </Box>
                 </DialogActions>
             </Dialog>
         </Box>
