@@ -54,7 +54,7 @@ const AdminDashboard = () => {
     const { adminUser: user, logoutAdmin } = useSession();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (isMobile) {
