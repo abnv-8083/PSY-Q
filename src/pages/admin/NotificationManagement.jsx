@@ -17,10 +17,12 @@ import {
     Avatar,
     Tooltip,
     Stack,
+    Skeleton,
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions
+    DialogActions,
+    alpha
 } from '@mui/material';
 import { Edit, Trash2, Plus, GripVertical, Image as ImageIcon, Search, AlertCircle } from 'lucide-react';
 import { COLORS } from '../../theme/adminTheme';
