@@ -1,26 +1,24 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    Box, Typography, Paper, Grid, CircularProgress, alpha, Card, CardContent, Stack, Divider,
+    Box, Typography, Paper, Grid, CircularProgress, alpha, Stack, Divider,
     Avatar, Chip, Tooltip, Autocomplete, TextField as MuiTextField, Modal,
-    IconButton as MuiIconButton, InputAdornment, Table, TableBody, TableCell,
-    TableContainer, TableHead, TableRow, Tabs, Tab, Button, Skeleton
+    IconButton as MuiIconButton, InputAdornment, Tabs, Tab, Button, Skeleton
 } from '@mui/material';
 import {
-    Users, CreditCard, FileText, TrendingUp, ArrowUpRight, ArrowDownRight, Search, 
-    Filter, Activity, Calendar, Award, X, ExternalLink, PieChart as PieIcon, 
-    BarChart as BarIcon, Target, Zap, LayoutDashboard, Clock, CheckCircle2, 
-    AlertCircle, Download, RefreshCw, Layers
+    Users, CreditCard, TrendingUp, ArrowUpRight, ArrowDownRight, Search,
+    Activity, Award, X, Target, Zap, LayoutDashboard, Clock, AlertCircle,
+    RefreshCw, Layers, BarChart as BarIcon, PieChart as PieIcon
 } from 'lucide-react';
 import { COLORS } from '../../theme/adminTheme';
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
-    ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, 
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
+    ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
     Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PageHeaderSkeleton } from '../../components/AdminSkeleton';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-
 
 const CustomTooltip = ({ active, payload, label, prefix = '' }) => {
     if (active && payload && payload.length) {
@@ -42,25 +40,35 @@ const CustomTooltip = ({ active, payload, label, prefix = '' }) => {
     return null;
 };
 
+const ChartCard = ({ title, subtitle, icon: Icon, iconColor, children, height = 400, sx = {} }) => (
+    <Paper elevation={0} sx={{
+        p: 4, borderRadius: 5, border: '1px solid', borderColor: COLORS.border,
+        bgcolor: '#fff', transition: 'all 0.3s',
+        '&:hover': { boxShadow: '0 12px 32px rgba(0,0,0,0.06)', borderColor: alpha(iconColor || COLORS.accent, 0.3) },
+        ...sx,
+    }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+            <Box>
+                <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.primary, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    {Icon && <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(iconColor || COLORS.accent, 0.1), color: iconColor || COLORS.accent, display: 'flex' }}><Icon size={18} /></Box>}
+                    {title}
+                </Typography>
+                {subtitle && <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600, mt: 0.5, ml: Icon ? 5.5 : 0 }}>{subtitle}</Typography>}
+            </Box>
+        </Stack>
+        <Box sx={{ height }}>{children}</Box>
+    </Paper>
+);
+
 const Analytics = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState(0);
     const [stats, setStats] = useState({
-        totalUsers: 0,
-        totalRevenue: 0,
-        totalAttempts: 0,
-        activeBundles: 0,
-        userGrowth: [],
-        revenueTrends: [],
-        testPopularity: [],
-        subjectPerformance: [],
-        revenueByBundle: [],
-        dailyActiveUsers: [],
-        recentPayments: [],
-        recentSignups: []
+        totalUsers: 0, totalRevenue: 0, totalAttempts: 0, activeBundles: 0,
+        userGrowth: [], revenueTrends: [], testPopularity: [], subjectPerformance: [],
+        revenueByBundle: [], dailyActiveUsers: [], recentPayments: [], recentSignups: []
     });
 
-    // User Analysis State
     const [userSearchText, setUserSearchText] = useState('');
     const [userOptions, setUserOptions] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
@@ -68,9 +76,7 @@ const Analytics = () => {
     const [userLoading, setUserLoading] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
 
-    useEffect(() => {
-        fetchAnalyticsData();
-    }, []);
+    useEffect(() => { fetchAnalyticsData(); }, []);
 
     const fetchAnalyticsData = async () => {
         setLoading(true);
@@ -80,7 +86,6 @@ const Analytics = () => {
             if (!json.success) throw new Error(json.message);
             const data = json.data;
 
-            // Process Data
             const growthData = processGrowthData(data.recentSignups, 30);
             const revenueData = processRevenueData(data.payments, 30);
             const popularityData = processPopularityData(data.allResults);
@@ -117,9 +122,7 @@ const Analytics = () => {
             const name = p.bundles?.name || (p.type === 'bundle' ? 'Package Sales' : 'Direct Access');
             bundles[name] = (bundles[name] || 0) + (p.amount || 0);
         });
-        return Object.entries(bundles)
-            .map(([name, value]) => ({ name, value }))
-            .sort((a, b) => b.value - a.value);
+        return Object.entries(bundles).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
     };
 
     const processSubjectPerformance = (attempts, subjectsMap) => {
@@ -128,12 +131,10 @@ const Analytics = () => {
             const subjectId = a.test_id?.subject_id;
             const name = subjectsMap?.[subjectId] || 'Uncategorized';
             if (!subjects[name]) subjects[name] = { totalScore: 0, totalQuestions: 0, count: 0 };
-
             subjects[name].totalScore += a.score || 0;
             subjects[name].totalQuestions += a.total_questions || a.answers?.length || 1;
             subjects[name].count += 1;
         });
-
         return Object.entries(subjects).map(([name, data]) => ({
             subject: name,
             accuracy: Math.round((data.totalScore / (data.totalQuestions || 1)) * 100),
@@ -144,15 +145,9 @@ const Analytics = () => {
     const processDAU = (attempts, days) => {
         const data = [];
         for (let i = days; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
+            const date = new Date(); date.setDate(date.getDate() - i);
             const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-            const count = new Set(attempts?.filter(a => {
-                const aDate = new Date(a.created_at);
-                return aDate.toDateString() === date.toDateString();
-            }).map(a => a.user_id)).size;
-
+            const count = new Set(attempts?.filter(a => new Date(a.created_at).toDateString() === date.toDateString()).map(a => a.user_id)).size;
             data.push({ name: dateStr, active: count });
         }
         return data;
@@ -161,15 +156,9 @@ const Analytics = () => {
     const processGrowthData = (users, days) => {
         const data = [];
         for (let i = days; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
+            const date = new Date(); date.setDate(date.getDate() - i);
             const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-            const count = users?.filter(u => {
-                const uDate = new Date(u.created_at);
-                return uDate.toDateString() === date.toDateString();
-            }).length || 0;
-
+            const count = users?.filter(u => new Date(u.created_at).toDateString() === date.toDateString()).length || 0;
             data.push({ name: dateStr, users: count });
         }
         return data;
@@ -178,600 +167,452 @@ const Analytics = () => {
     const processRevenueData = (payments, days) => {
         const data = [];
         for (let i = days; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
+            const date = new Date(); date.setDate(date.getDate() - i);
             const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-            const amount = payments?.filter(p => {
-                const pDate = new Date(p.created_at);
-                return pDate.toDateString() === date.toDateString();
-            }).reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-
-            data.push({ name: dateStr, amount: amount });
+            const amount = payments?.filter(p => new Date(p.created_at).toDateString() === date.toDateString()).reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+            data.push({ name: dateStr, amount });
         }
         return data;
     };
 
     const processPopularityData = (attempts) => {
         const counts = {};
-        attempts?.forEach(a => {
-            const name = a.test_id?.name || 'Unknown Test';
-            counts[name] = (counts[name] || 0) + 1;
-        });
-
-        return Object.entries(counts)
-            .map(([name, value]) => ({ name, value }))
-            .sort((a, b) => b.value - a.value)
-            .slice(0, 8);
+        attempts?.forEach(a => { const name = a.test_id?.name || 'Unknown Test'; counts[name] = (counts[name] || 0) + 1; });
+        return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 8);
     };
 
     const handleUserSearch = async (val) => {
         setUserSearchText(val);
         if (val.length < 2) return;
-
         try {
             const res = await fetch(`${API_URL}/admin/analytics/search?query=${val}`);
             const json = await res.json();
             setUserOptions(json.data || []);
-        } catch (error) {
-            console.error('Error searching users:', error);
-        }
+        } catch (error) { console.error('Error searching users:', error); }
     };
 
     const fetchUserAnalytics = async (user) => {
-        setUserLoading(true);
-        setSelectedUser(user);
-        setModalOpen(true);
+        setUserLoading(true); setSelectedUser(user); setModalOpen(true);
         try {
-            const userId = user._id || user.id;
-            const res = await fetch(`${API_URL}/admin/analytics/users/${userId}`);
+            const res = await fetch(`${API_URL}/admin/analytics/users/${user._id || user.id}`);
             const json = await res.json();
             const data = json.data;
-
             const trends = data.attempts?.map(a => ({
                 date: new Date(a.created_at).toLocaleDateString(),
                 score: a.score,
                 total: a.total_questions || a.answers?.length || 1,
-                time: Math.round((a.time_spent || 0) / 60), // in minutes
+                time: Math.round((a.time_spent || 0) / 60),
                 percentage: Math.round((a.score / (a.total_questions || a.answers?.length || 1)) * 100),
                 test: a.test_id?.name || 'Unknown'
             })) || [];
-
             setUserAnalytics({
-                attempts: data.attempts || [],
-                bundles: data.bundles || [],
-                trends: trends,
+                attempts: data.attempts || [], bundles: data.bundles || [], trends,
                 totalTests: data.attempts?.length || 0,
-                avgScore: data.attempts?.length ? Math.round(trends.reduce((sum, t) => sum + t.percentage, 0) / trends.length) : 0,
-                avgTime: data.attempts?.length ? Math.round(trends.reduce((sum, t) => sum + t.time, 0) / trends.length) : 0
+                avgScore: data.attempts?.length ? Math.round(trends.reduce((s, t) => s + t.percentage, 0) / trends.length) : 0,
+                avgTime: data.attempts?.length ? Math.round(trends.reduce((s, t) => s + t.time, 0) / trends.length) : 0
             });
-        } catch (error) {
-            console.error('Error fetching user analytics:', error);
-        } finally {
-            setUserLoading(false);
-        }
+        } catch (error) { console.error('Error fetching user analytics:', error); }
+        finally { setUserLoading(false); }
     };
-
-    const StatCard = ({ title, value, icon: Icon, trend, color, subtitle }) => (
-        <Paper sx={{
-            p: 4, borderRadius: 7, border: '1px solid #e2e8f0', height: '100%', position: 'relative', overflow: 'hidden',
-            background: `linear-gradient(135deg, white 0%, ${alpha(color, 0.05)} 100%)`, 
-            transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            '&:hover': {
-                transform: 'translateY(-8px)',
-                boxShadow: `0 30px 60px ${alpha(color, 0.15)}`,
-                borderColor: alpha(color, 0.4)
-            }
-        }}>
-            <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.1, color: color }}>
-                <Icon size={120} />
-            </Box>
-            <Stack spacing={3}>
-                <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha(color, 0.1), color: color, width: 'fit-content', boxShadow: `0 8px 16px ${alpha(color, 0.1)}` }}>
-                    <Icon size={32} />
-                </Box>
-                <Box>
-                    <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', mb: 1 }}>{title}</Typography>
-                    <Typography variant="h2" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -1, fontSize: { xs: '2.5rem', md: '2.8rem' } }}>
-                        {typeof value === 'number' && (title.includes('Revenue') || title.includes('Price')) ? `₹${value.toLocaleString()}` : value.toLocaleString()}
-                    </Typography>
-                    {subtitle && <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 600 }}>{subtitle}</Typography>}
-                </Box>
-                {trend && (
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{
-                        color: trend > 0 ? COLORS.success : COLORS.error,
-                        bgcolor: alpha(trend > 0 ? COLORS.success : COLORS.error, 0.1),
-                        width: 'fit-content', px: 2, py: 0.8, borderRadius: 3
-                    }}>
-                        {trend > 0 ? <TrendingUp size={18} /> : <ArrowDownRight size={18} />}
-                        <Typography variant="body2" sx={{ fontWeight: 900 }}>{Math.abs(trend)}%</Typography>
-                        <Typography variant="caption" sx={{ opacity: 0.8, fontWeight: 700 }}>v/s last mo</Typography>
-                    </Stack>
-                )}
-            </Stack>
-        </Paper>
-    );
 
     if (loading) {
         return (
-            <Box sx={{ p: 4 }}>
-                <Skeleton variant="text" width={300} height={40} sx={{ mb: 1, bgcolor: alpha(COLORS.primary, 0.08) }} />
-                <Skeleton variant="text" width={450} height={18} sx={{ mb: 4, bgcolor: alpha(COLORS.primary, 0.05) }} />
-                <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
-                    {[1,2,3,4].map(i => (
-                        <Paper key={i} elevation={0} sx={{ flex: 1, minWidth: 160, p: 2.5, borderRadius: 4, border: `1px solid ${COLORS.border}` }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Skeleton variant="rounded" width={44} height={44} sx={{ borderRadius: 3, bgcolor: alpha(COLORS.accent, 0.08) }} />
-                                <Box><Skeleton variant="text" width={50} height={28} /><Skeleton variant="text" width={70} height={12} /></Box>
-                            </Box>
-                        </Paper>
+            <Box sx={{ p: { xs: 3, md: 5 }, minHeight: '100vh', background: 'linear-gradient(160deg, #fdf2f8 0%, #f8fafc 100%)' }}>
+                <PageHeaderSkeleton />
+                <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+                    {[1, 2, 3, 4].map(i => (
+                        <Box key={i} sx={{ flex: 1, minWidth: 160, display: 'flex', alignItems: 'center', gap: 2, px: 3, py: 2.5, borderRadius: 4, bgcolor: 'rgba(255,255,255,0.7)', border: '1px solid', borderColor: COLORS.border }}>
+                            <Skeleton variant="rounded" width={44} height={44} sx={{ borderRadius: 3 }} />
+                            <Box><Skeleton variant="text" width={50} height={28} /><Skeleton variant="text" width={70} height={12} /></Box>
+                        </Box>
                     ))}
                 </Box>
-                <Skeleton variant="rounded" width="100%" height={300} sx={{ borderRadius: 4, bgcolor: alpha(COLORS.primary, 0.03) }} />
+                <Skeleton variant="rounded" width="100%" height={48} sx={{ borderRadius: 3, mb: 3 }} />
+                <Box sx={{ display: 'flex', gap: 3 }}>
+                    <Skeleton variant="rounded" width="65%" height={420} sx={{ borderRadius: 5 }} />
+                    <Skeleton variant="rounded" width="35%" height={420} sx={{ borderRadius: 5 }} />
+                </Box>
             </Box>
         );
     }
 
+    const statCards = [
+        { title: 'Total Users', value: stats.totalUsers, icon: Users, color: COLORS.indigo, subtitle: 'Registered students' },
+        { title: 'Revenue', value: stats.totalRevenue, icon: CreditCard, color: COLORS.success, subtitle: 'Gross earnings', isCurrency: true },
+        { title: 'Exams Taken', value: stats.totalAttempts, icon: Zap, color: COLORS.warning, subtitle: 'Tests completed' },
+        { title: 'Active Bundles', value: stats.activeBundles, icon: Layers, color: COLORS.accent, subtitle: 'Paid subscriptions' },
+    ];
+
+    const tabs = [
+        { label: 'Overview', icon: LayoutDashboard },
+        { label: 'Revenue', icon: CreditCard },
+        { label: 'Academics', icon: Activity },
+        { label: 'Activity', icon: Clock },
+    ];
+
     return (
-        <Box sx={{ p: { xs: 3, md: 6 }, bgcolor: COLORS.background }}>
-            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                {/* Header */}
-                <Box sx={{ mb: 6, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'flex-end' }, gap: 4 }}>
-                    <Box>
-                        <Typography variant="h2" sx={{ fontWeight: 940, color: COLORS.primary, letterSpacing: -2, mb: 1 }}>
-                            Intelligence <Box component="span" sx={{ color: COLORS.accent }}>Matrix</Box>
-                        </Typography>
-                        <Typography variant="h6" sx={{ color: COLORS.textLight, fontWeight: 600, maxWidth: 600 }}>
-                            Predictive insights and real-time behavioral analytics for the Psy-Q ecosystem.
-                        </Typography>
+        <Box sx={{ p: { xs: 3, md: 5 }, minHeight: '100vh', background: 'linear-gradient(160deg, #fdf2f8 0%, #f8fafc 100%)' }}>
+
+            {/* ── Header ────────────────────────────────────────────────── */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+                <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Admin</Typography>
+                        <Typography variant="caption" sx={{ color: COLORS.border }}>›</Typography>
+                        <Typography variant="caption" sx={{ color: COLORS.accent, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>Analytics</Typography>
                     </Box>
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ bgcolor: 'white', p: 1, borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
-                        <Autocomplete
-                            sx={{ width: 350 }}
-                            options={userOptions}
-                            getOptionLabel={(option) => `${option.full_name} (${option.email})`}
-                            onInputChange={(e, val) => handleUserSearch(val)}
-                            onChange={(e, user) => user && fetchUserAnalytics(user)}
-                            popupIcon={null}
-                            renderInput={(params) => (
-                                <MuiTextField
-                                    {...params}
-                                    placeholder="Search Student DNA..."
-                                    size="small"
-                                    InputProps={{
-                                        ...params.InputProps,
-                                        startAdornment: (
-                                            <InputAdornment position="start">
-                                                <Search size={20} color={COLORS.accent} />
-                                            </InputAdornment>
-                                        ),
-                                        sx: { borderRadius: 3, '& fieldset': { border: 'none' }, fontWeight: 700 }
-                                    }}
-                                />
-                            )}
-                        />
-                        <Divider orientation="vertical" flexItem sx={{ my: 1 }} />
-                        <Button startIcon={<RefreshCw size={18} />} onClick={fetchAnalyticsData} sx={{ color: COLORS.primary, fontWeight: 800, textTransform: 'none', px: 3 }}>Refresh</Button>
-                    </Stack>
+                    <Typography variant="h4" sx={{ fontWeight: 900, color: COLORS.primary, letterSpacing: -0.5, lineHeight: 1 }}>
+                        Analytics Dashboard
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600, mt: 0.5 }}>
+                        Insights and behavioral analytics for the Psy-Q platform
+                    </Typography>
                 </Box>
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Autocomplete
+                        sx={{ width: 280 }}
+                        options={userOptions}
+                        getOptionLabel={(option) => `${option.full_name} (${option.email})`}
+                        onInputChange={(e, val) => handleUserSearch(val)}
+                        onChange={(e, user) => user && fetchUserAnalytics(user)}
+                        popupIcon={null}
+                        renderInput={(params) => (
+                            <MuiTextField {...params} placeholder="Search students…" size="small"
+                                InputProps={{ ...params.InputProps, startAdornment: <InputAdornment position="start"><Search size={16} color={COLORS.textLight} /></InputAdornment> }}
+                                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#fff', fontSize: '0.85rem', height: 38 } }}
+                            />
+                        )}
+                    />
+                    <Button startIcon={<RefreshCw size={16} />} onClick={fetchAnalyticsData}
+                        sx={{ bgcolor: '#fff', color: COLORS.primary, fontWeight: 700, textTransform: 'none', px: 2.5, height: 38, borderRadius: 2, border: `1px solid ${COLORS.border}`, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', '&:hover': { bgcolor: '#fff', borderColor: COLORS.accent } }}>
+                        Refresh
+                    </Button>
+                </Stack>
+            </Box>
 
-                {/* Navigation Tabs */}
-                <Paper sx={{ mb: 6, borderRadius: 5, bgcolor: '#ffffff', p: 1, boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #e2e8f0' }}>
-                    <Tabs
-                        value={activeTab}
-                        onChange={(e, val) => setActiveTab(val)}
-                        sx={{
-                            '& .MuiTabs-indicator': { display: 'none' },
-                            '& .MuiTab-root': {
-                                borderRadius: 4, fontWeight: 800, textTransform: 'none', minHeight: 56, transition: 'all 0.3s', p: 3,
-                                '&.Mui-selected': { bgcolor: COLORS.primary, color: 'white', boxShadow: `0 12px 24px ${alpha(COLORS.primary, 0.2)}` },
-                                '&:hover:not(.Mui-selected)': { bgcolor: alpha(COLORS.primary, 0.05) }
-                            }
-                        }}
-                    >
-                        <Tab label="Command Center" icon={<LayoutDashboard size={20} />} iconPosition="start" />
-                        <Tab label="Financial Pulse" icon={<CreditCard size={20} />} iconPosition="start" />
-                        <Tab label="Academic Velocity" icon={<Activity size={20} />} iconPosition="start" />
-                        <Tab label="Recent Activity" icon={<Clock size={20} />} iconPosition="start" />
-                    </Tabs>
-                </Paper>
+            {/* ── Stats Bar ─────────────────────────────────────────────── */}
+            <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+                {statCards.map(({ title, value, icon: Icon, color, subtitle, isCurrency }) => (
+                    <Box key={title} sx={{
+                        flex: 1, minWidth: 160, display: 'flex', alignItems: 'center', gap: 2.5,
+                        px: 3, py: 2.5, borderRadius: 4, background: 'rgba(255,255,255,0.7)',
+                        backdropFilter: 'blur(12px)', border: `1px solid ${alpha(color, 0.15)}`,
+                        boxShadow: `0 2px 12px ${alpha(color, 0.08)}`, transition: 'all 0.3s',
+                        '&:hover': { transform: 'translateY(-2px)', boxShadow: `0 8px 24px ${alpha(color, 0.15)}`, borderColor: alpha(color, 0.3) },
+                    }}>
+                        <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: alpha(color, 0.12), color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Icon size={20} />
+                        </Box>
+                        <Box>
+                            <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, lineHeight: 1 }}>
+                                {isCurrency ? `₹${(value || 0).toLocaleString()}` : (value || 0).toLocaleString()}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>{title}</Typography>
+                        </Box>
+                    </Box>
+                ))}
+            </Box>
 
-                <AnimatePresence mode="wait">
-                    {activeTab === 0 && (
-                        <motion.div key="overview" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.4 }}>
-                            {/* Stats Highlights */}
-                            <Grid container spacing={4} sx={{ mb: 6 }}>
-                                <Grid item xs={12} sm={6} md={3}>
-                                    <StatCard title="Global Users" value={stats.totalUsers} icon={Users} color={COLORS.indigo} trend={14.2} subtitle="Verified accounts" />
-                                </Grid>
-                                <Grid item xs={12} sm={6} md={3}>
-                                    <StatCard title="Revenue Flow" value={stats.totalRevenue} icon={CreditCard} color={COLORS.success} trend={8.7} subtitle="Gross merchandise value" />
-                                </Grid>
-                                <Grid item xs={12} sm={6} md={3}>
-                                    <StatCard title="Exam Vol." value={stats.totalAttempts} icon={Zap} color={COLORS.warning} trend={22.5} subtitle="Tests completed" />
-                                </Grid>
-                                <Grid item xs={12} sm={6} md={3}>
-                                    <StatCard title="Conversion" value={Math.round((stats.activeBundles / (stats.totalUsers || 1)) * 100)} icon={Target} color={COLORS.accent} trend={-2.1} unit="%" subtitle="Paid user ratio" />
-                                </Grid>
+            {/* ── Tabs ──────────────────────────────────────────────────── */}
+            <Paper sx={{ mb: 4, borderRadius: 3, bgcolor: '#fff', p: 0.75, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: `1px solid ${COLORS.border}` }}>
+                <Tabs value={activeTab} onChange={(e, val) => setActiveTab(val)} sx={{
+                    '& .MuiTabs-indicator': { display: 'none' },
+                    '& .MuiTab-root': {
+                        borderRadius: 2.5, fontWeight: 700, textTransform: 'none', minHeight: 44, fontSize: '0.85rem',
+                        transition: 'all 0.2s', gap: 1,
+                        '&.Mui-selected': { bgcolor: COLORS.primary, color: 'white', boxShadow: `0 4px 12px ${alpha(COLORS.primary, 0.2)}` },
+                        '&:hover:not(.Mui-selected)': { bgcolor: alpha(COLORS.primary, 0.05) }
+                    }
+                }}>
+                    {tabs.map(({ label, icon: Icon }) => (
+                        <Tab key={label} label={label} icon={<Icon size={16} />} iconPosition="start" />
+                    ))}
+                </Tabs>
+            </Paper>
+
+            {/* ── Tab Content ───────────────────────────────────────────── */}
+            <AnimatePresence mode="wait">
+                {activeTab === 0 && (
+                    <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12} md={8}>
+                                <ChartCard title="User Growth" subtitle="New registrations over 30 days" icon={Users} iconColor={COLORS.indigo} height={380}>
+                                    <ResponsiveContainer>
+                                        <AreaChart data={stats.userGrowth}>
+                                            <defs>
+                                                <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={COLORS.indigo} stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor={COLORS.indigo} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                            <XAxis dataKey="name" fontSize={11} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: COLORS.textLight }} dy={8} />
+                                            <YAxis fontSize={11} fontWeight={700} axisLine={false} tickLine={false} tick={{ fill: COLORS.textLight }} dx={-8} />
+                                            <RechartsTooltip content={<CustomTooltip />} />
+                                            <Area type="monotone" dataKey="users" name="Registrations" stroke={COLORS.indigo} strokeWidth={3} fillOpacity={1} fill="url(#colorUsers)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </ChartCard>
                             </Grid>
-
-                            <Grid container spacing={4}>
-                                <Grid item xs={12} md={8}>
-                                    <Paper sx={{ p: 5, borderRadius: 8, border: '1px solid #e2e8f0', bgcolor: 'white', boxShadow: '0 20px 50px rgba(0,0,0,0.02)' }}>
-                                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 5 }}>
-                                            <Box>
-                                                <Typography variant="h5" sx={{ fontWeight: 900, color: COLORS.primary, mb: 1 }}>Acquisition Velocity</Typography>
-                                                <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>New student registrations over last 30 days</Typography>
+                            <Grid item xs={12} md={4}>
+                                <Paper elevation={0} sx={{ p: 4, borderRadius: 5, border: `1px solid ${COLORS.border}`, height: '100%', bgcolor: '#fff' }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent, display: 'flex' }}><TrendingUp size={18} /></Box>
+                                        Top Tests
+                                    </Typography>
+                                    <Stack spacing={2.5}>
+                                        {(stats.testPopularity || []).slice(0, 6).map((test, i) => (
+                                            <Box key={i}>
+                                                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.75 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 700, color: COLORS.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{test.name}</Typography>
+                                                    <Typography variant="body2" sx={{ fontWeight: 800, color: COLORS.accent, flexShrink: 0 }}>{test.value}</Typography>
+                                                </Stack>
+                                                <Box sx={{ height: 6, bgcolor: alpha(COLORS.accent, 0.06), borderRadius: 3, overflow: 'hidden' }}>
+                                                    <Box sx={{ height: '100%', width: `${(test.value / ((stats.testPopularity || [])[0]?.value || 1)) * 100}%`, bgcolor: COLORS.chart[i % COLORS.chart.length], borderRadius: 3, transition: 'width 0.8s ease' }} />
+                                                </Box>
                                             </Box>
-                                            <Box sx={{ p: 1.5, borderRadius: 3, bgcolor: alpha(COLORS.indigo, 0.1), color: COLORS.indigo }}>
-                                                <Users size={24} />
+                                        ))}
+                                    </Stack>
+                                </Paper>
+                            </Grid>
+                        </Grid>
+                    </motion.div>
+                )}
+
+                {activeTab === 1 && (
+                    <motion.div key="revenue" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12} md={7}>
+                                <ChartCard title="Revenue Trajectory" subtitle="Daily earnings over 30 days" icon={CreditCard} iconColor={COLORS.success} height={380}>
+                                    <ResponsiveContainer>
+                                        <AreaChart data={stats.dailyActiveUsers}>
+                                            <defs>
+                                                <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor={COLORS.success} stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor={COLORS.success} stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                            <XAxis dataKey="name" fontSize={11} fontWeight={700} axisLine={false} tickLine={false} />
+                                            <YAxis fontSize={11} fontWeight={700} axisLine={false} tickLine={false} />
+                                            <RechartsTooltip content={<CustomTooltip prefix="₹" />} />
+                                            <Area type="monotone" dataKey="active" name="Earnings" stroke={COLORS.success} strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </ChartCard>
+                            </Grid>
+                            <Grid item xs={12} md={5}>
+                                <ChartCard title="Revenue by Source" subtitle="Monetization breakdown" icon={PieIcon} iconColor={COLORS.warning} height={380}>
+                                    <ResponsiveContainer>
+                                        <PieChart>
+                                            <Pie data={stats.revenueByBundle} innerRadius={90} outerRadius={140} paddingAngle={6} dataKey="value" stroke="none">
+                                                {(stats.revenueByBundle || []).map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS.chart[index % COLORS.chart.length]} />
+                                                ))}
+                                            </Pie>
+                                            <RechartsTooltip content={<CustomTooltip prefix="₹" />} />
+                                            <Legend verticalAlign="bottom" align="center" iconType="circle"
+                                                formatter={(value) => <span style={{ color: COLORS.primary, fontWeight: 700, fontSize: '12px' }}>{value}</span>} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </ChartCard>
+                            </Grid>
+                        </Grid>
+                    </motion.div>
+                )}
+
+                {activeTab === 2 && (
+                    <motion.div key="academics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12} md={6}>
+                                <ChartCard title="Subject Accuracy" subtitle="Performance radar across subjects" icon={Target} iconColor={COLORS.accent} height={420}>
+                                    <ResponsiveContainer>
+                                        <RadarChart cx="50%" cy="50%" outerRadius="75%" data={stats.subjectPerformance}>
+                                            <PolarGrid stroke="#e2e8f0" strokeWidth={1.5} />
+                                            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 12, fontWeight: 700, fill: COLORS.primary }} />
+                                            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fontWeight: 600 }} />
+                                            <Radar name="Accuracy %" dataKey="accuracy" stroke={COLORS.accent} fill={COLORS.accent} fillOpacity={0.4} strokeWidth={2.5} />
+                                            <RechartsTooltip content={<CustomTooltip />} />
+                                        </RadarChart>
+                                    </ResponsiveContainer>
+                                </ChartCard>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <ChartCard title="Test Popularity" subtitle="Most attempted tests" icon={BarIcon} iconColor={COLORS.indigo} height={420}>
+                                    <ResponsiveContainer>
+                                        <BarChart layout="vertical" data={stats.testPopularity}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                                            <XAxis type="number" hide />
+                                            <YAxis dataKey="name" type="category" width={130} fontSize={11} fontWeight={700} axisLine={false} tickLine={false} />
+                                            <RechartsTooltip content={<CustomTooltip />} />
+                                            <Bar dataKey="value" name="Attempts" fill={COLORS.indigo} radius={[0, 6, 6, 0]} barSize={28} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </ChartCard>
+                            </Grid>
+                        </Grid>
+                    </motion.div>
+                )}
+
+                {activeTab === 3 && (
+                    <motion.div key="activity" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12} md={6}>
+                                <Paper elevation={0} sx={{ borderRadius: 5, border: `1px solid ${COLORS.border}`, overflow: 'hidden', bgcolor: '#fff' }}>
+                                    <Box sx={{ px: 4, py: 3, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(COLORS.indigo, 0.1), color: COLORS.indigo, display: 'flex' }}><Users size={18} /></Box>
+                                        <Typography variant="h6" sx={{ fontWeight: 900 }}>Recent Signups</Typography>
+                                        <Chip label={(stats.recentSignups || []).length} size="small" sx={{ ml: 'auto', fontWeight: 700, height: 22, bgcolor: alpha(COLORS.indigo, 0.1), color: COLORS.indigo }} />
+                                    </Box>
+                                    <Box sx={{ p: 2, maxHeight: 420, overflowY: 'auto' }}>
+                                        {(stats.recentSignups || []).length === 0 ? (
+                                            <Box sx={{ textAlign: 'center', py: 6 }}><AlertCircle size={32} color={COLORS.border} /><Typography variant="body2" sx={{ color: COLORS.textLight, mt: 1 }}>No signups yet</Typography></Box>
+                                        ) : (stats.recentSignups || []).map((user, i) => (
+                                            <Box key={i} sx={{ p: 2, borderRadius: 3, mb: 1, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': { bgcolor: alpha(COLORS.indigo, 0.04) } }}>
+                                                <Avatar sx={{ width: 42, height: 42, bgcolor: COLORS.chart[i % COLORS.chart.length], fontSize: '0.85rem', fontWeight: 800 }}>
+                                                    {user.full_name?.charAt(0)}
+                                                </Avatar>
+                                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 700, color: COLORS.primary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.full_name}</Typography>
+                                                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 600 }}>{user.email}</Typography>
+                                                </Box>
+                                                <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, flexShrink: 0 }}>{new Date(user.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</Typography>
                                             </Box>
-                                        </Stack>
-                                        <Box sx={{ height: 450 }}>
-                                            <ResponsiveContainer>
-                                                <AreaChart data={stats.userGrowth}>
-                                                    <defs>
-                                                        <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                                                            <stop offset="5%" stopColor={COLORS.indigo} stopOpacity={0.4} />
-                                                            <stop offset="95%" stopColor={COLORS.indigo} stopOpacity={0} />
-                                                        </linearGradient>
-                                                    </defs>
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                                    <XAxis dataKey="name" fontSize={12} fontWeight={800} axisLine={false} tickLine={false} tick={{ fill: COLORS.textLight }} dy={10} />
-                                                    <YAxis fontSize={12} fontWeight={800} axisLine={false} tickLine={false} tick={{ fill: COLORS.textLight }} dx={-10} />
-                                                    <RechartsTooltip content={<CustomTooltip />} />
-                                                    <Area type="monotone" dataKey="users" name="Registrations" stroke={COLORS.indigo} strokeWidth={6} fillOpacity={1} fill="url(#colorUsers)" />
-                                                </AreaChart>
-                                            </ResponsiveContainer>
-                                        </Box>
-                                    </Paper>
-                                </Grid>
-
-                                <Grid item xs={12} md={4}>
-                                    <Paper sx={{ p: 5, borderRadius: 8, border: '1px solid #e2e8f0', height: '100%', bgcolor: 'white' }}>
-                                        <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                            <TrendingUp size={24} color={COLORS.accent} /> Market Leaders
-                                        </Typography>
-                                        <Stack spacing={4}>
-                                            {(stats.testPopularity || []).slice(0, 6).map((test, i) => (
-                                                <Box key={i}>
-                                                    <Stack direction="row" justifyContent="space-between" sx={{ mb: 1.5 }}>
-                                                        <Typography variant="body2" sx={{ fontWeight: 800, color: COLORS.primary }}>{test.name}</Typography>
-                                                        <Typography variant="body2" sx={{ fontWeight: 900, color: COLORS.accent }}>{test.value} attempts</Typography>
-                                                    </Stack>
-                                                    <Box sx={{ height: 10, bgcolor: alpha(COLORS.accent, 0.05), borderRadius: 5, overflow: 'hidden' }}>
-                                                        <motion.div
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${(test.value / (stats.testPopularity[0]?.value || 1)) * 100}%` }}
-                                                            transition={{ duration: 1, delay: i * 0.1 }}
-                                                            style={{ height: '100%', backgroundColor: COLORS.chart[i % COLORS.chart.length], borderRadius: 5 }}
-                                                        />
-                                                    </Box>
+                                        ))}
+                                    </Box>
+                                </Paper>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <Paper elevation={0} sx={{ borderRadius: 5, border: `1px solid ${COLORS.border}`, overflow: 'hidden', bgcolor: '#fff' }}>
+                                    <Box sx={{ px: 4, py: 3, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success, display: 'flex' }}><CreditCard size={18} /></Box>
+                                        <Typography variant="h6" sx={{ fontWeight: 900 }}>Recent Payments</Typography>
+                                        <Chip label={(stats.recentPayments || []).length} size="small" sx={{ ml: 'auto', fontWeight: 700, height: 22, bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success }} />
+                                    </Box>
+                                    <Box sx={{ p: 2, maxHeight: 420, overflowY: 'auto' }}>
+                                        {(stats.recentPayments || []).length === 0 ? (
+                                            <Box sx={{ textAlign: 'center', py: 6 }}><AlertCircle size={32} color={COLORS.border} /><Typography variant="body2" sx={{ color: COLORS.textLight, mt: 1 }}>No payments yet</Typography></Box>
+                                        ) : (stats.recentPayments || []).map((p, i) => (
+                                            <Box key={i} sx={{ p: 2, borderRadius: 3, mb: 1, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': { bgcolor: alpha(COLORS.success, 0.04) } }}>
+                                                <Box sx={{ width: 42, height: 42, borderRadius: 3, bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                    <CreditCard size={18} />
                                                 </Box>
-                                            ))}
-                                        </Stack>
-                                        <Divider sx={{ my: 4 }} />
-                                        <Button fullWidth endIcon={<ArrowUpRight size={18} />} sx={{ color: COLORS.textLight, fontWeight: 700, p: 2, borderRadius: 3, '&:hover': { bgcolor: alpha(COLORS.accent, 0.05), color: COLORS.accent } }}>View All Course Performance</Button>
-                                    </Paper>
-                                </Grid>
-                            </Grid>
-                        </motion.div>
-                    )}
-
-                    {activeTab === 1 && (
-                        <motion.div key="revenue" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.4 }}>
-                            <Grid container spacing={4}>
-                                <Grid item xs={12} md={7}>
-                                    <Paper sx={{ p: 5, borderRadius: 8, border: '1px solid #e2e8f0', bgcolor: 'white' }}>
-                                        <Typography variant="h5" sx={{ fontWeight: 940, mb: 5, color: COLORS.primary }}>Revenue Trajectory (₹)</Typography>
-                                        <Box sx={{ height: 450 }}>
-                                            <ResponsiveContainer>
-                                                <AreaChart data={stats.dailyActiveUsers}>
-                                                    <defs>
-                                                        <linearGradient id="colorDAU" x1="0" y1="0" x2="0" y2="1">
-                                                            <stop offset="5%" stopColor={COLORS.success} stopOpacity={0.3} />
-                                                            <stop offset="95%" stopColor={COLORS.success} stopOpacity={0} />
-                                                        </linearGradient>
-                                                    </defs>
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                                    <XAxis dataKey="name" fontSize={11} fontWeight={800} axisLine={false} tickLine={false} />
-                                                    <YAxis fontSize={11} fontWeight={800} axisLine={false} tickLine={false} />
-                                                    <RechartsTooltip content={<CustomTooltip prefix="₹" />} />
-                                                    <Area type="monotone" dataKey="active" name="Earnings" stroke={COLORS.success} strokeWidth={6} fillOpacity={1} fill="url(#colorDAU)" />
-                                                </AreaChart>
-                                            </ResponsiveContainer>
-                                        </Box>
-                                    </Paper>
-                                </Grid>
-
-                                <Grid item xs={12} md={5}>
-                                    <Paper sx={{ p: 5, borderRadius: 8, border: '1px solid #e2e8f0', bgcolor: 'white' }}>
-                                        <Typography variant="h5" sx={{ fontWeight: 940, mb: 5, color: COLORS.primary }}>Monetization Distribution</Typography>
-                                        <Box sx={{ height: 450 }}>
-                                            <ResponsiveContainer>
-                                                <PieChart>
-                                                    <Pie
-                                                        data={stats.revenueByBundle}
-                                                        innerRadius={110}
-                                                        outerRadius={160}
-                                                        paddingAngle={8}
-                                                        dataKey="value"
-                                                        stroke="none"
-                                                    >
-                                                        {(stats.revenueByBundle || []).map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={COLORS.chart[index % COLORS.chart.length]} />
-                                                        ))}
-                                                    </Pie>
-                                                    <RechartsTooltip content={<CustomTooltip prefix="₹" />} />
-                                                    <Legend 
-                                                        verticalAlign="bottom" 
-                                                        align="center" 
-                                                        iconType="circle"
-                                                        formatter={(value) => <span style={{ color: COLORS.primary, fontWeight: 700, fontSize: '13px' }}>{value}</span>}
-                                                    />
-                                                </PieChart>
-                                            </ResponsiveContainer>
-                                        </Box>
-                                    </Paper>
-                                </Grid>
-                            </Grid>
-                        </motion.div>
-                    )}
-
-                    {activeTab === 2 && (
-                        <motion.div key="performance" initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4 }}>
-                            <Grid container spacing={4}>
-                                <Grid item xs={12} md={6}>
-                                    <Paper sx={{ p: 5, borderRadius: 8, border: '1px solid #e2e8f0', bgcolor: 'white' }}>
-                                        <Typography variant="h5" sx={{ fontWeight: 940, mb: 1, color: COLORS.primary }}>Subject Proficiency Radar</Typography>
-                                        <Typography variant="body2" sx={{ color: COLORS.textLight, mb: 5, fontWeight: 600 }}>Comparative accuracy analysis across core subjects</Typography>
-                                        <Box sx={{ height: 500 }}>
-                                            <ResponsiveContainer>
-                                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={stats.subjectPerformance}>
-                                                    <PolarGrid stroke="#e2e8f0" strokeWidth={2} />
-                                                    <PolarAngleAxis dataKey="subject" tick={{ fontSize: 13, fontWeight: 800, fill: COLORS.primary }} />
-                                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 11, fontWeight: 700 }} />
-                                                    <Radar name="Accuracy %" dataKey="accuracy" stroke={COLORS.accent} fill={COLORS.accent} fillOpacity={0.5} strokeWidth={4} />
-                                                    <RechartsTooltip content={<CustomTooltip prefix="" />} />
-                                                </RadarChart>
-                                            </ResponsiveContainer>
-                                        </Box>
-                                    </Paper>
-                                </Grid>
-
-                                <Grid item xs={12} md={6}>
-                                    <Paper sx={{ p: 5, borderRadius: 8, border: '1px solid #e2e8f0', bgcolor: 'white' }}>
-                                        <Typography variant="h5" sx={{ fontWeight: 940, mb: 5, color: COLORS.primary }}>Course Saturation Level</Typography>
-                                        <Box sx={{ height: 500 }}>
-                                            <ResponsiveContainer>
-                                                <BarChart layout="vertical" data={stats.testPopularity}>
-                                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                                                    <XAxis type="number" hide />
-                                                    <YAxis dataKey="name" type="category" width={140} fontSize={11} fontWeight={800} axisLine={false} tickLine={false} />
-                                                    <RechartsTooltip content={<CustomTooltip />} />
-                                                    <Bar dataKey="value" name="Active Students" fill={COLORS.indigo} radius={[0, 8, 8, 0]} barSize={32} />
-                                                </BarChart>
-                                            </ResponsiveContainer>
-                                        </Box>
-                                    </Paper>
-                                </Grid>
-                            </Grid>
-                        </motion.div>
-                    )}
-
-                    {activeTab === 3 && (
-                        <motion.div key="activity" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }} transition={{ duration: 0.4 }}>
-                            <Grid container spacing={4}>
-                                <Grid item xs={12} md={6}>
-                                    <Paper sx={{ p: 0, borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden', bgcolor: 'white' }}>
-                                        <Box sx={{ p: 4, borderBottom: '1px solid #e2e8f0', bgcolor: alpha(COLORS.indigo, 0.03) }}>
-                                            <Typography variant="h6" sx={{ fontWeight: 900, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <Users size={24} color={COLORS.indigo} /> New Talent Pipeline
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ p: 2 }}>
-                                            {(stats.recentSignups || []).map((user, i) => (
-                                                <Box key={i} sx={{ p: 2.5, borderRadius: 4, mb: 1, transition: 'all 0.3s', '&:hover': { bgcolor: alpha(COLORS.indigo, 0.05) }, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
-                                                    <Avatar sx={{ width: 56, height: 56, bgcolor: COLORS.chart[i % COLORS.chart.length], fontWeight: 900, fontSize: '1.2rem' }}>
-                                                        {user.full_name?.charAt(0)}
-                                                    </Avatar>
-                                                    <Box sx={{ flexGrow: 1 }}>
-                                                        <Typography variant="body1" sx={{ fontWeight: 800, color: COLORS.primary }}>{user.full_name}</Typography>
-                                                        <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>{user.email}</Typography>
-                                                    </Box>
-                                                    <Box sx={{ textAlign: 'right' }}>
-                                                        <Typography variant="caption" sx={{ display: 'block', fontWeight: 800, color: COLORS.textLight }}>JOINED</Typography>
-                                                        <Typography variant="body2" sx={{ fontWeight: 900, color: COLORS.primary }}>{new Date(user.created_at).toLocaleDateString()}</Typography>
-                                                    </Box>
+                                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 700, color: COLORS.primary }}>{p.type === 'bundle' ? 'Bundle Purchase' : 'Test Access'}</Typography>
+                                                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 600 }}>{new Date(p.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</Typography>
                                                 </Box>
-                                            ))}
-                                        </Box>
-                                        <Button fullWidth sx={{ py: 3, fontWeight: 800, color: COLORS.indigo, bgcolor: alpha(COLORS.indigo, 0.02) }}>Explore All Pipeline Nodes</Button>
-                                    </Paper>
-                                </Grid>
-
-                                <Grid item xs={12} md={6}>
-                                    <Paper sx={{ p: 0, borderRadius: 8, border: '1px solid #e2e8f0', overflow: 'hidden', bgcolor: 'white' }}>
-                                        <Box sx={{ p: 4, borderBottom: '1px solid #e2e8f0', bgcolor: alpha(COLORS.success, 0.03) }}>
-                                            <Typography variant="h6" sx={{ fontWeight: 900, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <RefreshCw size={24} color={COLORS.success} /> Logistical Streams
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ p: 2 }}>
-                                            {(stats.recentPayments || []).map((p, i) => (
-                                                <Box key={i} sx={{ p: 2.5, borderRadius: 4, mb: 1, transition: 'all 0.3s', '&:hover': { bgcolor: alpha(COLORS.success, 0.05) }, display: 'flex', alignItems: 'center', gap: 3 }}>
-                                                    <Box sx={{ width: 56, height: 56, borderRadius: '50%', bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <CreditCard size={28} />
-                                                    </Box>
-                                                    <Box sx={{ flexGrow: 1 }}>
-                                                        <Typography variant="body1" sx={{ fontWeight: 800, color: COLORS.primary }}>{p.type === 'bundle' ? 'Package License' : 'Direct Access'}</Typography>
-                                                        <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>{new Date(p.created_at).toLocaleDateString()}</Typography>
-                                                    </Box>
-                                                    <Box sx={{ textAlign: 'right' }}>
-                                                        <Typography variant="h6" sx={{ fontWeight: 940, color: COLORS.success }}>₹{p.amount?.toLocaleString()}</Typography>
-                                                        <Chip label="SETTLED" size="small" sx={{ fontWeight: 900, height: 20, fontSize: '0.65rem', bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success }} />
-                                                    </Box>
+                                                <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 800, color: COLORS.success }}>₹{(p.amount || 0).toLocaleString()}</Typography>
+                                                    <Chip label="Paid" size="small" sx={{ height: 18, fontSize: '0.6rem', fontWeight: 800, bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success }} />
                                                 </Box>
-                                            ))}
-                                        </Box>
-                                        <Button fullWidth sx={{ py: 3, fontWeight: 800, color: COLORS.success, bgcolor: alpha(COLORS.success, 0.02) }}>Full Financial Ledger</Button>
-                                    </Paper>
-                                </Grid>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                </Paper>
                             </Grid>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </motion.div>
+                        </Grid>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            {/* User Detail Modal */}
-            <Modal
-                open={modalOpen}
-                onClose={() => setModalOpen(false)}
-                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2, backdropFilter: 'blur(10px)' }}
-            >
+            {/* ── User Detail Modal ─────────────────────────────────────── */}
+            <Modal open={modalOpen} onClose={() => setModalOpen(false)}
+                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2, backdropFilter: 'blur(8px)' }}>
                 <Paper sx={{
-                    width: '100%', maxWidth: 1100, maxHeight: '92vh', overflowY: 'auto', borderRadius: 8, position: 'relative', p: 0, bgcolor: '#f8fafc', boxShadow: '0 40px 100px rgba(0,0,0,0.3)'
+                    width: '100%', maxWidth: 1000, maxHeight: '90vh', overflowY: 'auto',
+                    borderRadius: 6, bgcolor: '#f8fafc', boxShadow: '0 40px 100px rgba(0,0,0,0.25)',
                 }}>
                     {userLoading ? (
-                        <Box sx={{ p: 15, textAlign: 'center' }}>
-                            <CircularProgress thickness={6} size={70} sx={{ color: COLORS.accent }} />
-                            <Typography sx={{ mt: 3, fontWeight: 900, color: COLORS.primary, letterSpacing: -0.5 }}>SYNCHRONIZING PROFILE ANALYTICS...</Typography>
+                        <Box sx={{ p: 12, textAlign: 'center' }}>
+                            <CircularProgress thickness={5} size={56} sx={{ color: COLORS.accent }} />
+                            <Typography sx={{ mt: 3, fontWeight: 800, color: COLORS.primary, fontSize: '0.9rem' }}>Loading student analytics…</Typography>
                         </Box>
                     ) : userAnalytics && (
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+                        <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
                             {/* Modal Header */}
-                            <Box sx={{ p: 5, bgcolor: 'white', borderBottom: '1px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 10 }}>
+                            <Box sx={{ p: 4, bgcolor: '#fff', borderBottom: `1px solid ${COLORS.border}`, position: 'sticky', top: 0, zIndex: 10, borderRadius: '24px 24px 0 0' }}>
                                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                    <Stack direction="row" spacing={4} alignItems="center">
-                                        <Avatar sx={{ width: 80, height: 80, bgcolor: COLORS.accent, fontSize: '2rem', fontWeight: 900, boxShadow: `0 15px 30px ${alpha(COLORS.accent, 0.2)}` }}>
+                                    <Stack direction="row" spacing={3} alignItems="center">
+                                        <Avatar sx={{ width: 56, height: 56, bgcolor: COLORS.accent, fontSize: '1.3rem', fontWeight: 900, boxShadow: `0 8px 20px ${alpha(COLORS.accent, 0.2)}` }}>
                                             {selectedUser?.full_name?.charAt(0)}
                                         </Avatar>
                                         <Box>
-                                            <Typography variant="h3" sx={{ fontWeight: 940, color: COLORS.primary, letterSpacing: -1.5 }}>{selectedUser?.full_name}</Typography>
-                                            <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-                                                <Typography variant="h6" sx={{ color: COLORS.textLight, fontWeight: 600 }}>{selectedUser?.email}</Typography>
-                                                <Chip label="PREMIUM MEMBER" size="small" icon={<Zap size={14} />} sx={{ bgcolor: alpha(COLORS.warning, 0.1), color: '#b45309', fontWeight: 900, borderRadius: 2 }} />
-                                            </Stack>
+                                            <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.primary }}>{selectedUser?.full_name}</Typography>
+                                            <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 600 }}>{selectedUser?.email}</Typography>
                                         </Box>
                                     </Stack>
-                                    <MuiIconButton onClick={() => setModalOpen(false)} sx={{ bgcolor: '#f1f5f9', p: 2, '&:hover': { bgcolor: COLORS.error, color: 'white' } }}>
-                                        <X size={24} />
+                                    <MuiIconButton onClick={() => setModalOpen(false)}
+                                        sx={{ bgcolor: '#f1f5f9', '&:hover': { bgcolor: COLORS.error, color: '#fff' } }}>
+                                        <X size={20} />
                                     </MuiIconButton>
                                 </Stack>
                             </Box>
 
-                            <Box sx={{ p: 6 }}>
-                                {/* User Core Stats */}
-                                <Grid container spacing={4} sx={{ mb: 6 }}>
+                            <Box sx={{ p: 4 }}>
+                                {/* User Stats */}
+                                <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
                                     {[
-                                        { label: 'Total Missions', val: userAnalytics.totalTests, icon: Layers, color: COLORS.primary },
-                                        { label: 'Mean Accuracy', val: `${userAnalytics.avgScore}%`, icon: Target, color: COLORS.success },
-                                        { label: 'Time Efficiency', val: `${userAnalytics.avgTime}m`, icon: Clock, color: COLORS.indigo },
-                                        { label: 'Active Licenses', val: userAnalytics.bundles.length, icon: Award, color: COLORS.warning }
-                                    ].map((stat, i) => (
-                                        <Grid item xs={12} sm={6} md={3} key={i}>
-                                            <Paper sx={{ p: 4, borderRadius: 5, border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', overflow: 'hidden' }}>
-                                                <Box sx={{ position: 'absolute', top: -5, right: -5, opacity: 0.05, color: stat.color }}>
-                                                    <stat.icon size={80} />
-                                                </Box>
-                                                <Typography variant="caption" sx={{ fontWeight: 800, color: COLORS.textLight, textTransform: 'uppercase', letterSpacing: 1 }}>{stat.label}</Typography>
-                                                <Typography variant="h3" sx={{ fontWeight: 940, color: stat.color }}>{stat.val}</Typography>
-                                            </Paper>
-                                        </Grid>
-                                    ))}
-                                </Grid>
-
-                                <Grid container spacing={5}>
-                                    {/* Score Trend */}
-                                    <Grid item xs={12} md={8}>
-                                        <Paper sx={{ p: 5, borderRadius: 6, border: '1px solid #e2e8f0', bgcolor: 'white', minHeight: 450 }}>
-                                            <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <TrendingUp size={24} color={COLORS.accent} /> Performance Arc
-                                            </Typography>
-                                            <Box sx={{ height: 350 }}>
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <LineChart data={userAnalytics.trends}>
-                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                                        <XAxis dataKey="date" fontSize={11} fontWeight={800} tick={{ fill: COLORS.textLight }} axisLine={false} tickLine={false} />
-                                                        <YAxis domain={[0, 100]} fontSize={11} fontWeight={800} tick={{ fill: COLORS.textLight }} axisLine={false} tickLine={false} />
-                                                        <RechartsTooltip content={<CustomTooltip prefix="" />} />
-                                                        <Line type="monotone" dataKey="percentage" name="Accuracy" stroke={COLORS.accent} strokeWidth={6} dot={{ r: 8, fill: COLORS.accent, strokeWidth: 3, stroke: 'white' }} activeDot={{ r: 10, shadow: '0 0 20px rgba(0,0,0,0.2)' }} />
-                                                    </LineChart>
-                                                </ResponsiveContainer>
+                                        { label: 'Tests Taken', value: userAnalytics.totalTests, icon: Layers, color: COLORS.primary },
+                                        { label: 'Avg Score', value: `${userAnalytics.avgScore}%`, icon: Target, color: COLORS.success },
+                                        { label: 'Avg Time', value: `${userAnalytics.avgTime}m`, icon: Clock, color: COLORS.indigo },
+                                        { label: 'Bundles', value: (userAnalytics.bundles || []).length, icon: Award, color: COLORS.warning },
+                                    ].map(({ label, value, icon: Icon, color }) => (
+                                        <Box key={label} sx={{ flex: 1, minWidth: 140, display: 'flex', alignItems: 'center', gap: 2, px: 2.5, py: 2, borderRadius: 3, bgcolor: '#fff', border: `1px solid ${COLORS.border}` }}>
+                                            <Box sx={{ p: 1.2, borderRadius: 2, bgcolor: alpha(color, 0.1), color, display: 'flex' }}><Icon size={18} /></Box>
+                                            <Box>
+                                                <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.primary, lineHeight: 1 }}>{value}</Typography>
+                                                <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</Typography>
                                             </Box>
-                                        </Paper>
-                                    </Grid>
+                                        </Box>
+                                    ))}
+                                </Box>
 
-                                    {/* Test History Feed */}
-                                    <Grid item xs={12} md={4}>
-                                        <Paper sx={{ p: 5, borderRadius: 6, border: '1px solid #e2e8f0', height: '100%', bgcolor: 'white' }}>
-                                            <Typography variant="h5" sx={{ fontWeight: 900, mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                <Activity size={24} color={COLORS.primary} /> Log Stream
-                                            </Typography>
-                                            <Stack spacing={3}>
-                                                {userAnalytics.attempts.slice().reverse().slice(0, 6).map((attempt, i) => (
-                                                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }} key={i}>
-                                                        <Box sx={{ p: 3, borderRadius: 4, bgcolor: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.3s', '&:hover': { transform: 'scale(1.02)', boxShadow: '0 8px 16px rgba(0,0,0,0.05)' } }}>
-                                                            <Box>
-                                                                <Typography variant="body2" sx={{ fontWeight: 900, color: COLORS.primary, mb: 0.5 }}>{attempt.test_id?.name || 'Experimental Test'}</Typography>
-                                                                <Stack direction="row" spacing={1} alignItems="center">
-                                                                    <Clock size={12} color={COLORS.textLight} />
-                                                                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700 }}>{new Date(attempt.created_at).toLocaleDateString()}</Typography>
-                                                                </Stack>
-                                                            </Box>
-                                                            <Box sx={{ textAlign: 'right' }}>
-                                                                <Typography variant="h6" sx={{ fontWeight: 940, color: COLORS.accent }}>{Math.round((attempt.score / (attempt.total_questions || attempt.answers?.length || 1)) * 100)}%</Typography>
-                                                                <Typography variant="caption" sx={{ fontWeight: 800, color: COLORS.success }}>PASS</Typography>
-                                                            </Box>
-                                                        </Box>
-                                                    </motion.div>
-                                                ))}
-                                                {userAnalytics.attempts.length === 0 && (
-                                                    <Box sx={{ textAlign: 'center', py: 10 }}>
-                                                        <AlertCircle size={40} color={COLORS.textLight} style={{ opacity: 0.3, marginBottom: 16 }} />
-                                                        <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 700 }}>NO NEURAL ACTIVITY LOGGED</Typography>
-                                                    </Box>
-                                                )}
-                                            </Stack>
-                                        </Paper>
-                                    </Grid>
+                                {/* Score Chart */}
+                                <Paper elevation={0} sx={{ p: 4, borderRadius: 5, border: `1px solid ${COLORS.border}`, bgcolor: '#fff', mb: 3 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent, display: 'flex' }}><TrendingUp size={16} /></Box>
+                                        Score Trend
+                                    </Typography>
+                                    <Box sx={{ height: 280 }}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={userAnalytics.trends}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                                <XAxis dataKey="date" fontSize={10} fontWeight={700} tick={{ fill: COLORS.textLight }} axisLine={false} tickLine={false} />
+                                                <YAxis domain={[0, 100]} fontSize={10} fontWeight={700} tick={{ fill: COLORS.textLight }} axisLine={false} tickLine={false} />
+                                                <RechartsTooltip content={<CustomTooltip />} />
+                                                <Line type="monotone" dataKey="percentage" name="Accuracy %" stroke={COLORS.accent} strokeWidth={3} dot={{ r: 5, fill: COLORS.accent, strokeWidth: 2, stroke: '#fff' }} />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </Box>
+                                </Paper>
 
-                                    {/* Subject Mastery Radar (Within Modal) */}
-                                    <Grid item xs={12}>
-                                        <Paper sx={{ p: 5, borderRadius: 6, border: '1px solid #e2e8f0', bgcolor: 'white' }}>
-                                            <Typography variant="h5" sx={{ fontWeight: 900, mb: 6 }}>Behavioral Mastery Profiles</Typography>
-                                            <Grid container spacing={4} alignItems="center">
-                                                <Grid item xs={12} md={5}>
-                                                    <Stack spacing={4}>
-                                                        {userAnalytics.bundles.map((ub, i) => (
-                                                            <Box key={i} sx={{ p: 4, borderRadius: 4, border: `1px solid ${alpha(COLORS.success, 0.2)}`, bgcolor: alpha(COLORS.success, 0.02), display: 'flex', alignItems: 'center', gap: 3, boxShadow: '0 10px 30px rgba(16, 185, 129, 0.05)' }}>
-                                                                <Box sx={{ p: 2, borderRadius: 3, bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success }}>
-                                                                    <Award size={32} />
-                                                                </Box>
-                                                                <Box>
-                                                                    <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.primary }}>{ub.name}</Typography>
-                                                                    <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 700 }}>Authorized on {new Date(ub.created_at || Date.now()).toLocaleDateString()}</Typography>
-                                                                </Box>
-                                                            </Box>
-                                                        ))}
-                                                        {userAnalytics.bundles.length === 0 && (
-                                                            <Paper sx={{ p: 4, borderRadius: 4, bgcolor: '#f1f5f9', textAlign: 'center', border: '2px dashed #e2e8f0' }}>
-                                                                <CreditCard size={32} color={COLORS.textLight} style={{ opacity: 0.3, marginBottom: 16 }} />
-                                                                <Typography variant="body2" sx={{ color: COLORS.textLight, fontWeight: 800 }}>NO ACTIVE LICENSES FOUND</Typography>
-                                                            </Paper>
-                                                        )}
-                                                    </Stack>
-                                                </Grid>
-                                                <Grid item xs={12} md={7}>
-                                                    <Box sx={{ p: 4, borderRadius: 4, bgcolor: '#f8fafc', height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <BarIcon size={64} color={COLORS.border} strokeWidth={1} />
-                                                        <Typography variant="body1" sx={{ ml: 3, color: COLORS.textLight, fontWeight: 700, fontStyle: 'italic' }}>Detailed behavioral radar available upon session saturation.</Typography>
-                                                    </Box>
-                                                </Grid>
-                                            </Grid>
-                                        </Paper>
-                                    </Grid>
-                                </Grid>
+                                {/* Test History */}
+                                <Paper elevation={0} sx={{ p: 4, borderRadius: 5, border: `1px solid ${COLORS.border}`, bgcolor: '#fff' }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(COLORS.primary, 0.1), color: COLORS.primary, display: 'flex' }}><Activity size={16} /></Box>
+                                        Test History
+                                    </Typography>
+                                    <Stack spacing={1.5}>
+                                        {userAnalytics.attempts.slice().reverse().slice(0, 8).map((attempt, i) => (
+                                            <Box key={i} sx={{ p: 2.5, borderRadius: 3, bgcolor: '#f8fafc', border: `1px solid ${COLORS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s', '&:hover': { bgcolor: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' } }}>
+                                                <Box>
+                                                    <Typography variant="body2" sx={{ fontWeight: 700, color: COLORS.primary }}>{attempt.test_id?.name || 'Unknown Test'}</Typography>
+                                                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 600 }}>{new Date(attempt.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</Typography>
+                                                </Box>
+                                                <Box sx={{ textAlign: 'right' }}>
+                                                    <Typography variant="body2" sx={{ fontWeight: 800, color: COLORS.accent }}>
+                                                        {Math.round((attempt.score / (attempt.total_questions || attempt.answers?.length || 1)) * 100)}%
+                                                    </Typography>
+                                                    <Chip label={Math.round((attempt.score / (attempt.total_questions || attempt.answers?.length || 1)) * 100) >= 40 ? 'Pass' : 'Fail'} size="small"
+                                                        sx={{ height: 18, fontSize: '0.6rem', fontWeight: 800, bgcolor: Math.round((attempt.score / (attempt.total_questions || attempt.answers?.length || 1)) * 100) >= 40 ? alpha(COLORS.success, 0.1) : alpha(COLORS.error, 0.1), color: Math.round((attempt.score / (attempt.total_questions || attempt.answers?.length || 1)) * 100) >= 40 ? COLORS.success : COLORS.error }} />
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                        {userAnalytics.attempts.length === 0 && (
+                                            <Box sx={{ textAlign: 'center', py: 6 }}><AlertCircle size={32} color={COLORS.border} /><Typography variant="body2" sx={{ color: COLORS.textLight, mt: 1 }}>No test attempts yet</Typography></Box>
+                                        )}
+                                    </Stack>
+                                </Paper>
                             </Box>
                         </motion.div>
                     )}
