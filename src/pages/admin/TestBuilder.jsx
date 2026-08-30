@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, TextField, Paper, Grid, IconButton, Chip, Dialog, DialogTitle, DialogContent, DialogActions, alpha, Switch, Tooltip, LinearProgress, InputAdornment } from '@mui/material';
 import { fetchTests, createTest, updateTest, deleteTest } from '../../api/testsApi';
 import ModernDialog from '../../components/ModernDialog';
-import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle, BookOpen, Gift, DollarSign, Zap, CircleCheck, Search, X, Share2, Link, Copy, Check, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Clock, Target, Pencil, GripVertical, ChevronLeft, Calendar, Layout, Layers, HelpCircle, BookOpen, Gift, DollarSign, Zap, CircleCheck, Search, X, Share2, Link, Copy, Check, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown, Filter, CalendarDays } from 'lucide-react';
 import { setMarketingSchedule } from '../../api/testsApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DragDropContext, Draggable } from '@hello-pangea/dnd';
@@ -50,6 +50,8 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const [tests, setTests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState('order'); // 'order' | 'name' | 'name_desc' | 'date' | 'date_desc' | 'price' | 'price_desc' | 'questions' | 'questions_desc'
+    const [filterType, setFilterType] = useState('all'); // 'all' | 'free' | 'paid' | 'trial'
     const [openTestDialog, setOpenTestDialog] = useState(false);
     const [newTest, setNewTest] = useState({ name: '', price: 0, duration: 100, year: '', is_free_trial: false, free_trial_limit: 1 });
     const [isEditMode, setIsEditMode] = useState(false);
@@ -288,11 +290,43 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
     const paidTests = tests.filter(t => t.price > 0 && !t.is_free_trial).length;
     const freeTrialTests = tests.filter(t => t.is_free_trial).length;
 
-    // Search filter
-    const filteredTests = searchQuery.trim()
-        ? tests.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()))
-        : tests;
+    // Search + filter + sort
+    let filteredTests = [...tests];
     const isSearching = searchQuery.trim().length > 0;
+    const isFiltering = filterType !== 'all';
+    const isSorting = sortBy !== 'order';
+    const hasActiveFilters = isSearching || isFiltering || isSorting;
+
+    // 1) Search filter
+    if (isSearching) {
+        filteredTests = filteredTests.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+
+    // 2) Pricing filter
+    if (filterType === 'free') {
+        filteredTests = filteredTests.filter(t => t.price === 0 && !t.is_free_trial);
+    } else if (filterType === 'paid') {
+        filteredTests = filteredTests.filter(t => t.price > 0 && !t.is_free_trial);
+    } else if (filterType === 'trial') {
+        filteredTests = filteredTests.filter(t => t.is_free_trial);
+    }
+
+    // 3) Sort
+    if (sortBy !== 'order') {
+        filteredTests.sort((a, b) => {
+            switch (sortBy) {
+                case 'name': return a.name.localeCompare(b.name);
+                case 'name_desc': return b.name.localeCompare(a.name);
+                case 'date': return new Date(b.created_at) - new Date(a.created_at);
+                case 'date_desc': return new Date(a.created_at) - new Date(b.created_at);
+                case 'price': return (a.price || 0) - (b.price || 0);
+                case 'price_desc': return (b.price || 0) - (a.price || 0);
+                case 'questions': return (b.total_questions || 0) - (a.total_questions || 0);
+                case 'questions_desc': return (a.total_questions || 0) - (b.total_questions || 0);
+                default: return 0;
+            }
+        });
+    }
 
     if (!subject) {
         return (
@@ -465,19 +499,110 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                             },
                         }}
                     />
-                    {isSearching && (
+                    {isSearching && filteredTests.length === 0 && (
                         <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, mt: 1, display: 'block' }}>
-                            {filteredTests.length === 0
-                                ? 'No tests match your search'
-                                : `Showing ${filteredTests.length} of ${tests.length} test${tests.length !== 1 ? 's' : ''}`}
+                            No tests match your search
+                        </Typography>
+                    )}
+                </Box>
+            )}
+
+            {/* ── Sort & Filter Toolbar ─────────────────────────────── */}
+            {tests.length > 0 && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
+                    <Filter size={16} color={COLORS.textLight} />
+                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                        Filter:
+                    </Typography>
+                    {[{ val: 'all', label: 'All' }, { val: 'free', label: 'Free' }, { val: 'paid', label: 'Paid' }, { val: 'trial', label: 'Free Trial' }].map(opt => (
+                        <Chip
+                            key={opt.val}
+                            label={opt.label}
+                            size="small"
+                            onClick={() => setFilterType(opt.val)}
+                            sx={{
+                                fontWeight: 700,
+                                fontSize: '0.72rem',
+                                height: 26,
+                                borderRadius: 2,
+                                cursor: 'pointer',
+                                bgcolor: filterType === opt.val ? alpha(COLORS.accent, 0.12) : 'rgba(0,0,0,0.04)',
+                                color: filterType === opt.val ? COLORS.accent : COLORS.textLight,
+                                border: `1px solid ${filterType === opt.val ? alpha(COLORS.accent, 0.3) : 'transparent'}`,
+                                '&:hover': { bgcolor: alpha(COLORS.accent, 0.15), color: COLORS.accent },
+                                transition: 'all 0.2s',
+                            }}
+                        />
+                    ))}
+
+                    <Box sx={{ width: 1, height: 20, bgcolor: alpha(COLORS.border, 0.6), mx: 0.5 }} />
+
+                    <ArrowUpDown size={16} color={COLORS.textLight} />
+                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                        Sort:
+                    </Typography>
+                    <TextField
+                        select
+                        size="small"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        sx={{
+                            minWidth: 160,
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: 2,
+                                bgcolor: '#fff',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                                height: 32,
+                            },
+                            '& .MuiSelect-select': { py: 0.5 },
+                        }}
+                    >
+                        <MenuItem value="order" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><GripVertical size={13} style={{ marginRight: 6 }} /> Display Order</MenuItem>
+                        <MenuItem value="name" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><ArrowUp size={13} style={{ marginRight: 6 }} /> Name (A→Z)</MenuItem>
+                        <MenuItem value="name_desc" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><ArrowDown size={13} style={{ marginRight: 6 }} /> Name (Z→A)</MenuItem>
+                        <MenuItem value="date" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><CalendarDays size={13} style={{ marginRight: 6 }} /> Newest First</MenuItem>
+                        <MenuItem value="date_desc" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><CalendarDays size={13} style={{ marginRight: 6 }} /> Oldest First</MenuItem>
+                        <MenuItem value="price" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><DollarSign size={13} style={{ marginRight: 6 }} /> Price (Low→High)</MenuItem>
+                        <MenuItem value="price_desc" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><DollarSign size={13} style={{ marginRight: 6 }} /> Price (High→Low)</MenuItem>
+                        <MenuItem value="questions" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><HelpCircle size={13} style={{ marginRight: 6 }} /> Most Questions</MenuItem>
+                        <MenuItem value="questions_desc" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><HelpCircle size={13} style={{ marginRight: 6 }} /> Least Questions</MenuItem>
+                    </TextField>
+
+                    {hasActiveFilters && (
+                        <Chip
+                            label="Clear all"
+                            size="small"
+                            icon={<X size={12} />}
+                            onClick={() => { setSearchQuery(''); setSortBy('order'); setFilterType('all'); }}
+                            sx={{
+                                fontWeight: 700,
+                                fontSize: '0.72rem',
+                                height: 26,
+                                borderRadius: 2,
+                                cursor: 'pointer',
+                                bgcolor: alpha('#ef4444', 0.08),
+                                color: '#ef4444',
+                                border: '1px solid rgba(239,68,68,0.2)',
+                                '&:hover': { bgcolor: alpha('#ef4444', 0.15) },
+                                transition: 'all 0.2s',
+                            }}
+                        />
+                    )}
+
+                    {(isSearching || isFiltering) && (
+                        <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, ml: 'auto' }}>
+                            {filteredTests.length === tests.length
+                                ? `All ${tests.length} tests`
+                                : `Showing ${filteredTests.length} of ${tests.length} tests`}
                         </Typography>
                     )}
                 </Box>
             )}
 
             {/* ── Test Cards Grid ────────────────────────────────────────── */}
-            <DragDropContext onDragEnd={isSearching ? () => {} : handleDragEnd}>
-                <StrictModeDroppable droppableId="tests-list" isDropDisabled={isSearching}>
+            <DragDropContext onDragEnd={hasActiveFilters ? () => {} : handleDragEnd}>
+                <StrictModeDroppable droppableId="tests-list" isDropDisabled={hasActiveFilters}>
                     {(provided) => (
                         <Box
                             {...provided.droppableProps}
