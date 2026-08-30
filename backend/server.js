@@ -369,9 +369,26 @@ app.get('/api/tests', async (req, res) => {
       Test.find(filter).sort({ display_order: 1 }).skip(skip).limit(parseInt(limit)),
       Test.countDocuments(filter)
     ]);
+
+    // Compute actual question counts from the Question collection
+    // to avoid relying on the potentially stale total_questions counter
+    const testIds = tests.map(t => t._id.toString());
+    const questionCounts = await Question.aggregate([
+      { $match: { test_id: { $in: testIds } } },
+      { $group: { _id: '$test_id', count: { $sum: 1 } } }
+    ]);
+    const countMap = {};
+    questionCounts.forEach(qc => { countMap[qc._id] = qc.count; });
+
+    const data = tests.map(t => {
+      const doc = t.toObject();
+      doc.total_questions = countMap[t._id.toString()] || 0;
+      return doc;
+    });
+
     res.json({
       success: true,
-      data: tests,
+      data,
       pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) }
     });
   } catch (error) {
@@ -383,7 +400,11 @@ app.get('/api/tests/:id', async (req, res) => {
   try {
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ success: false, message: 'Test not found' });
-    res.json({ success: true, data: test });
+    // Compute actual question count from the Question collection
+    const actualCount = await Question.countDocuments({ test_id: req.params.id });
+    const doc = test.toObject();
+    doc.total_questions = actualCount;
+    res.json({ success: true, data: doc });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -458,6 +479,7 @@ app.get('/api/marketing/:slug', async (req, res) => {
       (!test.marketing_start || new Date(test.marketing_start) <= now) &&
       (!test.marketing_end || new Date(test.marketing_end) >= now);
 
+    const actualQuestionCount = await Question.countDocuments({ test_id: test._id.toString() });
     res.json({
       success: true,
       data: {
@@ -465,7 +487,7 @@ app.get('/api/marketing/:slug', async (req, res) => {
         name: test.name,
         subject: test.subject,
         duration: test.duration,
-        total_questions: test.total_questions,
+        total_questions: actualQuestionCount,
         price: test.price,
         is_currently_free: isCurrentlyFree,
         marketing_start: test.marketing_start,
@@ -599,7 +621,9 @@ app.post('/api/results', async (req, res) => {
       return { ...ans, is_correct: isCorrect };
     });
 
-    const totalMarks = (test.total_questions || questions.length) * 2;
+    // Use actual question count from DB, not the potentially stale total_questions field
+    const actualQuestionCount = await Question.countDocuments({ test_id });
+    const totalMarks = actualQuestionCount * 2;
 
     const result = new Result({
       user_id: user_id || null,
