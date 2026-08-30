@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Chip, IconButton, Dialog, DialogTitle, DialogContent,
-    DialogActions, Button, TextField, MenuItem, Stack, Avatar, Tooltip, Link
+    DialogActions, Button, TextField, MenuItem, Stack, Avatar, Tooltip, Link,
+    Skeleton, alpha
 } from '@mui/material';
 import { Eye, Trash2, Download, ExternalLink, Filter, Search, X, Image as ImageIcon, FileText } from 'lucide-react';
 import { COLORS } from '../../theme/adminTheme';
