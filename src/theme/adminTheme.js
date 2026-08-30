@@ -17,6 +17,7 @@ export const COLORS = {
     warning: '#d97706',
     indigo: '#6366f1',
     error: '#ef4444',
+    chart: ['#ca0056', '#6366f1', '#10b981', '#d97706', '#0284c7', '#ec4899', '#8b5cf6', '#14b8a6'],
 };
 
 export const FONTS = {

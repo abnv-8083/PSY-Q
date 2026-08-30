@@ -88,20 +88,22 @@ const Analytics = () => {
             const subjectPerfData = processSubjectPerformance(data.allResults, data.subjectsMap);
             const dauData = processDAU(data.allResults, 30);
 
-            setStats({
-                totalUsers: data.totalUsers || 0,
-                totalRevenue: data.totalRevenue || 0,
-                totalAttempts: data.totalAttempts || 0,
-                activeBundles: data.activeBundles || 0,
-                userGrowth: growthData,
-                revenueTrends: revenueData,
-                testPopularity: popularityData,
-                revenueByBundle: bundleRevData,
-                subjectPerformance: subjectPerfData,
-                dailyActiveUsers: dauData,
-                recentPayments: data.payments?.slice(0, 5) || [],
-                recentSignups: data.recentSignups || []
-            });
+            if (data) {
+                setStats({
+                    totalUsers: data.totalUsers || 0,
+                    totalRevenue: data.totalRevenue || 0,
+                    totalAttempts: data.totalAttempts || 0,
+                    activeBundles: data.activeBundles || 0,
+                    userGrowth: growthData,
+                    revenueTrends: revenueData,
+                    testPopularity: popularityData,
+                    revenueByBundle: bundleRevData,
+                    subjectPerformance: subjectPerfData,
+                    dailyActiveUsers: dauData,
+                    recentPayments: data.payments?.slice(0, 5) || [],
+                    recentSignups: data.recentSignups || []
+                });
+            }
         } catch (error) {
             console.error('Error fetching analytics:', error);
         } finally {
@@ -431,7 +433,7 @@ const Analytics = () => {
                                             <TrendingUp size={24} color={COLORS.accent} /> Market Leaders
                                         </Typography>
                                         <Stack spacing={4}>
-                                            {stats.testPopularity.slice(0, 6).map((test, i) => (
+                                            {(stats.testPopularity || []).slice(0, 6).map((test, i) => (
                                                 <Box key={i}>
                                                     <Stack direction="row" justifyContent="space-between" sx={{ mb: 1.5 }}>
                                                         <Typography variant="body2" sx={{ fontWeight: 800, color: COLORS.primary }}>{test.name}</Typography>
@@ -496,7 +498,7 @@ const Analytics = () => {
                                                         dataKey="value"
                                                         stroke="none"
                                                     >
-                                                        {stats.revenueByBundle.map((entry, index) => (
+                                                        {(stats.revenueByBundle || []).map((entry, index) => (
                                                             <Cell key={`cell-${index}`} fill={COLORS.chart[index % COLORS.chart.length]} />
                                                         ))}
                                                     </Pie>
@@ -568,7 +570,7 @@ const Analytics = () => {
                                             </Typography>
                                         </Box>
                                         <Box sx={{ p: 2 }}>
-                                            {stats.recentSignups.map((user, i) => (
+                                            {(stats.recentSignups || []).map((user, i) => (
                                                 <Box key={i} sx={{ p: 2.5, borderRadius: 4, mb: 1, transition: 'all 0.3s', '&:hover': { bgcolor: alpha(COLORS.indigo, 0.05) }, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
                                                     <Avatar sx={{ width: 56, height: 56, bgcolor: COLORS.chart[i % COLORS.chart.length], fontWeight: 900, fontSize: '1.2rem' }}>
                                                         {user.full_name?.charAt(0)}
@@ -596,7 +598,7 @@ const Analytics = () => {
                                             </Typography>
                                         </Box>
                                         <Box sx={{ p: 2 }}>
-                                            {stats.recentPayments.map((p, i) => (
+                                            {(stats.recentPayments || []).map((p, i) => (
                                                 <Box key={i} sx={{ p: 2.5, borderRadius: 4, mb: 1, transition: 'all 0.3s', '&:hover': { bgcolor: alpha(COLORS.success, 0.05) }, display: 'flex', alignItems: 'center', gap: 3 }}>
                                                     <Box sx={{ width: 56, height: 56, borderRadius: '50%', bgcolor: alpha(COLORS.success, 0.1), color: COLORS.success, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         <CreditCard size={28} />
