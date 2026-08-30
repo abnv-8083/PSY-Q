@@ -334,7 +334,8 @@ const MockTestHome = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const testsData = await fetchTests();
+                const testsResult = await fetchTests();
+                const testsData = testsResult.data || testsResult;
                 if (testsData) {
                     setTests(testsData.filter(t => t.is_published !== false).slice(0, 6));
                 }

@@ -11,7 +11,8 @@ export const fetchTests = async (subjectId) => {
     const response = await fetch(url);
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
-    return result.data;
+    // Return full result so callers can access subject_total_questions, pagination, etc.
+    return result;
 };
 
 /**

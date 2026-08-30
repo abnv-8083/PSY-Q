@@ -51,7 +51,8 @@ const MockTestBundleView = () => {
                 }
                 setBundle(bundleData);
 
-                const allTestsData = await fetchTests();
+                const testsResult = await fetchTests();
+                const allTestsData = testsResult.data || testsResult;
                 const bundleTestIds = new Set((bundleData.tests || []).map(t => typeof t === 'object' ? (t.id || t._id) : t));
                 const filteredTests = (allTestsData || [])
                     .filter(test => bundleTestIds.has(test._id || test.id))

@@ -42,11 +42,12 @@ const MockTestDashboard = () => {
         const fetchData = async (userId) => {
             try {
                 // Fetch Subjects and Tests via API
-                const [subjectsData, allTestsData, bundlesData] = await Promise.all([
+                const [subjectsData, testsResult, bundlesData] = await Promise.all([
                     fetchSubjects(),
                     fetchTests(),
                     fetchBundles()
                 ]);
+                const allTestsData = testsResult.data || testsResult;
 
                 // Map tests to subjects
                 const subjectsWithTests = subjectsData.map(subject => ({

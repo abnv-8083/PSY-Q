@@ -81,11 +81,15 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         }
     }, [subject?.id]);
 
+    const [subjectTotalQuestions, setSubjectTotalQuestions] = useState(0);
+
     const getTests = async () => {
         if (!subject || !subject.id) return;
         try {
             setLoading(true);
-            const data = await fetchTests(subject.id);
+            const result = await fetchTests(subject.id);
+            const data = result.data || [];
+            setSubjectTotalQuestions(result.subject_total_questions || 0);
             setTests(data.map(t => ({ ...t, id: t._id })));
         } catch (error) {
             console.error("Error fetching tests from MongoDB:", error);
@@ -278,10 +282,11 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
         return true;
     };
 
-    // Computed stats
-    const totalQuestions = tests.reduce((acc, t) => acc + (t.total_questions || t.questions?.[0]?.count || 0), 0);
-    const freeTests = tests.filter(t => t.price === 0 || t.is_free_trial).length;
+    // Computed stats — use subject_total_questions from the API (counts ALL tests, not just the paginated page)
+    const totalQuestions = subjectTotalQuestions || tests.reduce((acc, t) => acc + (t.total_questions || 0), 0);
+    const freeTests = tests.filter(t => t.price === 0 && !t.is_free_trial).length;
     const paidTests = tests.filter(t => t.price > 0 && !t.is_free_trial).length;
+    const freeTrialTests = tests.filter(t => t.is_free_trial).length;
 
     // Search filter
     const filteredTests = searchQuery.trim()

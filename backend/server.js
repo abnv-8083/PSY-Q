@@ -370,15 +370,20 @@ app.get('/api/tests', async (req, res) => {
       Test.countDocuments(filter)
     ]);
 
-    // Compute actual question counts from the Question collection
-    // to avoid relying on the potentially stale total_questions counter
-    const testIds = tests.map(t => t._id.toString());
+    // Get ALL test IDs for this subject (not just the paginated page)
+    // so we can count all questions across the entire subject
+    const allTestIds = (await Test.find(filter).select('_id').lean()).map(t => t._id.toString());
+
+    // Count actual questions per test from the Question collection
     const questionCounts = await Question.aggregate([
-      { $match: { test_id: { $in: testIds } } },
+      { $match: { test_id: { $in: allTestIds } } },
       { $group: { _id: '$test_id', count: { $sum: 1 } } }
     ]);
     const countMap = {};
     questionCounts.forEach(qc => { countMap[qc._id] = qc.count; });
+
+    // Subject-wide total questions (across ALL tests, not just the paginated page)
+    const subjectTotalQuestions = questionCounts.reduce((sum, qc) => sum + qc.count, 0);
 
     const data = tests.map(t => {
       const doc = t.toObject();
@@ -389,6 +394,7 @@ app.get('/api/tests', async (req, res) => {
     res.json({
       success: true,
       data,
+      subject_total_questions: subjectTotalQuestions,
       pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) }
     });
   } catch (error) {
