@@ -459,142 +459,148 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                 </Box>
             )}
 
-            {/* ── Search Bar ────────────────────────────────────────────── */}
+            {/* ── Search + Filter + Sort Toolbar ──────────────────── */}
             {tests.length > 0 && (
                 <Box sx={{ mb: 4 }}>
-                    <TextField
-                        fullWidth
-                        placeholder="Search tests by name…"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <Search size={18} color={isSearching ? COLORS.accent : COLORS.textLight} />
-                                </InputAdornment>
-                            ),
-                            endAdornment: isSearching && (
-                                <InputAdornment position="end">
-                                    <Tooltip title="Clear search">
-                                        <IconButton size="small" onClick={() => setSearchQuery('')} sx={{ color: COLORS.textLight, '&:hover': { color: COLORS.accent } }}>
-                                            <X size={16} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </InputAdornment>
-                            ),
-                            sx: { fontWeight: 600, fontSize: '0.95rem', borderRadius: 3 },
-                        }}
-                        sx={{
-                            maxWidth: 480,
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 3,
-                                bgcolor: '#fff',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                                transition: 'all 0.2s',
-                                '&:hover fieldset': { borderColor: alpha(COLORS.accent, 0.4) },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: COLORS.accent,
-                                    borderWidth: 2,
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                        {/* Search */}
+                        <TextField
+                            placeholder="Search tests by name…"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            size="small"
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <Search size={16} color={isSearching ? COLORS.accent : COLORS.textLight} />
+                                    </InputAdornment>
+                                ),
+                                endAdornment: isSearching && (
+                                    <InputAdornment position="end">
+                                        <Tooltip title="Clear search">
+                                            <IconButton size="small" onClick={() => setSearchQuery('')} sx={{ color: COLORS.textLight, '&:hover': { color: COLORS.accent } }}>
+                                                <X size={14} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </InputAdornment>
+                                ),
+                                sx: { fontWeight: 600, fontSize: '0.85rem', borderRadius: 2 },
+                            }}
+                            sx={{
+                                minWidth: 220,
+                                flex: '1 1 220px',
+                                maxWidth: 360,
+                                '& .MuiOutlinedInput-root': {
+                                    borderRadius: 2,
+                                    bgcolor: '#fff',
+                                    height: 38,
+                                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                                    transition: 'all 0.2s',
+                                    '&:hover fieldset': { borderColor: alpha(COLORS.accent, 0.4) },
+                                    '&.Mui-focused fieldset': { borderColor: COLORS.accent, borderWidth: 2 },
                                 },
-                            },
-                        }}
-                    />
+                            }}
+                        />
+
+                        {/* Filter chips */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                            <Filter size={14} color={COLORS.textLight} />
+                            <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, fontSize: '0.65rem' }}>
+                                Filter:
+                            </Typography>
+                            {[{ val: 'all', label: 'All' }, { val: 'free', label: 'Free' }, { val: 'paid', label: 'Paid' }, { val: 'trial', label: 'Trial' }].map(opt => (
+                                <Chip
+                                    key={opt.val}
+                                    label={opt.label}
+                                    size="small"
+                                    onClick={() => setFilterType(opt.val)}
+                                    sx={{
+                                        fontWeight: 700,
+                                        fontSize: '0.68rem',
+                                        height: 24,
+                                        borderRadius: 1.5,
+                                        cursor: 'pointer',
+                                        bgcolor: filterType === opt.val ? alpha(COLORS.accent, 0.12) : 'rgba(0,0,0,0.04)',
+                                        color: filterType === opt.val ? COLORS.accent : COLORS.textLight,
+                                        border: `1px solid ${filterType === opt.val ? alpha(COLORS.accent, 0.3) : 'transparent'}`,
+                                        '&:hover': { bgcolor: alpha(COLORS.accent, 0.15), color: COLORS.accent },
+                                        transition: 'all 0.2s',
+                                    }}
+                                />
+                            ))}
+                        </Box>
+
+                        {/* Sort dropdown */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+                            <ArrowUpDown size={14} color={COLORS.textLight} />
+                            <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, fontSize: '0.65rem' }}>
+                                Sort:
+                            </Typography>
+                            <TextField
+                                select
+                                size="small"
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                sx={{
+                                    minWidth: 145,
+                                    '& .MuiOutlinedInput-root': {
+                                        borderRadius: 2,
+                                        bgcolor: '#fff',
+                                        fontSize: '0.78rem',
+                                        fontWeight: 700,
+                                        height: 34,
+                                        boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                                    },
+                                    '& .MuiSelect-select': { py: 0.4 },
+                                }}
+                            >
+                                <MenuItem value="order" sx={{ fontSize: '0.8rem', fontWeight: 700 }}><GripVertical size={12} style={{ marginRight: 6 }} /> Display Order</MenuItem>
+                                <MenuItem value="name" sx={{ fontSize: '0.8rem', fontWeight: 700 }}><ArrowUp size={12} style={{ marginRight: 6 }} /> Name (A→Z)</MenuItem>
+                                <MenuItem value="name_desc" sx={{ fontSize: '0.8rem', fontWeight: 700 }}><ArrowDown size={12} style={{ marginRight: 6 }} /> Name (Z→A)</MenuItem>
+                                <MenuItem value="date" sx={{ fontSize: '0.8rem', fontWeight: 700 }}><CalendarDays size={12} style={{ marginRight: 6 }} /> Newest First</MenuItem>
+                                <MenuItem value="date_desc" sx={{ fontSize: '0.8rem', fontWeight: 700 }}><CalendarDays size={12} style={{ marginRight: 6 }} /> Oldest First</MenuItem>
+                                <MenuItem value="price" sx={{ fontSize: '0.8rem', fontWeight: 700 }}><DollarSign size={12} style={{ marginRight: 6 }} /> Price (Low→High)</MenuItem>
+                                <MenuItem value="price_desc" sx={{ fontSize: '0.8rem', fontWeight: 700 }}><DollarSign size={12} style={{ marginRight: 6 }} /> Price (High→Low)</MenuItem>
+                                <MenuItem value="questions" sx={{ fontSize: '0.8rem', fontWeight: 700 }}><HelpCircle size={12} style={{ marginRight: 6 }} /> Most Questions</MenuItem>
+                                <MenuItem value="questions_desc" sx={{ fontSize: '0.8rem', fontWeight: 700 }}><HelpCircle size={12} style={{ marginRight: 6 }} /> Least Questions</MenuItem>
+                            </TextField>
+                        </Box>
+
+                        {/* Clear all */}
+                        {hasActiveFilters && (
+                            <Chip
+                                label="Clear all"
+                                size="small"
+                                icon={<X size={11} />}
+                                onClick={() => { setSearchQuery(''); setSortBy('order'); setFilterType('all'); }}
+                                sx={{
+                                    fontWeight: 700,
+                                    fontSize: '0.68rem',
+                                    height: 24,
+                                    borderRadius: 1.5,
+                                    cursor: 'pointer',
+                                    bgcolor: alpha('#ef4444', 0.08),
+                                    color: '#ef4444',
+                                    border: '1px solid rgba(239,68,68,0.2)',
+                                    '&:hover': { bgcolor: alpha('#ef4444', 0.15) },
+                                    transition: 'all 0.2s',
+                                    flexShrink: 0,
+                                }}
+                            />
+                        )}
+
+                        {/* Result count */}
+                        {(isSearching || isFiltering) && (
+                            <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, ml: 'auto', whiteSpace: 'nowrap' }}>
+                                {filteredTests.length === tests.length
+                                    ? `All ${tests.length} tests`
+                                    : `Showing ${filteredTests.length} of ${tests.length} tests`}
+                            </Typography>
+                        )}
+                    </Box>
                     {isSearching && filteredTests.length === 0 && (
                         <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, mt: 1, display: 'block' }}>
                             No tests match your search
-                        </Typography>
-                    )}
-                </Box>
-            )}
-
-            {/* ── Sort & Filter Toolbar ─────────────────────────────── */}
-            {tests.length > 0 && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3, flexWrap: 'wrap' }}>
-                    <Filter size={16} color={COLORS.textLight} />
-                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>
-                        Filter:
-                    </Typography>
-                    {[{ val: 'all', label: 'All' }, { val: 'free', label: 'Free' }, { val: 'paid', label: 'Paid' }, { val: 'trial', label: 'Free Trial' }].map(opt => (
-                        <Chip
-                            key={opt.val}
-                            label={opt.label}
-                            size="small"
-                            onClick={() => setFilterType(opt.val)}
-                            sx={{
-                                fontWeight: 700,
-                                fontSize: '0.72rem',
-                                height: 26,
-                                borderRadius: 2,
-                                cursor: 'pointer',
-                                bgcolor: filterType === opt.val ? alpha(COLORS.accent, 0.12) : 'rgba(0,0,0,0.04)',
-                                color: filterType === opt.val ? COLORS.accent : COLORS.textLight,
-                                border: `1px solid ${filterType === opt.val ? alpha(COLORS.accent, 0.3) : 'transparent'}`,
-                                '&:hover': { bgcolor: alpha(COLORS.accent, 0.15), color: COLORS.accent },
-                                transition: 'all 0.2s',
-                            }}
-                        />
-                    ))}
-
-                    <Box sx={{ width: 1, height: 20, bgcolor: alpha(COLORS.border, 0.6), mx: 0.5 }} />
-
-                    <ArrowUpDown size={16} color={COLORS.textLight} />
-                    <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>
-                        Sort:
-                    </Typography>
-                    <TextField
-                        select
-                        size="small"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        sx={{
-                            minWidth: 160,
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                                bgcolor: '#fff',
-                                fontSize: '0.8rem',
-                                fontWeight: 700,
-                                height: 32,
-                            },
-                            '& .MuiSelect-select': { py: 0.5 },
-                        }}
-                    >
-                        <MenuItem value="order" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><GripVertical size={13} style={{ marginRight: 6 }} /> Display Order</MenuItem>
-                        <MenuItem value="name" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><ArrowUp size={13} style={{ marginRight: 6 }} /> Name (A→Z)</MenuItem>
-                        <MenuItem value="name_desc" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><ArrowDown size={13} style={{ marginRight: 6 }} /> Name (Z→A)</MenuItem>
-                        <MenuItem value="date" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><CalendarDays size={13} style={{ marginRight: 6 }} /> Newest First</MenuItem>
-                        <MenuItem value="date_desc" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><CalendarDays size={13} style={{ marginRight: 6 }} /> Oldest First</MenuItem>
-                        <MenuItem value="price" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><DollarSign size={13} style={{ marginRight: 6 }} /> Price (Low→High)</MenuItem>
-                        <MenuItem value="price_desc" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><DollarSign size={13} style={{ marginRight: 6 }} /> Price (High→Low)</MenuItem>
-                        <MenuItem value="questions" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><HelpCircle size={13} style={{ marginRight: 6 }} /> Most Questions</MenuItem>
-                        <MenuItem value="questions_desc" sx={{ fontSize: '0.82rem', fontWeight: 700 }}><HelpCircle size={13} style={{ marginRight: 6 }} /> Least Questions</MenuItem>
-                    </TextField>
-
-                    {hasActiveFilters && (
-                        <Chip
-                            label="Clear all"
-                            size="small"
-                            icon={<X size={12} />}
-                            onClick={() => { setSearchQuery(''); setSortBy('order'); setFilterType('all'); }}
-                            sx={{
-                                fontWeight: 700,
-                                fontSize: '0.72rem',
-                                height: 26,
-                                borderRadius: 2,
-                                cursor: 'pointer',
-                                bgcolor: alpha('#ef4444', 0.08),
-                                color: '#ef4444',
-                                border: '1px solid rgba(239,68,68,0.2)',
-                                '&:hover': { bgcolor: alpha('#ef4444', 0.15) },
-                                transition: 'all 0.2s',
-                            }}
-                        />
-                    )}
-
-                    {(isSearching || isFiltering) && (
-                        <Typography variant="caption" sx={{ color: COLORS.textLight, fontWeight: 700, ml: 'auto' }}>
-                            {filteredTests.length === tests.length
-                                ? `All ${tests.length} tests`
-                                : `Showing ${filteredTests.length} of ${tests.length} tests`}
                         </Typography>
                     )}
                 </Box>
