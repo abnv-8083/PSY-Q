@@ -5,9 +5,19 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
  * @param {string} subjectId - Optional subject filtering
  * @returns {Promise<Array>} Array of tests
  */
-export const fetchTests = async (subjectId) => {
-    let url = `${API_URL}/tests`;
-    if (subjectId) url += `?subjectId=${subjectId}`;
+export const fetchTests = async (subjectId, options = {}) => {
+    const params = new URLSearchParams();
+    if (subjectId) params.append('subjectId', subjectId);
+    if (options.limit !== undefined) {
+        params.append('limit', options.limit);
+    } else {
+        // Pass limit=1000 to ensure full collection is fetched across all backend versions
+        params.append('limit', '1000');
+    }
+    if (options.page !== undefined) params.append('page', options.page);
+
+    const queryString = params.toString();
+    const url = `${API_URL}/tests${queryString ? `?${queryString}` : ''}`;
     const response = await fetch(url);
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
@@ -65,9 +75,13 @@ export const updateTest = async (id, testData) => {
  * @param {string} testId - Test ID
  * @returns {Promise<Array>} Questions array
  */
-export const fetchTestQuestions = async (testId, { includeAnswers = false } = {}) => {
-    const params = includeAnswers ? '?include_answers=true' : '';
-    const response = await fetch(`${API_URL}/tests/${testId}/questions${params}`);
+export const fetchTestQuestions = async (testId, { includeAnswers = false, limit = 1000, page } = {}) => {
+    const params = new URLSearchParams();
+    if (includeAnswers) params.append('include_answers', 'true');
+    if (limit !== undefined) params.append('limit', limit);
+    if (page !== undefined) params.append('page', page);
+    const queryString = params.toString();
+    const response = await fetch(`${API_URL}/tests/${testId}/questions${queryString ? `?${queryString}` : ''}`);
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
     return result.data;

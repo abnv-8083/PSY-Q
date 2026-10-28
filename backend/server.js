@@ -362,11 +362,21 @@ app.post('/api/subjects', async (req, res) => {
 
 app.get('/api/tests', async (req, res) => {
   try {
-    const { subjectId, page = 1, limit = 50 } = req.query;
+    const { subjectId, page, limit } = req.query;
     const filter = subjectId ? { subject_id: subjectId } : {};
-    const skip = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
+
+    const hasLimit = limit !== undefined && limit !== 'all' && limit !== '0' && parseInt(limit) > 0;
+    let query = Test.find(filter).sort({ display_order: 1 });
+
+    if (hasLimit) {
+      const pageNum = Math.max(1, parseInt(page) || 1);
+      const limitNum = parseInt(limit);
+      const skip = (pageNum - 1) * limitNum;
+      query = query.skip(skip).limit(limitNum);
+    }
+
     const [tests, total] = await Promise.all([
-      Test.find(filter).sort({ display_order: 1 }).skip(skip).limit(parseInt(limit)),
+      query,
       Test.countDocuments(filter)
     ]);
 
@@ -391,11 +401,19 @@ app.get('/api/tests', async (req, res) => {
       return doc;
     });
 
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = hasLimit ? parseInt(limit) : total;
+
     res.json({
       success: true,
       data,
       subject_total_questions: subjectTotalQuestions,
-      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) }
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: hasLimit ? Math.ceil(total / limitNum) : 1
+      }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -515,9 +533,8 @@ app.post('/api/admin/bundles/reorder', bundleController.reorderBundles);
 
 app.get('/api/tests/:id/questions', async (req, res) => {
   try {
-    const { include_answers, page = 1, limit = 100 } = req.query;
+    const { include_answers, page, limit } = req.query;
     const filter = { test_id: req.params.id };
-    const skip = (Math.max(1, parseInt(page)) - 1) * parseInt(limit);
 
     // During an exam (default), strip correct answers to prevent cheating.
     // Only include them when include_answers=true (used by ResultAnalytics).
@@ -526,15 +543,33 @@ app.get('/api/tests/:id/questions', async (req, res) => {
       projection = { correct_key: 0, correct_answer: 0 };
     }
 
+    const hasLimit = limit !== undefined && limit !== 'all' && limit !== '0' && parseInt(limit) > 0;
+    let query = Question.find(filter, projection);
+
+    if (hasLimit) {
+      const pageNum = Math.max(1, parseInt(page) || 1);
+      const limitNum = parseInt(limit);
+      const skip = (pageNum - 1) * limitNum;
+      query = query.skip(skip).limit(limitNum);
+    }
+
     const [questions, total] = await Promise.all([
-      Question.find(filter, projection).skip(skip).limit(parseInt(limit)),
+      query,
       Question.countDocuments(filter)
     ]);
+
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = hasLimit ? parseInt(limit) : total;
 
     res.json({
       success: true,
       data: questions,
-      pagination: { page: parseInt(page), limit: parseInt(limit), total, pages: Math.ceil(total / parseInt(limit)) }
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        pages: hasLimit ? Math.ceil(total / limitNum) : 1
+      }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

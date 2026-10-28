@@ -153,7 +153,7 @@ export const deleteBundle = async (bundleId) => {
  * Get all tests available (placeholder for consistency)
  */
 export const fetchAvailableTests = async () => {
-    const response = await fetch(`${API_URL}/tests`);
+    const response = await fetch(`${API_URL}/tests?limit=1000`);
     const result = await response.json();
     if (!result.success) throw new Error(result.message);
     return (result.data || []).map(test => ({

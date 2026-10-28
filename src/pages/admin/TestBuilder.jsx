@@ -643,7 +643,7 @@ const TestBuilder = ({ subject, onBack, onManageQuestions }) => {
                                                         initial={{ opacity: 0, y: 20 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         exit={{ opacity: 0, y: -10 }}
-                                                        transition={{ delay: index * 0.05, duration: 0.3 }}
+                                                        transition={{ delay: Math.min(index * 0.02, 0.3), duration: 0.25 }}
                                                     >
                                                         <Paper elevation={0} sx={{
                                                             borderRadius: 5,

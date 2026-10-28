@@ -40,14 +40,14 @@ const CustomTooltip = ({ active, payload, label, prefix = '' }) => {
     return null;
 };
 
-const ChartCard = ({ title, subtitle, icon: Icon, iconColor, children, height = 400, sx = {} }) => (
+const ChartCard = ({ title, subtitle, icon: Icon, iconColor, children, height = 480, sx = {} }) => (
     <Paper elevation={0} sx={{
-        p: 4, borderRadius: 5, border: '1px solid', borderColor: COLORS.border,
+        p: 5, borderRadius: 6, border: '1px solid', borderColor: COLORS.border,
         bgcolor: '#fff', transition: 'all 0.3s',
-        '&:hover': { boxShadow: '0 12px 32px rgba(0,0,0,0.06)', borderColor: alpha(iconColor || COLORS.accent, 0.3) },
+        '&:hover': { boxShadow: '0 16px 40px rgba(0,0,0,0.07)', borderColor: alpha(iconColor || COLORS.accent, 0.3) },
         ...sx,
     }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
             <Box>
                 <Typography variant="h6" sx={{ fontWeight: 900, color: COLORS.primary, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     {Icon && <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(iconColor || COLORS.accent, 0.1), color: iconColor || COLORS.accent, display: 'flex' }}><Icon size={18} /></Box>}
@@ -334,9 +334,9 @@ const Analytics = () => {
             <AnimatePresence mode="wait">
                 {activeTab === 0 && (
                     <motion.div key="overview" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
-                        <Grid container spacing={3}>
+                        <Grid container spacing={4}>
                             <Grid item xs={12} md={8}>
-                                <ChartCard title="User Growth" subtitle="New registrations over 30 days" icon={Users} iconColor={COLORS.indigo} height={380}>
+                                <ChartCard title="User Growth" subtitle="New registrations over 30 days" icon={Users} iconColor={COLORS.indigo} height={440}>
                                     <ResponsiveContainer>
                                         <AreaChart data={stats.userGrowth}>
                                             <defs>
@@ -355,12 +355,12 @@ const Analytics = () => {
                                 </ChartCard>
                             </Grid>
                             <Grid item xs={12} md={4}>
-                                <Paper elevation={0} sx={{ p: 4, borderRadius: 5, border: `1px solid ${COLORS.border}`, height: '100%', bgcolor: '#fff' }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 900, mb: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                <Paper elevation={0} sx={{ p: 5, borderRadius: 6, border: `1px solid ${COLORS.border}`, height: '100%', bgcolor: '#fff' }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 900, mb: 4, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                         <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(COLORS.accent, 0.1), color: COLORS.accent, display: 'flex' }}><TrendingUp size={18} /></Box>
                                         Top Tests
                                     </Typography>
-                                    <Stack spacing={2.5}>
+                                    <Stack spacing={3}>
                                         {(stats.testPopularity || []).slice(0, 6).map((test, i) => (
                                             <Box key={i}>
                                                 <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.75 }}>
@@ -381,9 +381,9 @@ const Analytics = () => {
 
                 {activeTab === 1 && (
                     <motion.div key="revenue" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
-                        <Grid container spacing={3}>
+                        <Grid container spacing={4}>
                             <Grid item xs={12} md={7}>
-                                <ChartCard title="Revenue Trajectory" subtitle="Daily earnings over 30 days" icon={CreditCard} iconColor={COLORS.success} height={380}>
+                                <ChartCard title="Revenue Trajectory" subtitle="Daily earnings over 30 days" icon={CreditCard} iconColor={COLORS.success} height={440}>
                                     <ResponsiveContainer>
                                         <AreaChart data={stats.dailyActiveUsers}>
                                             <defs>
@@ -402,7 +402,7 @@ const Analytics = () => {
                                 </ChartCard>
                             </Grid>
                             <Grid item xs={12} md={5}>
-                                <ChartCard title="Revenue by Source" subtitle="Monetization breakdown" icon={PieIcon} iconColor={COLORS.warning} height={380}>
+                                <ChartCard title="Revenue by Source" subtitle="Monetization breakdown" icon={PieIcon} iconColor={COLORS.warning} height={440}>
                                     <ResponsiveContainer>
                                         <PieChart>
                                             <Pie data={stats.revenueByBundle} innerRadius={90} outerRadius={140} paddingAngle={6} dataKey="value" stroke="none">
@@ -423,9 +423,9 @@ const Analytics = () => {
 
                 {activeTab === 2 && (
                     <motion.div key="academics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
-                        <Grid container spacing={3}>
+                        <Grid container spacing={4}>
                             <Grid item xs={12} md={6}>
-                                <ChartCard title="Subject Accuracy" subtitle="Performance radar across subjects" icon={Target} iconColor={COLORS.accent} height={420}>
+                                <ChartCard title="Subject Accuracy" subtitle="Performance radar across subjects" icon={Target} iconColor={COLORS.accent} height={500}>
                                     <ResponsiveContainer>
                                         <RadarChart cx="50%" cy="50%" outerRadius="75%" data={stats.subjectPerformance}>
                                             <PolarGrid stroke="#e2e8f0" strokeWidth={1.5} />
@@ -438,7 +438,7 @@ const Analytics = () => {
                                 </ChartCard>
                             </Grid>
                             <Grid item xs={12} md={6}>
-                                <ChartCard title="Test Popularity" subtitle="Most attempted tests" icon={BarIcon} iconColor={COLORS.indigo} height={420}>
+                                <ChartCard title="Test Popularity" subtitle="Most attempted tests" icon={BarIcon} iconColor={COLORS.indigo} height={500}>
                                     <ResponsiveContainer>
                                         <BarChart layout="vertical" data={stats.testPopularity}>
                                             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
@@ -456,20 +456,20 @@ const Analytics = () => {
 
                 {activeTab === 3 && (
                     <motion.div key="activity" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
-                        <Grid container spacing={3}>
+                        <Grid container spacing={4}>
                             <Grid item xs={12} md={6}>
-                                <Paper elevation={0} sx={{ borderRadius: 5, border: `1px solid ${COLORS.border}`, overflow: 'hidden', bgcolor: '#fff' }}>
-                                    <Box sx={{ px: 4, py: 3, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                        <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha(COLORS.indigo, 0.1), color: COLORS.indigo, display: 'flex' }}><Users size={18} /></Box>
+                                <Paper elevation={0} sx={{ p: 0, borderRadius: 6, border: `1px solid ${COLORS.border}`, overflow: 'hidden', bgcolor: '#fff' }}>
+                                    <Box sx={{ px: 5, py: 3.5, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                        <Box sx={{ p: 1.2, borderRadius: 2.5, bgcolor: alpha(COLORS.indigo, 0.1), color: COLORS.indigo, display: 'flex' }}><Users size={18} /></Box>
                                         <Typography variant="h6" sx={{ fontWeight: 900 }}>Recent Signups</Typography>
                                         <Chip label={(stats.recentSignups || []).length} size="small" sx={{ ml: 'auto', fontWeight: 700, height: 22, bgcolor: alpha(COLORS.indigo, 0.1), color: COLORS.indigo }} />
                                     </Box>
-                                    <Box sx={{ p: 2, maxHeight: 420, overflowY: 'auto' }}>
+                                    <Box sx={{ p: 2.5, maxHeight: 480, overflowY: 'auto' }}>
                                         {(stats.recentSignups || []).length === 0 ? (
-                                            <Box sx={{ textAlign: 'center', py: 6 }}><AlertCircle size={32} color={COLORS.border} /><Typography variant="body2" sx={{ color: COLORS.textLight, mt: 1 }}>No signups yet</Typography></Box>
+                                            <Box sx={{ textAlign: 'center', py: 8 }}><AlertCircle size={36} color={COLORS.border} /><Typography variant="body2" sx={{ color: COLORS.textLight, mt: 1 }}>No signups yet</Typography></Box>
                                         ) : (stats.recentSignups || []).map((user, i) => (
-                                            <Box key={i} sx={{ p: 2, borderRadius: 3, mb: 1, display: 'flex', alignItems: 'center', gap: 2, transition: 'all 0.2s', '&:hover': { bgcolor: alpha(COLORS.indigo, 0.04) } }}>
-                                                <Avatar sx={{ width: 42, height: 42, bgcolor: COLORS.chart[i % COLORS.chart.length], fontSize: '0.85rem', fontWeight: 800 }}>
+                                            <Box key={i} sx={{ p: 2.5, borderRadius: 3, mb: 1.5, display: 'flex', alignItems: 'center', gap: 2.5, transition: 'all 0.2s', '&:hover': { bgcolor: alpha(COLORS.indigo, 0.04) } }}>
+                                                <Avatar sx={{ width: 46, height: 46, bgcolor: COLORS.chart[i % COLORS.chart.length], fontSize: '0.9rem', fontWeight: 800 }}>
                                                     {user.full_name?.charAt(0)}
                                                 </Avatar>
                                                 <Box sx={{ flex: 1, minWidth: 0 }}>
