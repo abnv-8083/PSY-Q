@@ -595,9 +595,23 @@ app.get('/api/questions', async (req, res) => {
   }
 });
 
+// Keep correct_answer (option ID) and correct_key (0-based index) synchronized
+const syncQuestionAnswerFields = (body) => {
+  const data = { ...body };
+  if (Array.isArray(data.options)) {
+    if (data.correct_answer) {
+      const idx = data.options.findIndex(opt => opt.id === data.correct_answer);
+      if (idx !== -1) data.correct_key = idx;
+    } else if (data.correct_key !== undefined && data.options[data.correct_key]) {
+      data.correct_answer = data.options[data.correct_key].id;
+    }
+  }
+  return data;
+};
+
 app.post('/api/questions', async (req, res) => {
   try {
-    const question = new Question(req.body);
+    const question = new Question(syncQuestionAnswerFields(req.body));
     await question.save();
     // Update test total questions count
     await Test.findByIdAndUpdate(req.body.test_id, { $inc: { total_questions: 1 } });
@@ -609,7 +623,7 @@ app.post('/api/questions', async (req, res) => {
 
 app.put('/api/questions/:id', async (req, res) => {
   try {
-    const question = await Question.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const question = await Question.findByIdAndUpdate(req.params.id, syncQuestionAnswerFields(req.body), { new: true });
     res.json({ success: true, data: question });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -653,7 +667,11 @@ app.post('/api/results', async (req, res) => {
       const question = questionMap[ans.question_id];
       if (!question) return { ...ans, is_correct: false };
 
-      const correctKey = question.correct_key ?? 0;
+      let correctKey = question.correct_key ?? 0;
+      if (question.correct_answer && Array.isArray(question.options)) {
+        const idx = question.options.findIndex(opt => opt.id === question.correct_answer);
+        if (idx !== -1) correctKey = idx;
+      }
       // selected_option is in format 'opt_0', 'opt_1', etc.
       const selectedIdx = ans.selected_option ? parseInt(ans.selected_option.split('_')[1]) : -1;
       const isCorrect = selectedIdx === correctKey;

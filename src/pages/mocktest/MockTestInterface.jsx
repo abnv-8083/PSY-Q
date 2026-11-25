@@ -76,6 +76,24 @@ const MockTestInterface = () => {
 
     const { user, loading: sessionLoading } = useSession();
 
+    const formatQuestions = (qData) => qData.map(q => {
+        let options = q.options;
+        let correctKey = q.correct_key;
+
+        if (options && options.length > 0 && typeof options[0] === 'object') {
+            options = q.options.map(opt => opt.text);
+            const correctIdx = q.options.findIndex(opt => opt.id === q.correct_answer);
+            if (correctIdx !== -1) correctKey = correctIdx;
+        }
+
+        return {
+            ...q,
+            text: q.text || q.question_text,
+            options,
+            correctKey: correctKey !== undefined ? correctKey : 0
+        };
+    });
+
     useEffect(() => {
         if (sessionLoading) return;
 
@@ -113,27 +131,7 @@ const MockTestInterface = () => {
                 }
 
                 const qData = await fetchTestQuestions(testId);
-                
-                // Transform MongoDB format back to simple frontend format if needed
-                const formattedQuestions = qData.map(q => {
-                    let options = q.options;
-                    let correctKey = q.correct_key;
-                    
-                    if (options && options.length > 0 && typeof options[0] === 'object') {
-                        options = q.options.map(opt => opt.text);
-                        const correctIdx = q.options.findIndex(opt => opt.id === q.correct_answer);
-                        if (correctIdx !== -1) correctKey = correctIdx;
-                    }
-
-                    return {
-                        ...q,
-                        text: q.text || q.question_text,
-                        options: options,
-                        correctKey: correctKey !== undefined ? correctKey : 0
-                    };
-                });
-                
-                setQuestions(formattedQuestions);
+                setQuestions(formatQuestions(qData));
 
             } catch (err) {
                 console.error("Error fetching exam data:", err);
@@ -236,29 +234,27 @@ const MockTestInterface = () => {
     };
 
     const handleFinalSubmit = async (gName = null) => {
-        const score = questions.reduce((acc, q, idx) => {
-            return answers[idx] === q.correctKey ? acc + 2 : acc;
-        }, 0);
-
         try {
-            // Format results for MongoDB model
+            // Format selected options for server-side grading
             const formattedAnswers = questions.map((q, idx) => ({
                 question_id: q._id || q.id,
-                selected_option: answers[idx] !== undefined ? `opt_${answers[idx]}` : null,
-                is_correct: answers[idx] === q.correctKey
+                selected_option: answers[idx] !== undefined ? `opt_${answers[idx]}` : null
             }));
 
-            await submitResult({
+            const savedResult = await submitResult({
                 user_id: user?._id || user?.id || null,
                 guest_name: gName || guestNameInput,
                 is_guest: !user,
                 test_id: testId,
-                score,
                 total_marks: questions.length * 2,
                 answers: formattedAnswers,
                 time_spent: (test?.duration || 100) * 60 - timeLeft,
                 status: 'completed'
             });
+
+            // Fetch questions with correct answers now that the test is submitted
+            const qWithAnswers = await fetchTestQuestions(testId, { includeAnswers: true });
+            const formattedWithAnswers = formatQuestions(qWithAnswers);
 
             // If guest, increment internal attempt counter
             if (!user) {
@@ -267,7 +263,13 @@ const MockTestInterface = () => {
             }
 
             navigate(`/academic/mocktest/${subjectId}/${testId}/results`, {
-                state: { score, total: questions.length * 2, answers, questions, guestName: gName || guestNameInput }
+                state: {
+                    score: savedResult?.score ?? 0,
+                    total: savedResult?.total_marks ?? questions.length * 2,
+                    answers,
+                    questions: formattedWithAnswers,
+                    guestName: gName || guestNameInput
+                }
             });
         } catch (err) {
             console.error("Submission failed:", err);

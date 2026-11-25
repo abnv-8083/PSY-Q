@@ -9,6 +9,7 @@ const questionSchema = new mongoose.Schema({
     text: { type: String, required: true }
   }],
   correct_answer: { type: String, required: true }, // ID of the correct option
+  correct_key: { type: Number }, // 0-based index of the correct option
   explanation: { type: String },
   marks: { type: Number, default: 1 },
   negative_marks: { type: Number, default: 0 },

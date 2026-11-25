@@ -90,9 +90,9 @@ const ResultAnalytics = () => {
                             };
                         });
                         setQuestions(mappedQuestions);
-                        setTotal(mappedQuestions.length);
 
                         const attempt = await fetchLatestResult(testId, user.id || user._id);
+                        setTotal(attempt?.total_marks || mappedQuestions.length * 2);
 
                         if (attempt) {
                             setScore(attempt.score);
